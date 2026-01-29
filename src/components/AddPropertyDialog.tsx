@@ -22,6 +22,7 @@ export interface PropertyFormData {
   coordinates: [number, number];
   segment: 'premium' | 'standard' | 'economy';
   status: 'available' | 'reserved' | 'sold';
+  boundary?: Array<[number, number]>;
 }
 
 const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps) => {
@@ -33,8 +34,68 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     location: '',
     coordinates: [55.751244, 37.618423],
     segment: 'standard',
-    status: 'available'
+    status: 'available',
+    boundary: undefined
   });
+  const [kmlFile, setKmlFile] = useState<File | null>(null);
+  const [isParsingKml, setIsParsingKml] = useState(false);
+
+  const parseKmlFile = async (file: File) => {
+    setIsParsingKml(true);
+    try {
+      const text = await file.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      
+      const coordinates = xmlDoc.getElementsByTagName('coordinates')[0]?.textContent?.trim();
+      
+      if (!coordinates) {
+        toast.error('Не удалось найти координаты в KML файле');
+        return;
+      }
+
+      const coords = coordinates
+        .split(/\s+/)
+        .map(coord => {
+          const [lon, lat] = coord.split(',').map(Number);
+          return [lat, lon] as [number, number];
+        })
+        .filter(coord => !isNaN(coord[0]) && !isNaN(coord[1]));
+
+      if (coords.length < 3) {
+        toast.error('KML должен содержать минимум 3 точки');
+        return;
+      }
+
+      const centerLat = coords.reduce((sum, c) => sum + c[0], 0) / coords.length;
+      const centerLon = coords.reduce((sum, c) => sum + c[1], 0) / coords.length;
+
+      setFormData(prev => ({
+        ...prev,
+        boundary: coords,
+        coordinates: [centerLat, centerLon]
+      }));
+
+      toast.success(`Загружена граница из ${coords.length} точек`);
+    } catch (error) {
+      console.error('Ошибка парсинга KML:', error);
+      toast.error('Ошибка чтения KML файла');
+    } finally {
+      setIsParsingKml(false);
+    }
+  };
+
+  const handleKmlUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.name.endsWith('.kml')) {
+        toast.error('Выберите файл формата KML');
+        return;
+      }
+      setKmlFile(file);
+      parseKmlFile(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +117,10 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
       location: '',
       coordinates: [55.751244, 37.618423],
       segment: 'standard',
-      status: 'available'
+      status: 'available',
+      boundary: undefined
     });
+    setKmlFile(null);
   };
 
   return (
@@ -139,6 +202,54 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="kml" className="flex items-center gap-2">
+                <Icon name="MapPin" size={16} />
+                Границы участка (KML файл)
+              </Label>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    id="kml"
+                    type="file"
+                    accept=".kml"
+                    onChange={handleKmlUpload}
+                    disabled={isParsingKml}
+                    className="cursor-pointer"
+                  />
+                </div>
+                {kmlFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setKmlFile(null);
+                      setFormData(prev => ({ ...prev, boundary: undefined }));
+                    }}
+                    disabled={isParsingKml}
+                  >
+                    <Icon name="X" size={16} />
+                  </Button>
+                )}
+              </div>
+              {formData.boundary && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Icon name="Check" size={12} className="text-green-500" />
+                  Загружено {formData.boundary.length} точек границы
+                </p>
+              )}
+              {isParsingKml && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Icon name="Loader2" size={12} className="animate-spin" />
+                  Обработка файла...
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Опционально: загрузите KML файл с границами участка для отображения на карте
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

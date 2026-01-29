@@ -14,6 +14,7 @@ interface Property {
   coordinates: [number, number];
   segment: 'premium' | 'standard' | 'economy';
   status: 'available' | 'reserved' | 'sold';
+  boundary?: Array<[number, number]>;
 }
 
 interface YandexMapProps {
@@ -116,6 +117,27 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
       map.geoObjects.add(clusterer);
 
       properties.forEach((property) => {
+        if (property.boundary && property.boundary.length >= 3) {
+          const polygon = new window.ymaps.Polygon(
+            [property.boundary],
+            {
+              hintContent: property.title
+            },
+            {
+              fillColor: getMarkerColor(property.segment) + '40',
+              strokeColor: getMarkerColor(property.segment),
+              strokeWidth: 2,
+              strokeStyle: 'solid'
+            }
+          );
+
+          polygon.events.add('click', () => {
+            onSelectProperty(property);
+          });
+
+          map.geoObjects.add(polygon);
+        }
+
         const placemark = new window.ymaps.Placemark(
           property.coordinates,
           {
@@ -131,6 +153,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
                   <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${property.area} м²</span>
                 </div>
                 <p style="margin: 0; font-size: 18px; font-weight: 700; color: #0EA5E9;">${formatPrice(property.price)}</p>
+                ${property.boundary ? '<p style="margin: 8px 0 0 0; font-size: 12px; color: #0EA5E9;">✓ Границы загружены</p>' : ''}
               </div>
             `
           },

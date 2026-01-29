@@ -20,6 +20,7 @@ interface Property {
   coordinates: [number, number];
   segment: 'premium' | 'standard' | 'economy';
   status: 'available' | 'reserved' | 'sold';
+  boundary?: Array<[number, number]>;
 }
 
 const initialProperties: Property[] = [
