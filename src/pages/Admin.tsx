@@ -22,6 +22,7 @@ import {
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { propertyService, Property } from '@/services/propertyService';
+import GeoJsonUploader from '@/components/GeoJsonUploader';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const Admin = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
   useEffect(() => {
     loadProperties();
@@ -153,10 +155,16 @@ const Admin = () => {
                 <p className="text-sm text-muted-foreground">Управление базой данных объектов</p>
               </div>
             </div>
-            <Button onClick={loadProperties} variant="outline" size="sm">
-              <Icon name="RefreshCw" size={16} className="mr-2" />
-              Обновить
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setIsUploadDialogOpen(true)} variant="default" size="sm">
+                <Icon name="Upload" size={16} className="mr-2" />
+                Загрузить GeoJSON
+              </Button>
+              <Button onClick={loadProperties} variant="outline" size="sm">
+                <Icon name="RefreshCw" size={16} className="mr-2" />
+                Обновить
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -417,6 +425,18 @@ const Admin = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Импорт объектов из GeoJSON</DialogTitle>
+            <DialogDescription>
+              Загрузите GeoJSON файл с объектами недвижимости. Система автоматически извлечет границы и атрибуты.
+            </DialogDescription>
+          </DialogHeader>
+          <GeoJsonUploader />
         </DialogContent>
       </Dialog>
     </div>

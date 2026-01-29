@@ -1,0 +1,426 @@
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import Icon from '@/components/ui/icon';
+import { propertyService } from '@/services/propertyService';
+
+interface GeoJsonFeature {
+  type: string;
+  geometry: {
+    type: string;
+    coordinates: number[][][] | number[];
+  };
+  properties: Record<string, any>;
+}
+
+interface GeoJsonData {
+  type: string;
+  features: GeoJsonFeature[];
+}
+
+interface FieldMapping {
+  title?: string;
+  type?: string;
+  price?: string;
+  area?: string;
+  location?: string;
+  segment?: string;
+  status?: string;
+}
+
+const GeoJsonUploader = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [geoJsonData, setGeoJsonData] = useState<GeoJsonData | null>(null);
+  const [mapping, setMapping] = useState<FieldMapping>({});
+  const [isUploading, setIsUploading] = useState(false);
+  const [availableFields, setAvailableFields] = useState<string[]>([]);
+  const [preview, setPreview] = useState<GeoJsonFeature | null>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (!selectedFile.name.endsWith('.geojson') && !selectedFile.name.endsWith('.json')) {
+      toast.error('Пожалуйста, выберите GeoJSON файл');
+      return;
+    }
+
+    setFile(selectedFile);
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const data: GeoJsonData = JSON.parse(event.target?.result as string);
+        
+        if (!data.features || data.features.length === 0) {
+          toast.error('GeoJSON файл не содержит объектов');
+          return;
+        }
+
+        setGeoJsonData(data);
+        setPreview(data.features[0]);
+        
+        const fields = Object.keys(data.features[0].properties || {});
+        setAvailableFields(fields);
+        
+        const autoMapping: FieldMapping = {};
+        fields.forEach(field => {
+          const lower = field.toLowerCase();
+          if (lower.includes('name') || lower.includes('title') || lower.includes('название')) {
+            autoMapping.title = field;
+          } else if (lower.includes('price') || lower.includes('цена') || lower.includes('стоимость')) {
+            autoMapping.price = field;
+          } else if (lower.includes('area') || lower.includes('площадь')) {
+            autoMapping.area = field;
+          } else if (lower.includes('location') || lower.includes('address') || lower.includes('адрес')) {
+            autoMapping.location = field;
+          }
+        });
+        
+        setMapping(autoMapping);
+        toast.success(`Загружено ${data.features.length} объектов`);
+      } catch (error) {
+        toast.error('Ошибка чтения файла. Проверьте формат GeoJSON');
+        console.error(error);
+      }
+    };
+
+    reader.readAsText(selectedFile);
+  };
+
+  const extractCoordinates = (feature: GeoJsonFeature): [number, number] => {
+    const { geometry } = feature;
+    
+    if (geometry.type === 'Point') {
+      const coords = geometry.coordinates as number[];
+      return [coords[1], coords[0]];
+    }
+    
+    if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
+      const coords = geometry.type === 'Polygon' 
+        ? (geometry.coordinates as number[][][])[0]
+        : (geometry.coordinates as number[][][][])[0][0];
+      
+      const sumLat = coords.reduce((sum, c) => sum + c[1], 0);
+      const sumLon = coords.reduce((sum, c) => sum + c[0], 0);
+      return [sumLat / coords.length, sumLon / coords.length];
+    }
+    
+    return [55.751244, 37.618423];
+  };
+
+  const extractBoundary = (feature: GeoJsonFeature): Array<[number, number]> | undefined => {
+    const { geometry } = feature;
+    
+    if (geometry.type === 'Polygon') {
+      const coords = (geometry.coordinates as number[][][])[0];
+      return coords.map(c => [c[1], c[0]] as [number, number]);
+    }
+    
+    if (geometry.type === 'MultiPolygon') {
+      const coords = (geometry.coordinates as number[][][][])[0][0];
+      return coords.map(c => [c[1], c[0]] as [number, number]);
+    }
+    
+    return undefined;
+  };
+
+  const getPropertyValue = (properties: Record<string, any>, fieldName?: string, defaultValue: any = '') => {
+    if (!fieldName) return defaultValue;
+    return properties[fieldName] ?? defaultValue;
+  };
+
+  const handleUpload = async () => {
+    if (!geoJsonData || !mapping.title) {
+      toast.error('Укажите как минимум поле для названия объекта');
+      return;
+    }
+
+    setIsUploading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const feature of geoJsonData.features) {
+        try {
+          const props = feature.properties;
+          const coordinates = extractCoordinates(feature);
+          const boundary = extractBoundary(feature);
+
+          const propertyData = {
+            title: getPropertyValue(props, mapping.title, 'Без названия'),
+            type: (getPropertyValue(props, mapping.type, 'land') as 'land' | 'commercial' | 'residential'),
+            price: Number(getPropertyValue(props, mapping.price, 0)),
+            area: Number(getPropertyValue(props, mapping.area, 0)),
+            location: getPropertyValue(props, mapping.location, 'Не указан'),
+            coordinates,
+            segment: (getPropertyValue(props, mapping.segment, 'standard') as 'premium' | 'standard' | 'economy'),
+            status: (getPropertyValue(props, mapping.status, 'available') as 'available' | 'reserved' | 'sold'),
+            boundary
+          };
+
+          await propertyService.createProperty(propertyData);
+          successCount++;
+        } catch (error) {
+          console.error('Error creating property:', error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Загружено ${successCount} объектов${errorCount > 0 ? `, ошибок: ${errorCount}` : ''}`);
+      }
+      
+      if (errorCount > 0 && successCount === 0) {
+        toast.error(`Не удалось загрузить объекты. Ошибок: ${errorCount}`);
+      }
+
+      setFile(null);
+      setGeoJsonData(null);
+      setMapping({});
+      setAvailableFields([]);
+      setPreview(null);
+    } catch (error) {
+      toast.error('Ошибка загрузки данных');
+      console.error(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon name="Upload" className="text-primary" size={24} />
+          Загрузка GeoJSON
+        </CardTitle>
+        <CardDescription>
+          Импорт объектов недвижимости из GeoJSON файла
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="geojson-file">Выберите GeoJSON файл</Label>
+          <Input
+            id="geojson-file"
+            type="file"
+            accept=".geojson,.json"
+            onChange={handleFileSelect}
+            disabled={isUploading}
+          />
+          {file && (
+            <p className="text-sm text-muted-foreground">
+              Файл: {file.name} ({(file.size / 1024).toFixed(2)} KB)
+            </p>
+          )}
+        </div>
+
+        {geoJsonData && (
+          <>
+            <div className="p-4 bg-muted/30 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Объектов в файле:</span>
+                <Badge variant="secondary">{geoJsonData.features.length}</Badge>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Доступные поля: {availableFields.join(', ')}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold flex items-center gap-2">
+                <Icon name="Settings" size={16} />
+                Сопоставление полей
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Название объекта *</Label>
+                  <Select
+                    value={mapping.title}
+                    onValueChange={(value) => setMapping({ ...mapping, title: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Тип объекта</Label>
+                  <Select
+                    value={mapping.type}
+                    onValueChange={(value) => setMapping({ ...mapping, type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано (land по умолчанию)</SelectItem>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Цена</Label>
+                  <Select
+                    value={mapping.price}
+                    onValueChange={(value) => setMapping({ ...mapping, price: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано (0 по умолчанию)</SelectItem>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Площадь</Label>
+                  <Select
+                    value={mapping.area}
+                    onValueChange={(value) => setMapping({ ...mapping, area: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано (0 по умолчанию)</SelectItem>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Адрес/Местоположение</Label>
+                  <Select
+                    value={mapping.location}
+                    onValueChange={(value) => setMapping({ ...mapping, location: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано</SelectItem>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Сегмент</Label>
+                  <Select
+                    value={mapping.segment}
+                    onValueChange={(value) => setMapping({ ...mapping, segment: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано (standard по умолчанию)</SelectItem>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Статус</Label>
+                  <Select
+                    value={mapping.status}
+                    onValueChange={(value) => setMapping({ ...mapping, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите поле (опционально)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Не указано (available по умолчанию)</SelectItem>
+                      {availableFields.map(field => (
+                        <SelectItem key={field} value={field}>{field}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {preview && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Icon name="Eye" size={16} />
+                  Предпросмотр первого объекта
+                </h3>
+                <div className="p-4 bg-muted/20 rounded-lg text-xs font-mono space-y-1">
+                  <div><span className="text-muted-foreground">Название:</span> {getPropertyValue(preview.properties, mapping.title, 'Без названия')}</div>
+                  <div><span className="text-muted-foreground">Тип:</span> {getPropertyValue(preview.properties, mapping.type, 'land')}</div>
+                  <div><span className="text-muted-foreground">Цена:</span> {getPropertyValue(preview.properties, mapping.price, 0)}</div>
+                  <div><span className="text-muted-foreground">Площадь:</span> {getPropertyValue(preview.properties, mapping.area, 0)} м²</div>
+                  <div><span className="text-muted-foreground">Адрес:</span> {getPropertyValue(preview.properties, mapping.location, 'Не указан')}</div>
+                  <div><span className="text-muted-foreground">Границы:</span> {extractBoundary(preview) ? `${extractBoundary(preview)!.length} точек` : 'Нет'}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleUpload}
+                disabled={isUploading || !mapping.title}
+                className="flex-1"
+              >
+                {isUploading ? (
+                  <>
+                    <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                    Загрузка...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Upload" className="mr-2" size={16} />
+                    Загрузить {geoJsonData.features.length} объектов
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setFile(null);
+                  setGeoJsonData(null);
+                  setMapping({});
+                  setAvailableFields([]);
+                  setPreview(null);
+                }}
+                disabled={isUploading}
+              >
+                Отмена
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default GeoJsonUploader;

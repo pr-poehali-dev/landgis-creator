@@ -1,0 +1,77 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [37.618423, 55.751244],
+            [37.619423, 55.751244],
+            [37.619423, 55.752244],
+            [37.618423, 55.752244],
+            [37.618423, 55.751244]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Участок 1",
+        "price": 5000000,
+        "area": 500,
+        "address": "ул. Тестовая, 1",
+        "type": "land",
+        "segment": "premium",
+        "status": "available"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [37.620423, 55.751244],
+            [37.621423, 55.751244],
+            [37.621423, 55.752244],
+            [37.620423, 55.752244],
+            [37.620423, 55.751244]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Участок 2",
+        "price": 7500000,
+        "area": 750,
+        "address": "ул. Тестовая, 2",
+        "type": "commercial",
+        "segment": "standard",
+        "status": "reserved"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [37.622423, 55.751244],
+            [37.623423, 55.751244],
+            [37.623423, 55.752244],
+            [37.622423, 55.752244],
+            [37.622423, 55.751244]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Участок 3",
+        "price": 3000000,
+        "area": 300,
+        "address": "ул. Тестовая, 3",
+        "type": "residential",
+        "segment": "economy",
+        "status": "available"
+      }
+    }
+  ]
+}
