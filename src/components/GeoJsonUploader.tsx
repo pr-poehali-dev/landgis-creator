@@ -114,18 +114,14 @@ const GeoJsonUploader = () => {
     const lon = (x / 20037508.34) * 180;
     let lat = (y / 20037508.34) * 180;
     lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
-    return [lon, lat];
+    return [lat, lon];
   };
 
   const normalizeCoordinates = (coords: number[]): [number, number] => {
-    const x = coords[0];
-    const y = coords[1];
-    
-    if (isWebMercator([x, y])) {
-      return webMercatorToWGS84(x, y);
+    if (isWebMercator(coords)) {
+      return webMercatorToWGS84(coords[0], coords[1]);
     }
-    
-    return [x, y];
+    return [coords[1], coords[0]];
   };
 
   const extractCoordinates = (feature: GeoJsonFeature): [number, number] => {
