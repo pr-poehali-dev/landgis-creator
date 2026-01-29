@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
+import YandexMap from '@/components/YandexMap';
 
 interface Property {
   id: number;
@@ -279,96 +280,12 @@ const Index = () => {
         </div>
 
         <div className="flex-1 relative bg-muted/20">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon name="Map" size={40} className="text-primary" />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Яндекс.Карты</h3>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  Интерактивная карта с маркерами объектов, кластеризацией и слоями данных.
-                  <br />
-                  Тип карты: <span className="font-semibold text-foreground">
-                    {mapType === 'scheme' ? 'Схема' : 'Гибрид (спутник + схема)'}
-                  </span>
-                </p>
-                <Button variant="outline" className="mt-4">
-                  <Icon name="ExternalLink" size={16} className="mr-2" />
-                  Подключить API
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {selectedProperty && (
-            <Card className="absolute bottom-6 left-6 w-96 shadow-2xl">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="mb-2">{selectedProperty.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-1">
-                      <Icon name="MapPin" size={14} />
-                      {selectedProperty.location}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSelectedProperty(null)}
-                  >
-                    <Icon name="X" size={18} />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Тип</div>
-                    <Badge variant="secondary">{getTypeLabel(selectedProperty.type)}</Badge>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">Сегмент</div>
-                    <Badge className={getSegmentColor(selectedProperty.segment)} variant="outline">
-                      {selectedProperty.segment === 'premium' ? 'Премиум' :
-                       selectedProperty.segment === 'standard' ? 'Стандарт' : 'Эконом'}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Площадь</span>
-                    <span className="font-semibold">{selectedProperty.area} м²</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Цена</span>
-                    <span className="font-bold text-xl text-primary">
-                      {formatPrice(selectedProperty.price)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Статус</span>
-                    <Badge className={getStatusColor(selectedProperty.status)} variant="outline">
-                      {selectedProperty.status === 'available' ? 'Доступен' : 
-                       selectedProperty.status === 'reserved' ? 'Резерв' : 'Продан'}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button className="flex-1">
-                    <Icon name="Phone" size={16} className="mr-2" />
-                    Связаться
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Icon name="Eye" size={16} className="mr-2" />
-                    Подробнее
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <YandexMap
+            properties={filteredProperties}
+            selectedProperty={selectedProperty}
+            onSelectProperty={setSelectedProperty}
+            mapType={mapType}
+          />
         </div>
 
         <div className="h-20 border-t border-border bg-card/30 backdrop-blur px-6 flex items-center justify-between">
