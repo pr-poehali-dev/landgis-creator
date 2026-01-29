@@ -446,7 +446,14 @@ const Admin = () => {
           <div className="p-4 bg-red-500 text-white">
             ТЕСТ: Этот блок должен быть виден
           </div>
+          <div className="p-4 bg-blue-500 text-white">
+            Перед GeoJsonUploader
+          </div>
+          {console.log('Попытка рендера GeoJsonUploader')}
           <GeoJsonUploader />
+          <div className="p-4 bg-green-500 text-white">
+            После GeoJsonUploader
+          </div>
         </DialogContent>
       </Dialog>
     </div>
