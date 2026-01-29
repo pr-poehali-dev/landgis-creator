@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -81,21 +82,62 @@ const initialProperties: Property[] = [
   }
 ];
 
+const API_URL = 'https://functions.poehali.dev/ac71b9f6-6521-4747-af29-18fd8700222c';
+
 const Index = () => {
-  const [properties, setProperties] = useState<Property[]>(initialProperties);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [mapType, setMapType] = useState<'scheme' | 'hybrid'>('scheme');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterSegment, setFilterSegment] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddProperty = (formData: PropertyFormData) => {
-    const newProperty: Property = {
-      id: properties.length + 1,
-      ...formData
-    };
-    setProperties([...properties, newProperty]);
+  useEffect(() => {
+    loadProperties();
+  }, []);
+
+  const loadProperties = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error('Failed to load properties');
+      }
+      const data = await response.json();
+      setProperties(data);
+    } catch (error) {
+      console.error('Error loading properties:', error);
+      toast.error('Не удалось загрузить объекты');
+      setProperties(initialProperties);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddProperty = async (formData: PropertyFormData) => {
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create property');
+      }
+
+      const newProperty = await response.json();
+      setProperties([newProperty, ...properties]);
+      toast.success('Объект успешно добавлен!');
+    } catch (error) {
+      console.error('Error creating property:', error);
+      toast.error('Не удалось добавить объект');
+      throw error;
+    }
   };
 
   const filteredProperties = properties.filter(property => {

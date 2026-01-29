@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 interface AddPropertyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (property: PropertyFormData) => void;
+  onAdd: (property: PropertyFormData) => Promise<void>;
 }
 
 export interface PropertyFormData {
@@ -97,7 +97,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.title || !formData.location || formData.price <= 0 || formData.area <= 0) {
@@ -105,22 +105,25 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
       return;
     }
 
-    onAdd(formData);
-    toast.success('Объект успешно добавлен!');
-    onOpenChange(false);
+    try {
+      await onAdd(formData);
+      onOpenChange(false);
 
-    setFormData({
-      title: '',
-      type: 'land',
-      price: 0,
-      area: 0,
-      location: '',
-      coordinates: [55.751244, 37.618423],
-      segment: 'standard',
-      status: 'available',
-      boundary: undefined
-    });
-    setKmlFile(null);
+      setFormData({
+        title: '',
+        type: 'land',
+        price: 0,
+        area: 0,
+        location: '',
+        coordinates: [55.751244, 37.618423],
+        segment: 'standard',
+        status: 'available',
+        boundary: undefined
+      });
+      setKmlFile(null);
+    } catch (error) {
+      console.error('Failed to add property:', error);
+    }
   };
 
   return (

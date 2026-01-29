@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Get all properties",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "0": {
+          "id": "number",
+          "title": "string",
+          "type": "string"
+        }
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Create property",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "title": "Test Property",
+        "type": "land",
+        "price": 1000000,
+        "area": 500,
+        "location": "Test Location",
+        "coordinates": [55.751244, 37.618423],
+        "segment": "standard",
+        "status": "available"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "id": "number",
+        "title": "Test Property"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

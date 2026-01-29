@@ -1,0 +1,161 @@
+import json
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+def handler(event: dict, context) -> dict:
+    '''API для управления объектами недвижимости'''
+    method = event.get('httpMethod', 'GET')
+    
+    if method == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '86400'
+            },
+            'body': '',
+            'isBase64Encoded': False
+        }
+    
+    try:
+        dsn = os.environ.get('DATABASE_URL')
+        if not dsn:
+            return error_response('DATABASE_URL not configured', 500)
+        
+        conn = psycopg2.connect(dsn)
+        
+        if method == 'GET':
+            return get_properties(conn)
+        elif method == 'POST':
+            body = json.loads(event.get('body', '{}'))
+            return create_property(conn, body)
+        elif method == 'DELETE':
+            property_id = event.get('queryStringParameters', {}).get('id')
+            if not property_id:
+                return error_response('Property ID required', 400)
+            return delete_property(conn, int(property_id))
+        else:
+            return error_response('Method not allowed', 405)
+            
+    except Exception as e:
+        return error_response(f'Server error: {str(e)}', 500)
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+def get_properties(conn):
+    '''Получить все объекты недвижимости'''
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute('''
+            SELECT 
+                id, title, type, price, area, location,
+                latitude, longitude, segment, status, boundary,
+                created_at, updated_at
+            FROM properties
+            ORDER BY created_at DESC
+        ''')
+        properties = cur.fetchall()
+        
+        result = []
+        for prop in properties:
+            result.append({
+                'id': prop['id'],
+                'title': prop['title'],
+                'type': prop['type'],
+                'price': float(prop['price']),
+                'area': float(prop['area']),
+                'location': prop['location'],
+                'coordinates': [float(prop['latitude']), float(prop['longitude'])],
+                'segment': prop['segment'],
+                'status': prop['status'],
+                'boundary': prop['boundary'] if prop['boundary'] else None,
+                'created_at': prop['created_at'].isoformat() if prop['created_at'] else None,
+                'updated_at': prop['updated_at'].isoformat() if prop['updated_at'] else None
+            })
+        
+        return success_response(result)
+
+def create_property(conn, data):
+    '''Создать новый объект недвижимости'''
+    required_fields = ['title', 'type', 'price', 'area', 'location', 'coordinates', 'segment', 'status']
+    for field in required_fields:
+        if field not in data:
+            return error_response(f'Missing required field: {field}', 400)
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        boundary_json = json.dumps(data.get('boundary')) if data.get('boundary') else None
+        
+        cur.execute('''
+            INSERT INTO properties 
+            (title, type, price, area, location, latitude, longitude, segment, status, boundary)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+            RETURNING id, title, type, price, area, location, latitude, longitude, 
+                      segment, status, boundary, created_at, updated_at
+        ''', (
+            data['title'],
+            data['type'],
+            data['price'],
+            data['area'],
+            data['location'],
+            data['coordinates'][0],
+            data['coordinates'][1],
+            data['segment'],
+            data['status'],
+            boundary_json
+        ))
+        
+        conn.commit()
+        prop = cur.fetchone()
+        
+        result = {
+            'id': prop['id'],
+            'title': prop['title'],
+            'type': prop['type'],
+            'price': float(prop['price']),
+            'area': float(prop['area']),
+            'location': prop['location'],
+            'coordinates': [float(prop['latitude']), float(prop['longitude'])],
+            'segment': prop['segment'],
+            'status': prop['status'],
+            'boundary': prop['boundary'] if prop['boundary'] else None,
+            'created_at': prop['created_at'].isoformat() if prop['created_at'] else None,
+            'updated_at': prop['updated_at'].isoformat() if prop['updated_at'] else None
+        }
+        
+        return success_response(result, 201)
+
+def delete_property(conn, property_id):
+    '''Удалить объект недвижимости'''
+    with conn.cursor() as cur:
+        cur.execute('DELETE FROM properties WHERE id = %s', (property_id,))
+        conn.commit()
+        
+        if cur.rowcount == 0:
+            return error_response('Property not found', 404)
+        
+        return success_response({'message': 'Property deleted successfully'})
+
+def success_response(data, status_code=200):
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps(data),
+        'isBase64Encoded': False
+    }
+
+def error_response(message, status_code=400):
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps({'error': message}),
+        'isBase64Encoded': False
+    }
