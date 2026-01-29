@@ -224,6 +224,11 @@ const GeoJsonUploader = () => {
           const coordinates = extractCoordinates(feature);
           const boundary = extractBoundary(feature);
 
+          const filteredAttributes = { ...props };
+          delete filteredAttributes.geometry_name;
+          const mappedFields = Object.values(mapping).filter(Boolean);
+          mappedFields.forEach(field => delete filteredAttributes[field as string]);
+
           const propertyData = {
             title: getPropertyValue(props, mapping.title, `Объект ${i + 1}`),
             type: normalizePropertyType(getPropertyValue(props, mapping.type, 'land')),
@@ -234,7 +239,7 @@ const GeoJsonUploader = () => {
             segment: normalizeSegment(getPropertyValue(props, mapping.segment, 'standard')),
             status: normalizeStatus(getPropertyValue(props, mapping.status, 'available')),
             boundary,
-            attributes: props
+            attributes: filteredAttributes
           };
 
           console.log(`Создание объекта ${i + 1}:`, propertyData);
