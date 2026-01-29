@@ -32,6 +32,8 @@ const Admin = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadProperties();
@@ -65,6 +67,62 @@ const Admin = () => {
     } catch (error) {
       console.error('Error deleting property:', error);
       toast.error('Не удалось удалить объект');
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredProperties.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredProperties.map(p => p.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: number) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.size === 0) {
+      toast.error('Выберите объекты для удаления');
+      return;
+    }
+
+    if (!confirm(`Вы уверены, что хотите удалить ${selectedIds.size} объектов?`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const id of selectedIds) {
+        try {
+          await propertyService.deleteProperty(id);
+          successCount++;
+        } catch (error) {
+          console.error(`Error deleting property ${id}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`Удалено объектов: ${successCount}${errorCount > 0 ? `, ошибок: ${errorCount}` : ''}`);
+      }
+      if (errorCount > 0 && successCount === 0) {
+        toast.error(`Не удалось удалить объекты`);
+      }
+
+      setSelectedIds(new Set());
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -217,20 +275,54 @@ const Admin = () => {
 
         <Card>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div>
-                <CardTitle>База данных объектов</CardTitle>
-                <CardDescription>Полный список объектов недвижимости</CardDescription>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div>
+                  <CardTitle>База данных объектов</CardTitle>
+                  <CardDescription>Полный список объектов недвижимости</CardDescription>
+                </div>
+                <div className="relative w-full sm:w-64">
+                  <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                  <Input
+                    placeholder="Поиск по ID, названию, адресу..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="relative w-full sm:w-64">
-                <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                <Input
-                  placeholder="Поиск по ID, названию, адресу..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              {selectedIds.size > 0 && (
+                <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">
+                    Выбрано: {selectedIds.size} объектов
+                  </span>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteSelected}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Icon name="Loader2" className="animate-spin mr-2" size={14} />
+                        Удаление...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Trash2" className="mr-2" size={14} />
+                        Удалить выбранные
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedIds(new Set())}
+                  >
+                    Отменить
+                  </Button>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -248,6 +340,14 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.size === filteredProperties.length && filteredProperties.length > 0}
+                          onChange={toggleSelectAll}
+                          className="w-4 h-4 cursor-pointer"
+                        />
+                      </TableHead>
                       <TableHead className="w-[60px]">ID</TableHead>
                       <TableHead>Название</TableHead>
                       <TableHead>Тип</TableHead>
@@ -264,6 +364,15 @@ const Admin = () => {
                   <TableBody>
                     {filteredProperties.map((property) => (
                       <TableRow key={property.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(property.id)}
+                            onChange={() => toggleSelectOne(property.id)}
+                            className="w-4 h-4 cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{property.id}</TableCell>
                         <TableCell className="font-medium max-w-[200px] truncate">
                           {property.title}
