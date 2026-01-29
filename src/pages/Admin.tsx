@@ -154,6 +154,14 @@ const Admin = () => {
             </div>
             <div className="flex gap-2">
               <Button 
+                onClick={() => navigate('/admin/attributes')} 
+                variant="outline" 
+                size="sm"
+              >
+                <Icon name="Settings" size={16} className="mr-2" />
+                Настройки атрибутов
+              </Button>
+              <Button 
                 onClick={() => setIsUploadDialogOpen(true)} 
                 variant="default" 
                 size="sm"
