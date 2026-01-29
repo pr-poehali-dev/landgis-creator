@@ -166,14 +166,18 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
                 <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #0EA5E9;">${formatPrice(property.price)}</p>
                 ${property.boundary ? '<p style="margin: 0 0 8px 0; font-size: 12px; color: #0EA5E9;">✓ Границы загружены</p>' : ''}
                 ${property.attributes && Object.keys(property.attributes).length > 0 ? `
-                  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5;">
-                    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #888;">Дополнительные атрибуты:</p>
-                    ${Object.entries(property.attributes).map(([key, value]) => 
-                      `<div style="font-size: 11px; margin: 4px 0; display: flex; gap: 4px;">
-                        <span style="color: #666; font-weight: 500;">${key}:</span>
-                        <span style="color: #333;">${value !== null && value !== undefined ? value : '—'}</span>
-                      </div>`
-                    ).join('')}
+                  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5; max-height: 300px; overflow-y: auto;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #0EA5E9;">Атрибуты объекта (${Object.keys(property.attributes).length}):</p>
+                    ${Object.entries(property.attributes)
+                      .filter(([key]) => key !== 'geometry_name')
+                      .map(([key, value]) => {
+                        const strValue = value !== null && value !== undefined ? String(value) : '—';
+                        const truncated = strValue.length > 200 ? strValue.substring(0, 200) + '...' : strValue;
+                        return `<div style="font-size: 11px; margin: 6px 0; padding: 4px 0; border-bottom: 1px solid #f0f0f0;">
+                          <span style="color: #666; font-weight: 600; display: block; margin-bottom: 2px;">${key}</span>
+                          <span style="color: #333; word-break: break-word; white-space: pre-wrap;">${truncated}</span>
+                        </div>`;
+                      }).join('')}
                   </div>
                 ` : ''}
               </div>
@@ -275,6 +279,39 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
                 </Badge>
               </div>
             </div>
+
+            {selectedProperty.attributes && Object.keys(selectedProperty.attributes).length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold">Атрибуты объекта</h4>
+                  <Badge variant="secondary" className="text-xs">
+                    {Object.keys(selectedProperty.attributes).length}
+                  </Badge>
+                </div>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                  {Object.entries(selectedProperty.attributes)
+                    .filter(([key]) => key !== 'geometry_name')
+                    .slice(0, 10)
+                    .map(([key, value]) => (
+                      <div key={key} className="text-xs">
+                        <span className="text-muted-foreground font-medium">{key}:</span>
+                        <p className="text-foreground mt-1 break-words">
+                          {value !== null && value !== undefined 
+                            ? String(value).length > 100 
+                              ? String(value).substring(0, 100) + '...'
+                              : String(value)
+                            : '—'}
+                        </p>
+                      </div>
+                    ))}
+                  {Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length > 10 && (
+                    <p className="text-xs text-muted-foreground italic">
+                      + ещё {Object.keys(selectedProperty.attributes).length - 10} атрибутов
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-2 pt-2">
               <Button className="flex-1" size="sm">
