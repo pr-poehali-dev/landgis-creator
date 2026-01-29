@@ -106,6 +106,24 @@ const GeoJsonUploader = () => {
     reader.readAsText(selectedFile);
   };
 
+  const isWebMercator = (coords: number[]): boolean => {
+    return Math.abs(coords[0]) > 180 || Math.abs(coords[1]) > 90;
+  };
+
+  const webMercatorToWGS84 = (x: number, y: number): [number, number] => {
+    const lon = (x / 20037508.34) * 180;
+    let lat = (y / 20037508.34) * 180;
+    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+    return [lat, lon];
+  };
+
+  const normalizeCoordinates = (coords: number[]): [number, number] => {
+    if (isWebMercator(coords)) {
+      return webMercatorToWGS84(coords[0], coords[1]);
+    }
+    return [coords[1], coords[0]];
+  };
+
   const extractCoordinates = (feature: GeoJsonFeature): [number, number] => {
     const { geometry } = feature;
     
@@ -116,7 +134,7 @@ const GeoJsonUploader = () => {
     
     if (geometry.type === 'Point') {
       const coords = geometry.coordinates as number[];
-      return [coords[1], coords[0]];
+      return normalizeCoordinates(coords);
     }
     
     if (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon') {
@@ -129,9 +147,12 @@ const GeoJsonUploader = () => {
         return [55.751244, 37.618423];
       }
       
-      const sumLat = coords.reduce((sum, c) => sum + c[1], 0);
-      const sumLon = coords.reduce((sum, c) => sum + c[0], 0);
-      return [sumLat / coords.length, sumLon / coords.length];
+      const sumX = coords.reduce((sum, c) => sum + c[0], 0);
+      const sumY = coords.reduce((sum, c) => sum + c[1], 0);
+      const centerX = sumX / coords.length;
+      const centerY = sumY / coords.length;
+      
+      return normalizeCoordinates([centerX, centerY]);
     }
     
     console.warn('Неизвестный тип геометрии:', geometry.type);
@@ -143,12 +164,12 @@ const GeoJsonUploader = () => {
     
     if (geometry.type === 'Polygon') {
       const coords = (geometry.coordinates as number[][][])[0];
-      return coords.map(c => [c[1], c[0]] as [number, number]);
+      return coords.map(c => normalizeCoordinates(c));
     }
     
     if (geometry.type === 'MultiPolygon') {
       const coords = (geometry.coordinates as number[][][][])[0][0];
-      return coords.map(c => [c[1], c[0]] as [number, number]);
+      return coords.map(c => normalizeCoordinates(c));
     }
     
     return undefined;
