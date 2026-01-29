@@ -11,79 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Icon from '@/components/ui/icon';
 import YandexMap from '@/components/YandexMap';
 import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDialog';
-
-interface Property {
-  id: number;
-  title: string;
-  type: 'land' | 'commercial' | 'residential';
-  price: number;
-  area: number;
-  location: string;
-  coordinates: [number, number];
-  segment: 'premium' | 'standard' | 'economy';
-  status: 'available' | 'reserved' | 'sold';
-  boundary?: Array<[number, number]>;
-}
-
-const initialProperties: Property[] = [
-  {
-    id: 1,
-    title: 'Участок в центре города',
-    type: 'land',
-    price: 15000000,
-    area: 500,
-    location: 'ул. Ленина, 15',
-    coordinates: [55.751244, 37.618423],
-    segment: 'premium',
-    status: 'available'
-  },
-  {
-    id: 2,
-    title: 'Коммерческое помещение',
-    type: 'commercial',
-    price: 35000000,
-    area: 250,
-    location: 'пр. Мира, 45',
-    coordinates: [55.771899, 37.597576],
-    segment: 'premium',
-    status: 'reserved'
-  },
-  {
-    id: 3,
-    title: 'Жилой комплекс',
-    type: 'residential',
-    price: 8500000,
-    area: 1200,
-    location: 'ул. Садовая, 78',
-    coordinates: [55.742465, 37.615829],
-    segment: 'standard',
-    status: 'available'
-  },
-  {
-    id: 4,
-    title: 'Земельный участок',
-    type: 'land',
-    price: 4200000,
-    area: 800,
-    location: 'ул. Полевая, 12',
-    coordinates: [55.758532, 37.642321],
-    segment: 'economy',
-    status: 'available'
-  },
-  {
-    id: 5,
-    title: 'Офисное здание',
-    type: 'commercial',
-    price: 52000000,
-    area: 450,
-    location: 'Деловой центр, 3',
-    coordinates: [55.748621, 37.538712],
-    segment: 'premium',
-    status: 'sold'
-  }
-];
-
-const API_URL = 'https://functions.poehali.dev/ac71b9f6-6521-4747-af29-18fd8700222c';
+import { propertyService, Property } from '@/services/propertyService';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -98,21 +26,20 @@ const Index = () => {
 
   useEffect(() => {
     loadProperties();
+    const unsubscribe = propertyService.subscribe((updatedProperties) => {
+      setProperties(updatedProperties);
+    });
+    return unsubscribe;
   }, []);
 
   const loadProperties = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error('Failed to load properties');
-      }
-      const data = await response.json();
+      const data = await propertyService.getProperties();
       setProperties(data);
     } catch (error) {
       console.error('Error loading properties:', error);
       toast.error('Не удалось загрузить объекты');
-      setProperties(initialProperties);
     } finally {
       setIsLoading(false);
     }
@@ -120,20 +47,7 @@ const Index = () => {
 
   const handleAddProperty = async (formData: PropertyFormData) => {
     try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create property');
-      }
-
-      const newProperty = await response.json();
-      setProperties([newProperty, ...properties]);
+      await propertyService.createProperty(formData);
       toast.success('Объект успешно добавлен!');
     } catch (error) {
       console.error('Error creating property:', error);

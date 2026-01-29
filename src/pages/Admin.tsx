@@ -21,24 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
-
-interface Property {
-  id: number;
-  title: string;
-  type: 'land' | 'commercial' | 'residential';
-  price: number;
-  area: number;
-  location: string;
-  latitude: number;
-  longitude: number;
-  segment: 'premium' | 'standard' | 'economy';
-  status: 'available' | 'reserved' | 'sold';
-  boundary?: Array<[number, number]>;
-  created_at: string;
-  updated_at?: string;
-}
-
-const API_URL = 'https://functions.poehali.dev/ac71b9f6-6521-4747-af29-18fd8700222c';
+import { propertyService, Property } from '@/services/propertyService';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -50,16 +33,16 @@ const Admin = () => {
 
   useEffect(() => {
     loadProperties();
+    const unsubscribe = propertyService.subscribe((updatedProperties) => {
+      setProperties(updatedProperties);
+    });
+    return unsubscribe;
   }, []);
 
   const loadProperties = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error('Failed to load properties');
-      }
-      const data = await response.json();
+      const data = await propertyService.getProperties();
       setProperties(data);
     } catch (error) {
       console.error('Error loading properties:', error);
@@ -75,15 +58,7 @@ const Admin = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}?id=${id}`, {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete property');
-      }
-
-      setProperties(properties.filter(p => p.id !== id));
+      await propertyService.deleteProperty(id);
       toast.success('Объект удалён');
     } catch (error) {
       console.error('Error deleting property:', error);
@@ -132,7 +107,8 @@ const Admin = () => {
     return colors[segment as keyof typeof colors];
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '—';
     return new Date(dateString).toLocaleString('ru-RU', {
       year: 'numeric',
       month: '2-digit',
@@ -403,11 +379,11 @@ const Admin = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Широта</p>
-                  <p className="text-sm font-mono">{selectedProperty.latitude}</p>
+                  <p className="text-sm font-mono">{selectedProperty.coordinates?.[0]}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Долгота</p>
-                  <p className="text-sm font-mono">{selectedProperty.longitude}</p>
+                  <p className="text-sm font-mono">{selectedProperty.coordinates?.[1]}</p>
                 </div>
               </div>
 
