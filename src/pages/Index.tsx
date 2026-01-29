@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import YandexMap from '@/components/YandexMap';
+import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDialog';
 
 interface Property {
   id: number;
@@ -21,7 +22,7 @@ interface Property {
   status: 'available' | 'reserved' | 'sold';
 }
 
-const mockProperties: Property[] = [
+const initialProperties: Property[] = [
   {
     id: 1,
     title: 'Участок в центре города',
@@ -80,13 +81,23 @@ const mockProperties: Property[] = [
 ];
 
 const Index = () => {
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [mapType, setMapType] = useState<'scheme' | 'hybrid'>('scheme');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterSegment, setFilterSegment] = useState<string>('all');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const filteredProperties = mockProperties.filter(property => {
+  const handleAddProperty = (formData: PropertyFormData) => {
+    const newProperty: Property = {
+      id: properties.length + 1,
+      ...formData
+    };
+    setProperties([...properties, newProperty]);
+  };
+
+  const filteredProperties = properties.filter(property => {
     const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          property.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'all' || property.type === filterType;
@@ -232,18 +243,18 @@ const Index = () => {
         <div className="p-4 border-t border-border bg-card/80 backdrop-blur">
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
-              <div className="font-bold text-lg text-primary">{mockProperties.length}</div>
+              <div className="font-bold text-lg text-primary">{properties.length}</div>
               <div className="text-muted-foreground">Объектов</div>
             </div>
             <div>
               <div className="font-bold text-lg text-green-400">
-                {mockProperties.filter(p => p.status === 'available').length}
+                {properties.filter(p => p.status === 'available').length}
               </div>
               <div className="text-muted-foreground">Доступно</div>
             </div>
             <div>
               <div className="font-bold text-lg text-secondary">
-                {formatPrice(mockProperties.reduce((sum, p) => sum + p.price, 0) / mockProperties.length).replace(/\s₽/, '')}
+                {formatPrice(properties.reduce((sum, p) => sum + p.price, 0) / properties.length).replace(/\s₽/, '')}
               </div>
               <div className="text-muted-foreground">Средняя цена</div>
             </div>
@@ -363,18 +374,18 @@ const Index = () => {
                   <div className="p-4 border-t border-border bg-card/80 backdrop-blur">
                     <div className="grid grid-cols-3 gap-2 text-center text-xs">
                       <div>
-                        <div className="font-bold text-lg text-primary">{mockProperties.length}</div>
+                        <div className="font-bold text-lg text-primary">{properties.length}</div>
                         <div className="text-muted-foreground">Объектов</div>
                       </div>
                       <div>
                         <div className="font-bold text-lg text-green-400">
-                          {mockProperties.filter(p => p.status === 'available').length}
+                          {properties.filter(p => p.status === 'available').length}
                         </div>
                         <div className="text-muted-foreground">Доступно</div>
                       </div>
                       <div>
                         <div className="font-bold text-lg text-secondary">
-                          {formatPrice(mockProperties.reduce((sum, p) => sum + p.price, 0) / mockProperties.length).replace(/\s₽/, '')}
+                          {formatPrice(properties.reduce((sum, p) => sum + p.price, 0) / properties.length).replace(/\s₽/, '')}
                         </div>
                         <div className="text-muted-foreground">Средняя</div>
                       </div>
@@ -414,7 +425,7 @@ const Index = () => {
               <Icon name="Layers" size={16} className="mr-2" />
               Слои
             </Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/90">
+            <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => setIsAddDialogOpen(true)}>
               <Icon name="Plus" size={16} className="md:mr-2" />
               <span className="hidden md:inline">Добавить объект</span>
             </Button>
@@ -434,15 +445,15 @@ const Index = () => {
           <div className="flex gap-3 lg:gap-6 text-xs lg:text-sm">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-muted-foreground"><span className="hidden md:inline">Доступно: </span><span className="font-semibold text-foreground">{mockProperties.filter(p => p.status === 'available').length}</span></span>
+              <span className="text-muted-foreground"><span className="hidden md:inline">Доступно: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'available').length}</span></span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <span className="text-muted-foreground"><span className="hidden md:inline">Резерв: </span><span className="font-semibold text-foreground">{mockProperties.filter(p => p.status === 'reserved').length}</span></span>
+              <span className="text-muted-foreground"><span className="hidden md:inline">Резерв: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'reserved').length}</span></span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-              <span className="text-muted-foreground"><span className="hidden md:inline">Продано: </span><span className="font-semibold text-foreground">{mockProperties.filter(p => p.status === 'sold').length}</span></span>
+              <span className="text-muted-foreground"><span className="hidden md:inline">Продано: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'sold').length}</span></span>
             </div>
           </div>
 
@@ -452,6 +463,12 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      <AddPropertyDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onAdd={handleAddProperty}
+      />
     </div>
   );
 };
