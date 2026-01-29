@@ -436,16 +436,14 @@ const Admin = () => {
       </Dialog>
 
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto" aria-describedby="upload-dialog-description">
           <DialogHeader className="mb-4">
             <DialogTitle>Импорт объектов из GeoJSON</DialogTitle>
-            <DialogDescription>
+            <DialogDescription id="upload-dialog-description">
               Загрузите GeoJSON файл с объектами недвижимости. Система автоматически извлечет границы и атрибуты.
             </DialogDescription>
           </DialogHeader>
-          <div className="overflow-auto">
-            <GeoJsonUploader />
-          </div>
+          <GeoJsonUploader />
         </DialogContent>
       </Dialog>
     </div>
