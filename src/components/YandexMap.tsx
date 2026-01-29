@@ -87,37 +87,47 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
     }
 
     window.ymaps.ready(() => {
-      if (!mapRef.current || mapInstanceRef.current) return;
+      if (!mapRef.current) return;
 
-      const map = new window.ymaps.Map(mapRef.current, {
-        center: [55.751244, 37.618423],
-        zoom: 12,
-        controls: ['zoomControl', 'fullscreenControl']
-      });
+      if (!mapInstanceRef.current) {
+        const map = new window.ymaps.Map(mapRef.current, {
+          center: [55.751244, 37.618423],
+          zoom: 12,
+          controls: ['zoomControl', 'fullscreenControl']
+        });
 
-      mapInstanceRef.current = map;
-      setIsMapReady(true);
+        mapInstanceRef.current = map;
+        setIsMapReady(true);
 
-      const clusterer = new window.ymaps.Clusterer({
-        preset: 'islands#invertedVioletClusterIcons',
-        clusterDisableClickZoom: false,
-        clusterOpenBalloonOnClick: true,
-        clusterBalloonContentLayout: 'cluster#balloonCarousel',
-        clusterBalloonPagerSize: 5,
-        clusterBalloonItemContentLayout: window.ymaps.templateLayoutFactory.createClass(
-          '<div style="padding: 8px;">' +
-          '<strong style="font-size: 14px;">{{ properties.title }}</strong><br/>' +
-          '<small style="color: #999;">{{ properties.location }}</small><br/>' +
-          '<strong style="color: #0EA5E9; font-size: 16px;">{{ properties.priceFormatted }}</strong>' +
-          '</div>'
-        )
-      });
+        const clusterer = new window.ymaps.Clusterer({
+          preset: 'islands#invertedVioletClusterIcons',
+          clusterDisableClickZoom: false,
+          clusterOpenBalloonOnClick: true,
+          clusterBalloonContentLayout: 'cluster#balloonCarousel',
+          clusterBalloonPagerSize: 5,
+          clusterBalloonItemContentLayout: window.ymaps.templateLayoutFactory.createClass(
+            '<div style="padding: 8px;">' +
+            '<strong style="font-size: 14px;">{{ properties.title }}</strong><br/>' +
+            '<small style="color: #999;">{{ properties.location }}</small><br/>' +
+            '<strong style="color: #0EA5E9; font-size: 16px;">{{ properties.priceFormatted }}</strong>' +
+            '</div>'
+          )
+        });
 
-      clustererRef.current = clusterer;
+        clustererRef.current = clusterer;
+        map.geoObjects.add(clusterer);
+      }
+
+      const map = mapInstanceRef.current;
+      const clusterer = clustererRef.current;
+
+      map.geoObjects.removeAll();
       map.geoObjects.add(clusterer);
+      clusterer.removeAll();
 
       properties.forEach((property) => {
         if (property.boundary && property.boundary.length >= 3) {
+          console.log('Рисуем границы для:', property.title, property.boundary);
           const polygon = new window.ymaps.Polygon(
             [property.boundary],
             {
@@ -175,9 +185,10 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
       if (mapInstanceRef.current) {
         mapInstanceRef.current.destroy();
         mapInstanceRef.current = null;
+        clustererRef.current = null;
       }
     };
-  }, []);
+  }, [properties]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
