@@ -111,16 +111,20 @@ const GeoJsonUploader = () => {
   };
 
   const webMercatorToWGS84 = (x: number, y: number): [number, number] => {
-    const lon = (x / 20037508.34) * 180;
-    let lat = (y / 20037508.34) * 180;
-    lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+    const R = 6378137;
+    const lon = (x / R) * (180 / Math.PI);
+    const lat = (Math.PI / 2 - 2 * Math.atan(Math.exp(-y / R))) * (180 / Math.PI);
     return [lat, lon];
   };
 
   const normalizeCoordinates = (coords: number[]): [number, number] => {
-    if (isWebMercator(coords)) {
-      return webMercatorToWGS84(coords[0], coords[1]);
+    const x = coords[0];
+    const y = coords[1];
+    
+    if (isWebMercator([x, y])) {
+      return webMercatorToWGS84(x, y);
     }
+    
     return [coords[1], coords[0]];
   };
 
