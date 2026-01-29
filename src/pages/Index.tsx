@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,6 +86,7 @@ const initialProperties: Property[] = [
 const API_URL = 'https://functions.poehali.dev/ac71b9f6-6521-4747-af29-18fd8700222c';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [mapType, setMapType] = useState<'scheme' | 'hybrid'>('scheme');
@@ -460,6 +462,10 @@ const Index = () => {
           </Tabs>
 
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="hidden md:flex" onClick={() => navigate('/admin')}>
+              <Icon name="Database" size={16} className="mr-2" />
+              Админка
+            </Button>
             <Button variant="outline" size="sm" className="hidden md:flex">
               <Icon name="Filter" size={16} className="mr-2" />
               Фильтры
