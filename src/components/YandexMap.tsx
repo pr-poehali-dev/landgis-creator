@@ -176,12 +176,12 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
       <div ref={mapRef} className="w-full h-full" />
 
       {selectedProperty && (
-        <Card className="absolute bottom-6 left-6 w-96 shadow-2xl animate-fade-in">
-          <CardHeader>
+        <Card className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:w-96 max-w-md shadow-2xl animate-fade-in">
+          <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <CardTitle className="mb-2">{selectedProperty.title}</CardTitle>
-                <CardDescription className="flex items-center gap-1">
+                <CardTitle className="text-base sm:text-lg mb-2">{selectedProperty.title}</CardTitle>
+                <CardDescription className="flex items-center gap-1 text-xs">
                   <Icon name="MapPin" size={14} />
                   {selectedProperty.location}
                 </CardDescription>
@@ -195,15 +195,15 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <CardContent className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Тип</div>
-                <Badge variant="secondary">{getTypeLabel(selectedProperty.type)}</Badge>
+                <Badge variant="secondary" className="text-xs">{getTypeLabel(selectedProperty.type)}</Badge>
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Сегмент</div>
-                <Badge className={getSegmentColor(selectedProperty.segment)} variant="outline">
+                <Badge className={`${getSegmentColor(selectedProperty.segment)} text-xs`} variant="outline">
                   {selectedProperty.segment === 'premium' ? 'Премиум' :
                    selectedProperty.segment === 'standard' ? 'Стандарт' : 'Эконом'}
                 </Badge>
@@ -213,11 +213,11 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Площадь</span>
-                <span className="font-semibold">{selectedProperty.area} м²</span>
+                <span className="font-semibold text-sm sm:text-base">{selectedProperty.area} м²</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Цена</span>
-                <span className="font-bold text-xl text-primary">
+                <span className="font-bold text-lg sm:text-xl text-primary">
                   {formatPrice(selectedProperty.price)}
                 </span>
               </div>
@@ -231,13 +231,13 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button className="flex-1">
-                <Icon name="Phone" size={16} className="mr-2" />
-                Связаться
+              <Button className="flex-1" size="sm">
+                <Icon name="Phone" size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">Связаться</span>
               </Button>
-              <Button variant="outline" className="flex-1">
-                <Icon name="Eye" size={16} className="mr-2" />
-                Подробнее
+              <Button variant="outline" className="flex-1" size="sm">
+                <Icon name="Eye" size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">Подробнее</span>
               </Button>
             </div>
           </CardContent>
