@@ -10,13 +10,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { propertyService, Property } from '@/services/propertyService';
 import GeoJsonUploader from '@/components/GeoJsonUploader';
 import AdminStats from '@/components/admin/AdminStats';
 import AdminTableHeader from '@/components/admin/AdminTableHeader';
 import AdminPropertyTable from '@/components/admin/AdminPropertyTable';
 import AdminPropertyDetail from '@/components/admin/AdminPropertyDetail';
+import AdminNavigation from '@/components/admin/AdminNavigation';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -133,104 +134,33 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card/30 backdrop-blur">
-        <div className="container mx-auto px-4 lg:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/')}
-              >
-                <Icon name="ArrowLeft" size={20} />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Icon name="Database" className="text-primary" size={28} />
-                  Администрирование
-                </h1>
-                <p className="text-sm text-muted-foreground">Управление базой данных объектов</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                onClick={() => navigate('/admin/attributes')} 
-                variant="outline" 
-                size="sm"
-              >
-                <Icon name="Settings" size={16} className="mr-2" />
-                Настройки атрибутов
-              </Button>
-              <Button 
-                onClick={() => setIsUploadDialogOpen(true)} 
-                variant="default" 
-                size="sm"
-              >
-                <Icon name="Upload" size={16} className="mr-2" />
-                Загрузить GeoJSON
-              </Button>
-              <Button onClick={loadProperties} variant="outline" size="sm">
-                <Icon name="RefreshCw" size={16} className="mr-2" />
-                Обновить
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminNavigation />
 
       <div className="container mx-auto px-4 lg:px-6 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => navigate('/admin/map-settings')}
-          >
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center gap-2">
-                <Icon name="Map" size={32} className="text-primary" />
-                <h3 className="font-semibold">Карта</h3>
-                <p className="text-xs text-muted-foreground">Настройки отображения</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => navigate('/admin/companies')}
-          >
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center gap-2">
-                <Icon name="Building2" size={32} className="text-primary" />
-                <h3 className="font-semibold">Компании</h3>
-                <p className="text-xs text-muted-foreground">Организации-собственники</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => navigate('/admin/users')}
-          >
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center gap-2">
-                <Icon name="Users" size={32} className="text-primary" />
-                <h3 className="font-semibold">Пользователи</h3>
-                <p className="text-xs text-muted-foreground">Управление доступом</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card
-            className="cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => navigate('/admin/filter-settings')}
-          >
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center gap-2">
-                <Icon name="Filter" size={32} className="text-primary" />
-                <h3 className="font-semibold">Фильтры</h3>
-                <p className="text-xs text-muted-foreground">Настройка фильтрации</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         <AdminStats properties={properties} />
+
+        <div className="flex gap-2 mb-4">
+          <Button 
+            onClick={() => navigate('/admin/attributes')} 
+            variant="outline" 
+            size="sm"
+          >
+            <Icon name="Settings" size={16} className="mr-2" />
+            Настройки атрибутов
+          </Button>
+          <Button 
+            onClick={() => setIsUploadDialogOpen(true)} 
+            variant="default" 
+            size="sm"
+          >
+            <Icon name="Upload" size={16} className="mr-2" />
+            Загрузить GeoJSON
+          </Button>
+          <Button onClick={loadProperties} variant="outline" size="sm">
+            <Icon name="RefreshCw" size={16} className="mr-2" />
+            Обновить
+          </Button>
+        </div>
 
         <Card>
           <div className="p-6">

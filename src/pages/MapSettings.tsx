@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { mapSettingsService, MapSetting } from '@/services/mapSettingsService';
+import AdminNavigation from '@/components/admin/AdminNavigation';
 
 const MapSettings = () => {
   const navigate = useNavigate();
@@ -70,43 +71,26 @@ const MapSettings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card/30 backdrop-blur">
-        <div className="container mx-auto px-4 lg:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/admin')}
-              >
-                <Icon name="ArrowLeft" size={20} />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Icon name="Map" className="text-primary" size={28} />
-                  Настройки карты
-                </h1>
-                <p className="text-sm text-muted-foreground">Параметры отображения карты</p>
-              </div>
-            </div>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Icon name="Loader2" className="animate-spin mr-2" size={16} />
-                  Сохранение...
-                </>
-              ) : (
-                <>
-                  <Icon name="Save" size={16} className="mr-2" />
-                  Сохранить
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
+      <AdminNavigation />
 
       <div className="container mx-auto px-4 lg:px-6 py-6">
+        <div className="flex justify-end mb-4">
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                Сохранение...
+              </>
+            ) : (
+              <>
+                <Icon name="Save" size={16} className="mr-2" />
+                Сохранить
+              </>
+            )}
+          </Button>
+        </div>
+
+
         <div className="grid gap-6">
           <Card>
             <CardHeader>

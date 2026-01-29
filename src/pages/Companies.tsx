@@ -23,6 +23,7 @@ import {
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { companyService, Company } from '@/services/companyService';
+import AdminNavigation from '@/components/admin/AdminNavigation';
 
 const Companies = () => {
   const navigate = useNavigate();
@@ -119,34 +120,17 @@ const Companies = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card/30 backdrop-blur">
-        <div className="container mx-auto px-4 lg:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/admin')}
-              >
-                <Icon name="ArrowLeft" size={20} />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Icon name="Building2" className="text-primary" size={28} />
-                  Компании
-                </h1>
-                <p className="text-sm text-muted-foreground">Организации-собственники и партнёры</p>
-              </div>
-            </div>
-            <Button onClick={() => handleOpenDialog()}>
-              <Icon name="Plus" size={16} className="mr-2" />
-              Добавить компанию
-            </Button>
-          </div>
-        </div>
-      </div>
+      <AdminNavigation />
 
       <div className="container mx-auto px-4 lg:px-6 py-6">
+        <div className="flex justify-end mb-4">
+          <Button onClick={() => handleOpenDialog()}>
+            <Icon name="Plus" size={16} className="mr-2" />
+            Добавить компанию
+          </Button>
+        </div>
+
+
         <Card>
           <CardHeader>
             <CardTitle>Список компаний</CardTitle>
