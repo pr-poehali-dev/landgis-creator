@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { propertyService } from '@/services/propertyService';
+import { attributeConfigService } from '@/services/attributeConfigService';
 
 interface GeoJsonFeature {
   type: string;
@@ -205,6 +206,46 @@ const GeoJsonUploader = () => {
     return 'available';
   };
 
+  const syncAttributeConfigs = async () => {
+    if (!geoJsonData || geoJsonData.features.length === 0) return;
+
+    try {
+      const allAttributes = new Set<string>();
+      geoJsonData.features.forEach(feature => {
+        if (feature.properties) {
+          Object.keys(feature.properties).forEach(key => {
+            if (key !== 'geometry_name') {
+              allAttributes.add(key);
+            }
+          });
+        }
+      });
+
+      const existingConfigs = await attributeConfigService.getConfigs();
+      const existingKeys = new Set(existingConfigs.map(c => c.attributeKey));
+
+      let createdCount = 0;
+      for (const attributeKey of allAttributes) {
+        if (!existingKeys.has(attributeKey)) {
+          await attributeConfigService.createOrUpdateConfig({
+            attributeKey,
+            displayName: attributeKey.charAt(0).toUpperCase() + attributeKey.slice(1),
+            displayOrder: existingConfigs.length + createdCount + 1,
+            visibleInTable: false,
+            visibleRoles: ['admin', 'user']
+          });
+          createdCount++;
+        }
+      }
+
+      if (createdCount > 0) {
+        console.log(`Создано ${createdCount} новых настроек атрибутов`);
+      }
+    } catch (error) {
+      console.error('Ошибка синхронизации атрибутов:', error);
+    }
+  };
+
   const handleUpload = async () => {
     if (!geoJsonData || !mapping.title) {
       toast.error('Укажите как минимум поле для названия объекта');
@@ -217,6 +258,8 @@ const GeoJsonUploader = () => {
     let errorCount = 0;
 
     try {
+      await syncAttributeConfigs();
+
       for (let i = 0; i < geoJsonData.features.length; i++) {
         const feature = geoJsonData.features[i];
         try {

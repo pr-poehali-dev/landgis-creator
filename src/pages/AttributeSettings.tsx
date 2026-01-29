@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
 import { attributeConfigService, AttributeConfig } from '@/services/attributeConfigService';
+import { propertyService } from '@/services/propertyService';
 
 const AttributeSettings = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const AttributeSettings = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<Partial<AttributeConfig> | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     loadConfigs();
@@ -141,6 +143,52 @@ const AttributeSettings = () => {
     setIsEditDialogOpen(true);
   };
 
+  const handleSyncFromDatabase = async () => {
+    setIsSyncing(true);
+    try {
+      const properties = await propertyService.getProperties();
+      const allAttributes = new Set<string>();
+      
+      properties.forEach(property => {
+        if (property.attributes) {
+          Object.keys(property.attributes).forEach(key => {
+            if (key !== 'geometry_name') {
+              allAttributes.add(key);
+            }
+          });
+        }
+      });
+
+      const existingKeys = new Set(configs.map(c => c.attributeKey));
+      let createdCount = 0;
+
+      for (const attributeKey of allAttributes) {
+        if (!existingKeys.has(attributeKey)) {
+          await attributeConfigService.createOrUpdateConfig({
+            attributeKey,
+            displayName: attributeKey.charAt(0).toUpperCase() + attributeKey.slice(1).replace(/_/g, ' '),
+            displayOrder: configs.length + createdCount + 1,
+            visibleInTable: false,
+            visibleRoles: ['admin', 'user']
+          });
+          createdCount++;
+        }
+      }
+
+      if (createdCount > 0) {
+        toast.success(`Добавлено ${createdCount} новых атрибутов`);
+        loadConfigs();
+      } else {
+        toast.info('Все атрибуты уже настроены');
+      }
+    } catch (error) {
+      console.error('Error syncing attributes:', error);
+      toast.error('Ошибка синхронизации атрибутов');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-card/30 backdrop-blur">
@@ -162,10 +210,29 @@ const AttributeSettings = () => {
                 <p className="text-sm text-muted-foreground">Управление отображением атрибутов объектов</p>
               </div>
             </div>
-            <Button onClick={() => openEditDialog()}>
-              <Icon name="Plus" size={16} className="mr-2" />
-              Добавить атрибут
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSyncFromDatabase}
+                variant="outline"
+                disabled={isSyncing}
+              >
+                {isSyncing ? (
+                  <>
+                    <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                    Синхронизация...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="RefreshCw" size={16} className="mr-2" />
+                    Синхронизировать из БД
+                  </>
+                )}
+              </Button>
+              <Button onClick={() => openEditDialog()}>
+                <Icon name="Plus" size={16} className="mr-2" />
+                Добавить атрибут
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -178,6 +245,7 @@ const AttributeSettings = () => {
               <CardDescription>Как работают настройки атрибутов</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+              <p>• <strong>Синхронизировать из БД</strong> — автоматически найти все атрибуты из загруженных объектов</p>
               <p>• <strong>Название (латиница)</strong> — ключ атрибута из GeoJSON файла</p>
               <p>• <strong>Отображаемое имя</strong> — название, которое увидят пользователи</p>
               <p>• <strong>Перетаскивание строк</strong> — измените порядок отображения атрибутов</p>
