@@ -36,6 +36,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [showAttributesPanel, setShowAttributesPanel] = useState(false);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -225,7 +226,45 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
 
-      {selectedProperty && (
+      {showAttributesPanel && selectedProperty && selectedProperty.attributes && (
+        <Card className="absolute top-0 right-0 h-full w-full sm:w-[450px] shadow-2xl animate-fade-in overflow-hidden flex flex-col">
+          <CardHeader className="pb-3 border-b border-border flex-shrink-0">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-base mb-2">Атрибуты объекта</CardTitle>
+                <CardDescription className="text-xs">
+                  {selectedProperty.title}
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 -mt-1"
+                onClick={() => setShowAttributesPanel(false)}
+              >
+                <Icon name="X" size={20} />
+              </Button>
+            </div>
+            <Badge variant="secondary" className="mt-2 w-fit">
+              Всего: {Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length} атрибутов
+            </Badge>
+          </CardHeader>
+          <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
+            {Object.entries(selectedProperty.attributes)
+              .filter(([key]) => key !== 'geometry_name')
+              .map(([key, value]) => (
+                <div key={key} className="pb-3 border-b border-border last:border-0">
+                  <p className="text-xs font-semibold text-primary mb-1">{key}</p>
+                  <p className="text-sm text-foreground break-words whitespace-pre-wrap">
+                    {value !== null && value !== undefined ? String(value) : '—'}
+                  </p>
+                </div>
+              ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {selectedProperty && !showAttributesPanel && (
         <Card className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:w-96 max-w-md shadow-2xl animate-fade-in">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
@@ -280,36 +319,20 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
               </div>
             </div>
 
-            {selectedProperty.attributes && Object.keys(selectedProperty.attributes).length > 0 && (
+            {selectedProperty.attributes && Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length > 0 && (
               <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold">Атрибуты объекта</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {Object.keys(selectedProperty.attributes).length}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setShowAttributesPanel(true)}
+                >
+                  <Icon name="ListTree" size={16} className="mr-2" />
+                  Показать все атрибуты
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    {Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length}
                   </Badge>
-                </div>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
-                  {Object.entries(selectedProperty.attributes)
-                    .filter(([key]) => key !== 'geometry_name')
-                    .slice(0, 10)
-                    .map(([key, value]) => (
-                      <div key={key} className="text-xs">
-                        <span className="text-muted-foreground font-medium">{key}:</span>
-                        <p className="text-foreground mt-1 break-words">
-                          {value !== null && value !== undefined 
-                            ? String(value).length > 100 
-                              ? String(value).substring(0, 100) + '...'
-                              : String(value)
-                            : '—'}
-                        </p>
-                      </div>
-                    ))}
-                  {Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length > 10 && (
-                    <p className="text-xs text-muted-foreground italic">
-                      + ещё {Object.keys(selectedProperty.attributes).length - 10} атрибутов
-                    </p>
-                  )}
-                </div>
+                </Button>
               </div>
             )}
 
