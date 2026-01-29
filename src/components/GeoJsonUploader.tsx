@@ -33,8 +33,6 @@ interface FieldMapping {
 }
 
 const GeoJsonUploader = () => {
-  console.log('GeoJsonUploader рендерится');
-  
   const [file, setFile] = useState<File | null>(null);
   const [geoJsonData, setGeoJsonData] = useState<GeoJsonData | null>(null);
   const [mapping, setMapping] = useState<FieldMapping>({});
@@ -303,14 +301,14 @@ const GeoJsonUploader = () => {
                 <div className="space-y-2">
                   <Label>Тип объекта</Label>
                   <Select
-                    value={mapping.type}
-                    onValueChange={(value) => setMapping({ ...mapping, type: value })}
+                    value={mapping.type || '__none__'}
+                    onValueChange={(value) => setMapping({ ...mapping, type: value === '__none__' ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите поле (опционально)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано (land по умолчанию)</SelectItem>
+                      <SelectItem value="__none__">Не указано (land по умолчанию)</SelectItem>
                       {availableFields.map(field => (
                         <SelectItem key={field} value={field}>{field}</SelectItem>
                       ))}
@@ -321,14 +319,14 @@ const GeoJsonUploader = () => {
                 <div className="space-y-2">
                   <Label>Цена</Label>
                   <Select
-                    value={mapping.price}
-                    onValueChange={(value) => setMapping({ ...mapping, price: value })}
+                    value={mapping.price || '__none__'}
+                    onValueChange={(value) => setMapping({ ...mapping, price: value === '__none__' ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите поле (опционально)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано (0 по умолчанию)</SelectItem>
+                      <SelectItem value="__none__">Не указано (0 по умолчанию)</SelectItem>
                       {availableFields.map(field => (
                         <SelectItem key={field} value={field}>{field}</SelectItem>
                       ))}
@@ -339,14 +337,14 @@ const GeoJsonUploader = () => {
                 <div className="space-y-2">
                   <Label>Площадь</Label>
                   <Select
-                    value={mapping.area}
-                    onValueChange={(value) => setMapping({ ...mapping, area: value })}
+                    value={mapping.area || '__none__'}
+                    onValueChange={(value) => setMapping({ ...mapping, area: value === '__none__' ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите поле (опционально)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано (0 по умолчанию)</SelectItem>
+                      <SelectItem value="__none__">Не указано (0 по умолчанию)</SelectItem>
                       {availableFields.map(field => (
                         <SelectItem key={field} value={field}>{field}</SelectItem>
                       ))}
@@ -357,14 +355,14 @@ const GeoJsonUploader = () => {
                 <div className="space-y-2">
                   <Label>Адрес/Местоположение</Label>
                   <Select
-                    value={mapping.location}
-                    onValueChange={(value) => setMapping({ ...mapping, location: value })}
+                    value={mapping.location || '__none__'}
+                    onValueChange={(value) => setMapping({ ...mapping, location: value === '__none__' ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите поле (опционально)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано</SelectItem>
+                      <SelectItem value="__none__">Не указано</SelectItem>
                       {availableFields.map(field => (
                         <SelectItem key={field} value={field}>{field}</SelectItem>
                       ))}
@@ -375,14 +373,14 @@ const GeoJsonUploader = () => {
                 <div className="space-y-2">
                   <Label>Сегмент</Label>
                   <Select
-                    value={mapping.segment}
-                    onValueChange={(value) => setMapping({ ...mapping, segment: value })}
+                    value={mapping.segment || '__none__'}
+                    onValueChange={(value) => setMapping({ ...mapping, segment: value === '__none__' ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите поле (опционально)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано (standard по умолчанию)</SelectItem>
+                      <SelectItem value="__none__">Не указано (standard по умолчанию)</SelectItem>
                       {availableFields.map(field => (
                         <SelectItem key={field} value={field}>{field}</SelectItem>
                       ))}
@@ -393,14 +391,14 @@ const GeoJsonUploader = () => {
                 <div className="space-y-2">
                   <Label>Статус</Label>
                   <Select
-                    value={mapping.status}
-                    onValueChange={(value) => setMapping({ ...mapping, status: value })}
+                    value={mapping.status || '__none__'}
+                    onValueChange={(value) => setMapping({ ...mapping, status: value === '__none__' ? undefined : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите поле (опционально)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Не указано (available по умолчанию)</SelectItem>
+                      <SelectItem value="__none__">Не указано (available по умолчанию)</SelectItem>
                       {availableFields.map(field => (
                         <SelectItem key={field} value={field}>{field}</SelectItem>
                       ))}

@@ -157,10 +157,7 @@ const Admin = () => {
             </div>
             <div className="flex gap-2">
               <Button 
-                onClick={() => {
-                  console.log('Открытие диалога загрузки GeoJSON');
-                  setIsUploadDialogOpen(true);
-                }} 
+                onClick={() => setIsUploadDialogOpen(true)} 
                 variant="default" 
                 size="sm"
               >
@@ -443,17 +440,7 @@ const Admin = () => {
               Загрузите GeoJSON файл с объектами недвижимости. Система автоматически извлечет границы и атрибуты.
             </DialogDescription>
           </DialogHeader>
-          <div className="p-4 bg-red-500 text-white">
-            ТЕСТ: Этот блок должен быть виден
-          </div>
-          <div className="p-4 bg-blue-500 text-white">
-            Перед GeoJsonUploader
-          </div>
-          {console.log('Попытка рендера GeoJsonUploader')}
           <GeoJsonUploader />
-          <div className="p-4 bg-green-500 text-white">
-            После GeoJsonUploader
-          </div>
         </DialogContent>
       </Dialog>
     </div>
