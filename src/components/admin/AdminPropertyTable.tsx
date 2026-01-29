@@ -96,6 +96,7 @@ const AdminPropertyTable = ({
             <TableHead>Сегмент</TableHead>
             <TableHead>Статус</TableHead>
             <TableHead>Границы</TableHead>
+            <TableHead>Атрибуты</TableHead>
             <TableHead>Создан</TableHead>
             <TableHead className="text-right">Действия</TableHead>
           </TableRow>
@@ -145,6 +146,16 @@ const AdminPropertyTable = ({
                   <Badge variant="outline" className="text-xs bg-green-500/10 text-green-400 border-green-500/30">
                     <Icon name="Check" size={12} className="mr-1" />
                     {property.boundary.length} точек
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {property.attributes && Object.keys(property.attributes).filter(k => k !== 'geometry_name').length > 0 ? (
+                  <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-400 border-blue-500/30">
+                    <Icon name="ListTree" size={12} className="mr-1" />
+                    {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
                   </Badge>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>

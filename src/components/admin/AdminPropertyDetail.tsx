@@ -152,19 +152,26 @@ const AdminPropertyDetail = ({ property, isOpen, onClose }: AdminPropertyDetailP
             </div>
           )}
 
-          {property.attributes && Object.keys(property.attributes).length > 0 && (
+          {property.attributes && Object.keys(property.attributes).filter(k => k !== 'geometry_name').length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">Атрибуты из GeoJSON</p>
-              <div className="bg-muted/30 rounded-lg p-3 max-h-60 overflow-y-auto">
-                <div className="space-y-2">
-                  {Object.entries(property.attributes).map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-start gap-4 text-xs">
-                      <span className="font-medium text-muted-foreground min-w-[100px]">{key}:</span>
-                      <span className="text-foreground text-right break-all">
-                        {value !== null && value !== undefined ? String(value) : '—'}
-                      </span>
-                    </div>
-                  ))}
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Атрибуты из GeoJSON</p>
+                <Badge variant="secondary" className="text-xs">
+                  {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
+                </Badge>
+              </div>
+              <div className="bg-muted/30 rounded-lg p-3 max-h-[400px] overflow-y-auto">
+                <div className="space-y-3">
+                  {Object.entries(property.attributes)
+                    .filter(([key]) => key !== 'geometry_name')
+                    .map(([key, value]) => (
+                      <div key={key} className="pb-3 border-b border-border last:border-0">
+                        <p className="text-xs font-semibold text-primary mb-1">{key}</p>
+                        <p className="text-sm text-foreground break-words whitespace-pre-wrap">
+                          {value !== null && value !== undefined ? String(value) : '—'}
+                        </p>
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
