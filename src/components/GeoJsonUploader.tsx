@@ -247,6 +247,8 @@ const GeoJsonUploader = () => {
 
       if (successCount > 0) {
         toast.success(`Загружено ${successCount} объектов${errorCount > 0 ? `, ошибок: ${errorCount}` : ''}`);
+        propertyService.invalidateCache();
+        await propertyService.getProperties(true);
       }
       
       if (errorCount > 0 && successCount === 0) {
