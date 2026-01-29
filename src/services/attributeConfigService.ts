@@ -9,7 +9,7 @@ interface AttributeConfig {
   updatedAt?: string;
 }
 
-const API_URL = 'https://functions.poehali.dev/2a9b6783-7159-48c4-9f78-53ab09348fc1';
+const API_URL = 'https://functions.poehali.dev/a3036691-51a9-417e-bbf2-0b462f69207b';
 
 class AttributeConfigService {
   private cache: AttributeConfig[] | null = null;
@@ -68,6 +68,21 @@ class AttributeConfigService {
     for (const config of configs) {
       await this.updateConfig(config);
     }
+    this.cache = null;
+  }
+
+  async renameAttributeKey(oldKey: string, newKey: string): Promise<void> {
+    const response = await fetch(`${API_URL}/rename`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldKey, newKey })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to rename attribute key: ${error}`);
+    }
+    
     this.cache = null;
   }
 

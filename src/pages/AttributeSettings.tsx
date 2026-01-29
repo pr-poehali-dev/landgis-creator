@@ -31,6 +31,7 @@ const AttributeSettings = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<Partial<AttributeConfig> | null>(null);
+  const [originalKey, setOriginalKey] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -58,14 +59,39 @@ const AttributeSettings = () => {
     }
 
     try {
-      await attributeConfigService.createOrUpdateConfig(editingConfig);
-      toast.success('Настройки сохранены');
+      // Если ключ изменился, нужно переименовать во всех объектах
+      if (originalKey && originalKey !== editingConfig.attributeKey) {
+        const confirmed = confirm(
+          `Переименовать ключ "${originalKey}" в "${editingConfig.attributeKey}" во всех объектах базы данных?\n\nЭто изменит атрибут во всех ${await getPropertiesCount()} объектах.`
+        );
+        
+        if (!confirmed) {
+          return;
+        }
+
+        await attributeConfigService.renameAttributeKey(originalKey, editingConfig.attributeKey);
+        toast.success(`Ключ переименован во всех объектах`);
+      } else {
+        await attributeConfigService.createOrUpdateConfig(editingConfig);
+        toast.success('Настройки сохранены');
+      }
+      
       setIsEditDialogOpen(false);
       setEditingConfig(null);
+      setOriginalKey(null);
       loadConfigs();
     } catch (error) {
       console.error('Error saving config:', error);
       toast.error('Ошибка сохранения');
+    }
+  };
+
+  const getPropertiesCount = async () => {
+    try {
+      const properties = await propertyService.getProperties();
+      return properties.length;
+    } catch {
+      return 0;
     }
   };
 
@@ -140,6 +166,7 @@ const AttributeSettings = () => {
       visibleInTable: false,
       visibleRoles: ['admin']
     });
+    setOriginalKey(config?.attributeKey || null);
     setIsEditDialogOpen(true);
   };
 
@@ -368,8 +395,13 @@ const AttributeSettings = () => {
                 value={editingConfig?.attributeKey || ''}
                 onChange={(e) => setEditingConfig({ ...editingConfig, attributeKey: e.target.value })}
                 placeholder="name"
-                disabled={!!editingConfig?.id}
               />
+              {originalKey && originalKey !== editingConfig?.attributeKey && (
+                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <Icon name="AlertTriangle" size={12} />
+                  Изменение ключа переименует его во всех объектах БД
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="displayName">Отображаемое имя</Label>
