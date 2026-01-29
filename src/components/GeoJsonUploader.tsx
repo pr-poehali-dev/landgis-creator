@@ -13,7 +13,7 @@ interface GeoJsonFeature {
   type: string;
   geometry: {
     type: string;
-    coordinates: number[][][] | number[];
+    coordinates: number[][][] | number[] | number[][][][];
   };
   properties: Record<string, any>;
 }
@@ -57,7 +57,14 @@ const GeoJsonUploader = () => {
       try {
         const data: GeoJsonData = JSON.parse(event.target?.result as string);
         
-        if (!data.features || data.features.length === 0) {
+        console.log('Загружен GeoJSON:', data);
+        
+        if (!data.type || data.type !== 'FeatureCollection') {
+          toast.error('Неверный формат: ожидается FeatureCollection');
+          return;
+        }
+        
+        if (!data.features || !Array.isArray(data.features) || data.features.length === 0) {
           toast.error('GeoJSON файл не содержит объектов');
           return;
         }
@@ -66,6 +73,7 @@ const GeoJsonUploader = () => {
         setPreview(data.features[0]);
         
         const fields = Object.keys(data.features[0].properties || {});
+        console.log('Найдены поля:', fields);
         setAvailableFields(fields);
         
         const autoMapping: FieldMapping = {};
@@ -82,12 +90,18 @@ const GeoJsonUploader = () => {
           }
         });
         
+        console.log('Авто-маппинг:', autoMapping);
         setMapping(autoMapping);
         toast.success(`Загружено ${data.features.length} объектов`);
       } catch (error) {
         toast.error('Ошибка чтения файла. Проверьте формат GeoJSON');
-        console.error(error);
+        console.error('Ошибка парсинга GeoJSON:', error);
       }
+    };
+
+    reader.onerror = () => {
+      toast.error('Ошибка чтения файла');
+      console.error('FileReader error');
     };
 
     reader.readAsText(selectedFile);
@@ -95,6 +109,11 @@ const GeoJsonUploader = () => {
 
   const extractCoordinates = (feature: GeoJsonFeature): [number, number] => {
     const { geometry } = feature;
+    
+    if (!geometry || !geometry.coordinates) {
+      console.warn('Геометрия отсутствует, используются координаты по умолчанию');
+      return [55.751244, 37.618423];
+    }
     
     if (geometry.type === 'Point') {
       const coords = geometry.coordinates as number[];
@@ -106,11 +125,17 @@ const GeoJsonUploader = () => {
         ? (geometry.coordinates as number[][][])[0]
         : (geometry.coordinates as number[][][][])[0][0];
       
+      if (!coords || coords.length === 0) {
+        console.warn('Пустые координаты полигона');
+        return [55.751244, 37.618423];
+      }
+      
       const sumLat = coords.reduce((sum, c) => sum + c[1], 0);
       const sumLon = coords.reduce((sum, c) => sum + c[0], 0);
       return [sumLat / coords.length, sumLon / coords.length];
     }
     
+    console.warn('Неизвестный тип геометрии:', geometry.type);
     return [55.751244, 37.618423];
   };
 
@@ -135,42 +160,69 @@ const GeoJsonUploader = () => {
     return properties[fieldName] ?? defaultValue;
   };
 
+  const normalizePropertyType = (value: any): 'land' | 'commercial' | 'residential' => {
+    const str = String(value || 'land').toLowerCase();
+    if (str === 'commercial' || str === 'коммерция') return 'commercial';
+    if (str === 'residential' || str === 'жилье' || str === 'жильё') return 'residential';
+    return 'land';
+  };
+
+  const normalizeSegment = (value: any): 'premium' | 'standard' | 'economy' => {
+    const str = String(value || 'standard').toLowerCase();
+    if (str === 'premium' || str === 'премиум') return 'premium';
+    if (str === 'economy' || str === 'эконом') return 'economy';
+    return 'standard';
+  };
+
+  const normalizeStatus = (value: any): 'available' | 'reserved' | 'sold' => {
+    const str = String(value || 'available').toLowerCase();
+    if (str === 'reserved' || str === 'резерв') return 'reserved';
+    if (str === 'sold' || str === 'продан' || str === 'продано') return 'sold';
+    return 'available';
+  };
+
   const handleUpload = async () => {
     if (!geoJsonData || !mapping.title) {
       toast.error('Укажите как минимум поле для названия объекта');
       return;
     }
 
+    console.log('Начало загрузки объектов:', geoJsonData.features.length);
     setIsUploading(true);
     let successCount = 0;
     let errorCount = 0;
 
     try {
-      for (const feature of geoJsonData.features) {
+      for (let i = 0; i < geoJsonData.features.length; i++) {
+        const feature = geoJsonData.features[i];
         try {
-          const props = feature.properties;
+          const props = feature.properties || {};
           const coordinates = extractCoordinates(feature);
           const boundary = extractBoundary(feature);
 
           const propertyData = {
-            title: getPropertyValue(props, mapping.title, 'Без названия'),
-            type: (getPropertyValue(props, mapping.type, 'land') as 'land' | 'commercial' | 'residential'),
-            price: Number(getPropertyValue(props, mapping.price, 0)),
-            area: Number(getPropertyValue(props, mapping.area, 0)),
+            title: getPropertyValue(props, mapping.title, `Объект ${i + 1}`),
+            type: normalizePropertyType(getPropertyValue(props, mapping.type, 'land')),
+            price: Number(getPropertyValue(props, mapping.price, 0)) || 0,
+            area: Number(getPropertyValue(props, mapping.area, 0)) || 0,
             location: getPropertyValue(props, mapping.location, 'Не указан'),
             coordinates,
-            segment: (getPropertyValue(props, mapping.segment, 'standard') as 'premium' | 'standard' | 'economy'),
-            status: (getPropertyValue(props, mapping.status, 'available') as 'available' | 'reserved' | 'sold'),
+            segment: normalizeSegment(getPropertyValue(props, mapping.segment, 'standard')),
+            status: normalizeStatus(getPropertyValue(props, mapping.status, 'available')),
             boundary
           };
 
+          console.log(`Создание объекта ${i + 1}:`, propertyData);
           await propertyService.createProperty(propertyData);
           successCount++;
+          console.log(`Объект ${i + 1} успешно создан`);
         } catch (error) {
-          console.error('Error creating property:', error);
+          console.error(`Ошибка при создании объекта ${i + 1}:`, error);
           errorCount++;
         }
       }
+
+      console.log(`Загрузка завершена: успешно ${successCount}, ошибок ${errorCount}`);
 
       if (successCount > 0) {
         toast.success(`Загружено ${successCount} объектов${errorCount > 0 ? `, ошибок: ${errorCount}` : ''}`);
@@ -187,7 +239,7 @@ const GeoJsonUploader = () => {
       setPreview(null);
     } catch (error) {
       toast.error('Ошибка загрузки данных');
-      console.error(error);
+      console.error('Критическая ошибка загрузки:', error);
     } finally {
       setIsUploading(false);
     }
