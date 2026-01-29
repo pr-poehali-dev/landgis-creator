@@ -90,6 +90,10 @@ def create_property(conn, data):
         boundary_json = json.dumps(data.get('boundary')) if data.get('boundary') else None
         attributes_json = json.dumps(data.get('attributes', {}))
         
+        print(f"Creating property: {data.get('title')}")
+        print(f"Attributes count: {len(data.get('attributes', {}))}")
+        print(f"Attributes: {attributes_json[:200]}...")
+        
         cur.execute('''
             INSERT INTO properties 
             (title, type, price, area, location, latitude, longitude, segment, status, boundary, attributes)
