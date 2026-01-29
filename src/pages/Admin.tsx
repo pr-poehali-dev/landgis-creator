@@ -443,6 +443,9 @@ const Admin = () => {
               Загрузите GeoJSON файл с объектами недвижимости. Система автоматически извлечет границы и атрибуты.
             </DialogDescription>
           </DialogHeader>
+          <div className="p-4 bg-red-500 text-white">
+            ТЕСТ: Этот блок должен быть виден
+          </div>
           <GeoJsonUploader />
         </DialogContent>
       </Dialog>
