@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -246,17 +246,7 @@ const GeoJsonUploader = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Icon name="Upload" className="text-primary" size={24} />
-          Загрузка GeoJSON
-        </CardTitle>
-        <CardDescription>
-          Импорт объектов недвижимости из GeoJSON файла
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="geojson-file">Выберите GeoJSON файл</Label>
           <Input
@@ -470,8 +460,7 @@ const GeoJsonUploader = () => {
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 

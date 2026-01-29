@@ -156,7 +156,14 @@ const Admin = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => setIsUploadDialogOpen(true)} variant="default" size="sm">
+              <Button 
+                onClick={() => {
+                  console.log('Открытие диалога загрузки GeoJSON');
+                  setIsUploadDialogOpen(true);
+                }} 
+                variant="default" 
+                size="sm"
+              >
                 <Icon name="Upload" size={16} className="mr-2" />
                 Загрузить GeoJSON
               </Button>
@@ -429,14 +436,16 @@ const Admin = () => {
       </Dialog>
 
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader className="mb-4">
             <DialogTitle>Импорт объектов из GeoJSON</DialogTitle>
             <DialogDescription>
               Загрузите GeoJSON файл с объектами недвижимости. Система автоматически извлечет границы и атрибуты.
             </DialogDescription>
           </DialogHeader>
-          <GeoJsonUploader />
+          <div className="overflow-auto">
+            <GeoJsonUploader />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
