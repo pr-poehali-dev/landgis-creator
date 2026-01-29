@@ -423,6 +423,24 @@ const Admin = () => {
                 </div>
               )}
 
+              {selectedProperty.attributes && Object.keys(selectedProperty.attributes).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Атрибуты из GeoJSON</p>
+                  <div className="bg-muted/30 rounded-lg p-3 max-h-60 overflow-y-auto">
+                    <div className="space-y-2">
+                      {Object.entries(selectedProperty.attributes).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-start gap-4 text-xs">
+                          <span className="font-medium text-muted-foreground min-w-[100px]">{key}:</span>
+                          <span className="text-foreground text-right break-all">
+                            {value !== null && value !== undefined ? String(value) : '—'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1 pt-4 border-t border-border">
                 <p className="text-xs text-muted-foreground">Дата создания</p>
                 <p className="text-sm">{formatDate(selectedProperty.created_at)}</p>

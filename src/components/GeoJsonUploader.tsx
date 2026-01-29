@@ -229,7 +229,8 @@ const GeoJsonUploader = () => {
             coordinates,
             segment: normalizeSegment(getPropertyValue(props, mapping.segment, 'standard')),
             status: normalizeStatus(getPropertyValue(props, mapping.status, 'available')),
-            boundary
+            boundary,
+            attributes: props
           };
 
           console.log(`Создание объекта ${i + 1}:`, propertyData);

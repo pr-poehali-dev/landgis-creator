@@ -52,7 +52,7 @@ def get_properties(conn):
         cur.execute('''
             SELECT 
                 id, title, type, price, area, location,
-                latitude, longitude, segment, status, boundary,
+                latitude, longitude, segment, status, boundary, attributes,
                 created_at, updated_at
             FROM properties
             ORDER BY created_at DESC
@@ -72,6 +72,7 @@ def get_properties(conn):
                 'segment': prop['segment'],
                 'status': prop['status'],
                 'boundary': prop['boundary'] if prop['boundary'] else None,
+                'attributes': prop['attributes'] if prop['attributes'] else {},
                 'created_at': prop['created_at'].isoformat() if prop['created_at'] else None,
                 'updated_at': prop['updated_at'].isoformat() if prop['updated_at'] else None
             })
@@ -87,13 +88,14 @@ def create_property(conn, data):
     
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         boundary_json = json.dumps(data.get('boundary')) if data.get('boundary') else None
+        attributes_json = json.dumps(data.get('attributes', {}))
         
         cur.execute('''
             INSERT INTO properties 
-            (title, type, price, area, location, latitude, longitude, segment, status, boundary)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+            (title, type, price, area, location, latitude, longitude, segment, status, boundary, attributes)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb)
             RETURNING id, title, type, price, area, location, latitude, longitude, 
-                      segment, status, boundary, created_at, updated_at
+                      segment, status, boundary, attributes, created_at, updated_at
         ''', (
             data['title'],
             data['type'],
@@ -104,7 +106,8 @@ def create_property(conn, data):
             data['coordinates'][1],
             data['segment'],
             data['status'],
-            boundary_json
+            boundary_json,
+            attributes_json
         ))
         
         conn.commit()
@@ -121,6 +124,7 @@ def create_property(conn, data):
             'segment': prop['segment'],
             'status': prop['status'],
             'boundary': prop['boundary'] if prop['boundary'] else None,
+            'attributes': prop['attributes'] if prop['attributes'] else {},
             'created_at': prop['created_at'].isoformat() if prop['created_at'] else None,
             'updated_at': prop['updated_at'].isoformat() if prop['updated_at'] else None
         }

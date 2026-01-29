@@ -15,6 +15,7 @@ interface Property {
   segment: 'premium' | 'standard' | 'economy';
   status: 'available' | 'reserved' | 'sold';
   boundary?: Array<[number, number]>;
+  attributes?: Record<string, any>;
 }
 
 interface YandexMapProps {
@@ -155,15 +156,26 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
             location: property.location,
             priceFormatted: formatPrice(property.price),
             balloonContent: `
-              <div style="font-family: Inter, sans-serif; max-width: 280px;">
+              <div style="font-family: Inter, sans-serif; max-width: 320px;">
                 <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${property.title}</h3>
                 <p style="margin: 0 0 8px 0; font-size: 13px; color: #666;">📍 ${property.location}</p>
                 <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                   <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${getTypeLabel(property.type)}</span>
                   <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${property.area} м²</span>
                 </div>
-                <p style="margin: 0; font-size: 18px; font-weight: 700; color: #0EA5E9;">${formatPrice(property.price)}</p>
-                ${property.boundary ? '<p style="margin: 8px 0 0 0; font-size: 12px; color: #0EA5E9;">✓ Границы загружены</p>' : ''}
+                <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #0EA5E9;">${formatPrice(property.price)}</p>
+                ${property.boundary ? '<p style="margin: 0 0 8px 0; font-size: 12px; color: #0EA5E9;">✓ Границы загружены</p>' : ''}
+                ${property.attributes && Object.keys(property.attributes).length > 0 ? `
+                  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5;">
+                    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #888;">Дополнительные атрибуты:</p>
+                    ${Object.entries(property.attributes).map(([key, value]) => 
+                      `<div style="font-size: 11px; margin: 4px 0; display: flex; gap: 4px;">
+                        <span style="color: #666; font-weight: 500;">${key}:</span>
+                        <span style="color: #333;">${value !== null && value !== undefined ? value : '—'}</span>
+                      </div>`
+                    ).join('')}
+                  </div>
+                ` : ''}
               </div>
             `
           },

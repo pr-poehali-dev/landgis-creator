@@ -9,6 +9,7 @@ interface Property {
   segment: 'premium' | 'standard' | 'economy';
   status: 'available' | 'reserved' | 'sold';
   boundary?: Array<[number, number]>;
+  attributes?: Record<string, any>;
   created_at?: string;
   updated_at?: string;
 }
