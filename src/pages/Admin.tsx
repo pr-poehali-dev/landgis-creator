@@ -179,6 +179,57 @@ const Admin = () => {
       </div>
 
       <div className="container mx-auto px-4 lg:px-6 py-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/admin/map-settings')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center gap-2">
+                <Icon name="Map" size={32} className="text-primary" />
+                <h3 className="font-semibold">Карта</h3>
+                <p className="text-xs text-muted-foreground">Настройки отображения</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/admin/companies')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center gap-2">
+                <Icon name="Building2" size={32} className="text-primary" />
+                <h3 className="font-semibold">Компании</h3>
+                <p className="text-xs text-muted-foreground">Организации-собственники</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/admin/users')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center gap-2">
+                <Icon name="Users" size={32} className="text-primary" />
+                <h3 className="font-semibold">Пользователи</h3>
+                <p className="text-xs text-muted-foreground">Управление доступом</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => navigate('/admin/filter-settings')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center gap-2">
+                <Icon name="Filter" size={32} className="text-primary" />
+                <h3 className="font-semibold">Фильтры</h3>
+                <p className="text-xs text-muted-foreground">Настройка фильтрации</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <AdminStats properties={properties} />
 
         <Card>

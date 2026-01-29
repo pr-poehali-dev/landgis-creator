@@ -1,4 +1,8 @@
 {
+  "companies": "https://functions.poehali.dev/a1ecb3f4-eea9-4fdd-9f5a-e4525374d77e",
+  "users": "https://functions.poehali.dev/14a9e6d4-46b2-4e2b-889e-40472270a4e3",
+  "map-settings": "https://functions.poehali.dev/ed0881ec-b657-466b-9732-c4908cc16183",
+  "filter-settings": "https://functions.poehali.dev/f72d0e85-b073-4b2a-94dc-203bb712f7e1",
   "attribute-config": "https://functions.poehali.dev/2a9b6783-7159-48c4-9f78-53ab09348fc1",
   "properties": "https://functions.poehali.dev/ac71b9f6-6521-4747-af29-18fd8700222c"
 }

@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "Get all filter settings",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
