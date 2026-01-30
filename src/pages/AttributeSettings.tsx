@@ -24,6 +24,107 @@ import {
 import Icon from '@/components/ui/icon';
 import { attributeConfigService, AttributeConfig } from '@/services/attributeConfigService';
 import { propertyService } from '@/services/propertyService';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface SortableRowProps {
+  config: AttributeConfig;
+  index: number;
+  handleToggleVisibility: (config: AttributeConfig) => void;
+  openEditDialog: (config: AttributeConfig) => void;
+  handleDelete: (key: string) => void;
+}
+
+const SortableRow = ({ config, index, handleToggleVisibility, openEditDialog, handleDelete }: SortableRowProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: config.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      className="hover:bg-muted/50"
+    >
+      <TableCell>
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <Icon name="GripVertical" size={16} className="text-muted-foreground" />
+        </div>
+      </TableCell>
+      <TableCell className="font-mono text-xs">{config.displayOrder}</TableCell>
+      <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
+      <TableCell className="font-medium">{config.displayName}</TableCell>
+      <TableCell>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => handleToggleVisibility(config)}
+        >
+          {config.visibleInTable ? (
+            <Icon name="Eye" size={16} className="text-green-400" />
+          ) : (
+            <Icon name="EyeOff" size={16} className="text-muted-foreground" />
+          )}
+        </Button>
+      </TableCell>
+      <TableCell>
+        <div className="flex gap-1 flex-wrap">
+          {config.visibleRoles.map(role => (
+            <Badge key={role} variant="secondary" className="text-xs">
+              {role}
+            </Badge>
+          ))}
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => openEditDialog(config)}
+          >
+            <Icon name="Pencil" size={16} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-destructive hover:text-destructive"
+            onClick={() => handleDelete(config.attributeKey)}
+          >
+            <Icon name="Trash2" size={16} />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 const AttributeSettings = () => {
   const navigate = useNavigate();
@@ -32,9 +133,14 @@ const AttributeSettings = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<Partial<AttributeConfig> | null>(null);
   const [originalKey, setOriginalKey] = useState<string | null>(null);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     loadConfigs();
@@ -122,34 +228,21 @@ const AttributeSettings = () => {
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    e.dataTransfer.effectAllowed = 'move';
-    setDraggedIndex(index);
-  };
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverIndex(index);
-  };
-
-  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null);
-      setDragOverIndex(null);
+    if (!over || active.id === over.id) {
       return;
     }
 
-    const newConfigs = [...configs];
-    const draggedItem = newConfigs[draggedIndex];
+    const oldIndex = configs.findIndex((c) => c.id === active.id);
+    const newIndex = configs.findIndex((c) => c.id === over.id);
+
+    const newConfigs = arrayMove(configs, oldIndex, newIndex);
     
-    // Удаляем элемент из старой позиции
-    newConfigs.splice(draggedIndex, 1);
-    // Вставляем в новую позицию
-    newConfigs.splice(dropIndex, 0, draggedItem);
-    
+    // Оптимистичное обновление UI
+    setConfigs(newConfigs);
+
     // Обновляем displayOrder для всех элементов
     const updates = newConfigs.map((config, index) => ({
       attributeKey: config.attributeKey,
@@ -159,21 +252,11 @@ const AttributeSettings = () => {
     try {
       await attributeConfigService.batchUpdateOrder(updates);
       toast.success('Порядок атрибутов обновлён');
-      setDraggedIndex(null);
-      setDragOverIndex(null);
-      loadConfigs();
     } catch (error) {
       console.error('Error updating order:', error);
       toast.error('Ошибка обновления порядка');
-      setDraggedIndex(null);
-      setDragOverIndex(null);
       loadConfigs();
     }
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-    setDragOverIndex(null);
   };
 
   const openEditDialog = (config?: AttributeConfig) => {
@@ -316,83 +399,42 @@ const AttributeSettings = () => {
                 <p>Нет настроенных атрибутов</p>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40px]"></TableHead>
-                    <TableHead className="w-[60px]">#</TableHead>
-                    <TableHead>Ключ (латиница)</TableHead>
-                    <TableHead>Отображаемое имя</TableHead>
-                    <TableHead>В таблице</TableHead>
-                    <TableHead>Роли</TableHead>
-                    <TableHead className="text-right">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {configs.map((config, index) => (
-                    <TableRow
-                      key={config.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, index)}
-                      onDragOver={(e) => handleDragOver(e, index)}
-                      onDrop={(e) => handleDrop(e, index)}
-                      onDragEnd={handleDragEnd}
-                      className={`cursor-move hover:bg-muted/50 ${
-                        draggedIndex === index ? 'opacity-50' : ''
-                      } ${dragOverIndex === index ? 'border-t-2 border-primary' : ''}`}
-                    >
-                      <TableCell>
-                        <Icon name="GripVertical" size={16} className="text-muted-foreground" />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">{config.displayOrder}</TableCell>
-                      <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
-                      <TableCell className="font-medium">{config.displayName}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleVisibility(config)}
-                        >
-                          {config.visibleInTable ? (
-                            <Icon name="Eye" size={16} className="text-green-400" />
-                          ) : (
-                            <Icon name="EyeOff" size={16} className="text-muted-foreground" />
-                          )}
-                        </Button>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 flex-wrap">
-                          {config.visibleRoles.map(role => (
-                            <Badge key={role} variant="secondary" className="text-xs">
-                              {role}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => openEditDialog(config)}
-                          >
-                            <Icon name="Pencil" size={16} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(config.attributeKey)}
-                          >
-                            <Icon name="Trash2" size={16} />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40px]"></TableHead>
+                      <TableHead className="w-[60px]">#</TableHead>
+                      <TableHead>Ключ (латиница)</TableHead>
+                      <TableHead>Отображаемое имя</TableHead>
+                      <TableHead>В таблице</TableHead>
+                      <TableHead>Роли</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    <SortableContext
+                      items={configs.map(c => c.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {configs.map((config, index) => (
+                        <SortableRow
+                          key={config.id}
+                          config={config}
+                          index={index}
+                          handleToggleVisibility={handleToggleVisibility}
+                          openEditDialog={openEditDialog}
+                          handleDelete={handleDelete}
+                        />
+                      ))}
+                    </SortableContext>
+                  </TableBody>
+                </Table>
+              </DndContext>
             )}
           </CardContent>
         </Card>
