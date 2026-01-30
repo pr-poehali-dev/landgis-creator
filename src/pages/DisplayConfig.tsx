@@ -32,6 +32,8 @@ const DisplayConfigPage = () => {
   const [editingConfig, setEditingConfig] = useState<DisplayConfig | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     loadConfigs();
@@ -154,6 +156,49 @@ const DisplayConfigPage = () => {
     setIsDialogOpen(true);
   };
 
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (targetIndex: number) => {
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newConfigs = [...filteredConfigs];
+    const [draggedItem] = newConfigs.splice(draggedIndex, 1);
+    newConfigs.splice(targetIndex, 0, draggedItem);
+
+    const updates = newConfigs.map((config, idx) => ({
+      id: config.id,
+      displayOrder: idx
+    }));
+
+    try {
+      await displayConfigService.batchUpdateOrder(updates);
+      toast.success('Порядок обновлён');
+      loadConfigs();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('Не удалось обновить порядок');
+    }
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   const filteredConfigs = configs.filter(c => 
     activeTab === 'all' || c.configType === activeTab
   ).sort((a, b) => a.displayOrder - b.displayOrder);
@@ -242,10 +287,20 @@ const DisplayConfigPage = () => {
                 {filteredConfigs.map((config, index) => (
                   <div
                     key={config.id}
-                    className={`flex items-center gap-3 p-4 border rounded-lg ${
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    onDrop={() => handleDrop(index)}
+                    className={`flex items-center gap-3 p-4 border rounded-lg transition-all ${
                       !config.enabled ? 'opacity-50' : ''
-                    }`}
+                    } ${
+                      draggedIndex === index ? 'opacity-40 scale-95' : ''
+                    } ${
+                      dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''
+                    } cursor-move hover:border-primary/50`}
                   >
+                    <Icon name="GripVertical" size={20} className="text-muted-foreground cursor-grab active:cursor-grabbing" />
                     <Icon name={getTypeIcon(config.configType) as any} size={20} className="text-primary" />
                     
                     <div className="flex-1">
