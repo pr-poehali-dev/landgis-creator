@@ -8,6 +8,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Property } from '@/services/propertyService';
+import AttributesDisplay from '@/components/AttributesDisplay';
 
 interface AdminPropertyDetailProps {
   property: Property | null;
@@ -162,16 +163,7 @@ const AdminPropertyDetail = ({ property, isOpen, onClose }: AdminPropertyDetailP
               </div>
               <div className="bg-muted/30 rounded-lg p-3 max-h-[400px] overflow-y-auto">
                 <div className="space-y-3">
-                  {Object.entries(property.attributes)
-                    .filter(([key]) => key !== 'geometry_name')
-                    .map(([key, value]) => (
-                      <div key={key} className="pb-3 border-b border-border last:border-0">
-                        <p className="text-xs font-semibold text-primary mb-1">{key}</p>
-                        <p className="text-sm text-foreground break-words whitespace-pre-wrap">
-                          {value !== null && value !== undefined ? String(value) : '—'}
-                        </p>
-                      </div>
-                    ))}
+                  <AttributesDisplay attributes={property.attributes} userRole="admin" />
                 </div>
               </div>
             </div>

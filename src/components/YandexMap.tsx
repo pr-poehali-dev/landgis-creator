@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import AttributesDisplay from '@/components/AttributesDisplay';
 
 interface Property {
   id: number;
@@ -250,16 +251,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
             </Badge>
           </CardHeader>
           <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
-            {Object.entries(selectedProperty.attributes)
-              .filter(([key]) => key !== 'geometry_name')
-              .map(([key, value]) => (
-                <div key={key} className="pb-3 border-b border-border last:border-0">
-                  <p className="text-xs font-semibold text-primary mb-1">{key}</p>
-                  <p className="text-sm text-foreground break-words whitespace-pre-wrap">
-                    {value !== null && value !== undefined ? String(value) : '—'}
-                  </p>
-                </div>
-              ))}
+            <AttributesDisplay attributes={selectedProperty.attributes} />
           </CardContent>
         </Card>
       )}
