@@ -45,29 +45,21 @@ export const AttributeSortableRow = ({
       style={style}
       {...attributes}
       {...listeners}
-      className="hover:bg-muted/50 cursor-grab active:cursor-grabbing"
+      className="hover:bg-muted/50"
     >
-      <TableCell className="cursor-grab active:cursor-grabbing">
+      <TableCell>
         <Icon name="GripVertical" size={16} className="text-muted-foreground" />
       </TableCell>
       <TableCell className="font-mono text-xs">{config.displayOrder}</TableCell>
       <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
       <TableCell className="font-medium">{config.displayName}</TableCell>
-      <TableCell 
-        onMouseDown={(e) => e.stopPropagation()} 
-        onTouchStart={(e) => e.stopPropagation()}
-        className="cursor-default"
-      >
+      <TableCell>
         <Switch
           checked={config.visibleInTable}
           onCheckedChange={() => handleToggleVisibility(config)}
         />
       </TableCell>
-      <TableCell 
-        onMouseDown={(e) => e.stopPropagation()} 
-        onTouchStart={(e) => e.stopPropagation()}
-        className="cursor-default"
-      >
+      <TableCell>
         <Switch
           checked={config.visibleInPopup}
           onCheckedChange={() => handleTogglePopup(config)}
@@ -82,11 +74,7 @@ export const AttributeSortableRow = ({
           ))}
         </div>
       </TableCell>
-      <TableCell 
-        className="text-right cursor-default"
-        onMouseDown={(e) => e.stopPropagation()} 
-        onTouchStart={(e) => e.stopPropagation()}
-      >
+      <TableCell className="text-right">
         <div className="flex items-center justify-end gap-2">
           <Button
             variant="ghost"
