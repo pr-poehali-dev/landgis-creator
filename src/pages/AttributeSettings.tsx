@@ -58,7 +58,7 @@ const SortableRow = ({ config, index, handleToggleVisibility, openEditDialog, ha
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: config.id });
+  } = useSortable({ id: String(config.id) });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -230,13 +230,18 @@ const AttributeSettings = () => {
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    console.log('handleDragEnd called', { active: active.id, over: over?.id });
 
     if (!over || active.id === over.id) {
+      console.log('No move needed');
       return;
     }
 
-    const oldIndex = configs.findIndex((c) => c.id === active.id);
-    const newIndex = configs.findIndex((c) => c.id === over.id);
+    const oldIndex = configs.findIndex((c) => String(c.id) === active.id);
+    const newIndex = configs.findIndex((c) => String(c.id) === over.id);
+    
+    console.log('Move from', oldIndex, 'to', newIndex);
 
     const newConfigs = arrayMove(configs, oldIndex, newIndex);
     
@@ -248,6 +253,8 @@ const AttributeSettings = () => {
       attributeKey: config.attributeKey,
       displayOrder: index + 1
     }));
+    
+    console.log('Sending updates:', updates);
 
     try {
       await attributeConfigService.batchUpdateOrder(updates);
@@ -418,7 +425,7 @@ const AttributeSettings = () => {
                   </TableHeader>
                   <TableBody>
                     <SortableContext
-                      items={configs.map(c => c.id)}
+                      items={configs.map(c => String(c.id))}
                       strategy={verticalListSortingStrategy}
                     >
                       {configs.map((config, index) => (
