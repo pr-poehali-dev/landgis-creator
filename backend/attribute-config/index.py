@@ -61,7 +61,7 @@ def get_config(conn):
         cur.execute('''
             SELECT 
                 id, attribute_key, display_name, display_order,
-                visible_in_table, visible_roles, created_at, updated_at
+                visible_in_table, visible_in_popup, visible_roles, created_at, updated_at
             FROM attribute_config
             ORDER BY display_order ASC, attribute_key ASC
         ''')
@@ -75,6 +75,7 @@ def get_config(conn):
                 'displayName': config['display_name'],
                 'displayOrder': config['display_order'],
                 'visibleInTable': config['visible_in_table'],
+                'visibleInPopup': config['visible_in_popup'],
                 'visibleRoles': config['visible_roles'],
                 'createdAt': config['created_at'].isoformat() if config['created_at'] else None,
                 'updatedAt': config['updated_at'].isoformat() if config['updated_at'] else None
@@ -90,22 +91,24 @@ def create_or_update_config(conn, data):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute('''
             INSERT INTO attribute_config 
-            (attribute_key, display_name, display_order, visible_in_table, visible_roles)
-            VALUES (%s, %s, %s, %s, %s)
+            (attribute_key, display_name, display_order, visible_in_table, visible_in_popup, visible_roles)
+            VALUES (%s, %s, %s, %s, %s, %s)
             ON CONFLICT (attribute_key) 
             DO UPDATE SET
                 display_name = EXCLUDED.display_name,
                 display_order = EXCLUDED.display_order,
                 visible_in_table = EXCLUDED.visible_in_table,
+                visible_in_popup = EXCLUDED.visible_in_popup,
                 visible_roles = EXCLUDED.visible_roles,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id, attribute_key, display_name, display_order, 
-                      visible_in_table, visible_roles, created_at, updated_at
+                      visible_in_table, visible_in_popup, visible_roles, created_at, updated_at
         ''', (
             data['attributeKey'],
             data['displayName'],
             data.get('displayOrder', 0),
             data.get('visibleInTable', False),
+            data.get('visibleInPopup', False),
             data.get('visibleRoles', ['admin'])
         ))
         
@@ -118,6 +121,7 @@ def create_or_update_config(conn, data):
             'displayName': config['display_name'],
             'displayOrder': config['display_order'],
             'visibleInTable': config['visible_in_table'],
+            'visibleInPopup': config['visible_in_popup'],
             'visibleRoles': config['visible_roles'],
             'createdAt': config['created_at'].isoformat() if config['created_at'] else None,
             'updatedAt': config['updated_at'].isoformat() if config['updated_at'] else None
@@ -143,6 +147,9 @@ def update_config(conn, data):
         if 'visibleInTable' in data:
             updates.append('visible_in_table = %s')
             values.append(data['visibleInTable'])
+        if 'visibleInPopup' in data:
+            updates.append('visible_in_popup = %s')
+            values.append(data['visibleInPopup'])
         if 'visibleRoles' in data:
             updates.append('visible_roles = %s')
             values.append(data['visibleRoles'])
@@ -158,7 +165,7 @@ def update_config(conn, data):
             SET {', '.join(updates)}
             WHERE attribute_key = %s
             RETURNING id, attribute_key, display_name, display_order,
-                      visible_in_table, visible_roles, created_at, updated_at
+                      visible_in_table, visible_in_popup, visible_roles, created_at, updated_at
         '''
         
         cur.execute(query, values)
@@ -174,6 +181,7 @@ def update_config(conn, data):
             'displayName': config['display_name'],
             'displayOrder': config['display_order'],
             'visibleInTable': config['visible_in_table'],
+            'visibleInPopup': config['visible_in_popup'],
             'visibleRoles': config['visible_roles'],
             'createdAt': config['created_at'].isoformat() if config['created_at'] else None,
             'updatedAt': config['updated_at'].isoformat() if config['updated_at'] else None
