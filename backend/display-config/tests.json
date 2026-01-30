@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Get all configs",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "type"
+    },
+    {
+      "name": "Create config",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "configType": "attribute",
+        "configKey": "test_attr",
+        "displayName": "Test Attribute",
+        "displayOrder": 0,
+        "visibleRoles": ["admin", "user"],
+        "enabled": true,
+        "settings": {}
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "id": "number",
+        "configType": "attribute",
+        "configKey": "test_attr",
+        "displayName": "Test Attribute"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
