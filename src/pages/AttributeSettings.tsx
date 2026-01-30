@@ -33,6 +33,7 @@ const AttributeSettings = () => {
   const [editingConfig, setEditingConfig] = useState<Partial<AttributeConfig> | null>(null);
   const [originalKey, setOriginalKey] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
@@ -129,23 +130,28 @@ const AttributeSettings = () => {
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
     
-    if (draggedIndex === null || draggedIndex === index) return;
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
 
     const newConfigs = [...configs];
     const draggedItem = newConfigs[draggedIndex];
-    newConfigs.splice(draggedIndex, 1);
-    newConfigs.splice(index, 0, draggedItem);
     
-    setConfigs(newConfigs);
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnd = async (e: React.DragEvent) => {
-    e.preventDefault();
-    if (draggedIndex === null) return;
-
-    const updates = configs.map((config, index) => ({
+    // Удаляем элемент из старой позиции
+    newConfigs.splice(draggedIndex, 1);
+    // Вставляем в новую позицию
+    newConfigs.splice(dropIndex, 0, draggedItem);
+    
+    // Обновляем displayOrder для всех элементов
+    const updates = newConfigs.map((config, index) => ({
       attributeKey: config.attributeKey,
       displayOrder: index + 1
     }));
@@ -154,12 +160,20 @@ const AttributeSettings = () => {
       await attributeConfigService.batchUpdateOrder(updates);
       toast.success('Порядок атрибутов обновлён');
       setDraggedIndex(null);
+      setDragOverIndex(null);
       loadConfigs();
     } catch (error) {
       console.error('Error updating order:', error);
       toast.error('Ошибка обновления порядка');
+      setDraggedIndex(null);
+      setDragOverIndex(null);
       loadConfigs();
     }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const openEditDialog = (config?: AttributeConfig) => {
@@ -321,8 +335,11 @@ const AttributeSettings = () => {
                       draggable
                       onDragStart={(e) => handleDragStart(e, index)}
                       onDragOver={(e) => handleDragOver(e, index)}
+                      onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      className="cursor-move hover:bg-muted/50"
+                      className={`cursor-move hover:bg-muted/50 ${
+                        draggedIndex === index ? 'opacity-50' : ''
+                      } ${dragOverIndex === index ? 'border-t-2 border-primary' : ''}`}
                     >
                       <TableCell>
                         <Icon name="GripVertical" size={16} className="text-muted-foreground" />
