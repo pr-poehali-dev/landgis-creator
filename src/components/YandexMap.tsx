@@ -311,29 +311,12 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
               </div>
             </div>
 
-            {selectedProperty.attributes && Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setShowAttributesPanel(true)}
-                >
-                  <Icon name="ListTree" size={16} className="mr-2" />
-                  Показать все атрибуты
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    {Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length}
-                  </Badge>
-                </Button>
-              </div>
-            )}
-
             <div className="flex gap-2 pt-2">
               <Button className="flex-1" size="sm">
                 <Icon name="Phone" size={16} className="sm:mr-2" />
                 <span className="hidden sm:inline">Связаться</span>
               </Button>
-              <Button variant="outline" className="flex-1" size="sm">
+              <Button variant="outline" className="flex-1" size="sm" onClick={() => setShowAttributesPanel(true)}>
                 <Icon name="Eye" size={16} className="sm:mr-2" />
                 <span className="hidden sm:inline">Подробнее</span>
               </Button>
