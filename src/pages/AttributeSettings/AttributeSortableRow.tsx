@@ -53,21 +53,23 @@ export const AttributeSortableRow = ({
       <TableCell className="font-mono text-xs">{config.displayOrder}</TableCell>
       <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
       <TableCell className="font-medium">{config.displayName}</TableCell>
-      <TableCell>
-        <div onPointerDown={(e) => e.stopPropagation()}>
-          <Switch
-            checked={config.visibleInTable}
-            onCheckedChange={() => handleToggleVisibility(config)}
-          />
-        </div>
+      <TableCell 
+        onClick={(e) => e.stopPropagation()} 
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <Switch
+          checked={config.visibleInTable}
+          onCheckedChange={() => handleToggleVisibility(config)}
+        />
       </TableCell>
-      <TableCell>
-        <div onPointerDown={(e) => e.stopPropagation()}>
-          <Switch
-            checked={config.visibleInPopup}
-            onCheckedChange={() => handleTogglePopup(config)}
-          />
-        </div>
+      <TableCell 
+        onClick={(e) => e.stopPropagation()} 
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <Switch
+          checked={config.visibleInPopup}
+          onCheckedChange={() => handleTogglePopup(config)}
+        />
       </TableCell>
       <TableCell>
         <div className="flex gap-1 flex-wrap">
@@ -78,8 +80,12 @@ export const AttributeSortableRow = ({
           ))}
         </div>
       </TableCell>
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-2" onPointerDown={(e) => e.stopPropagation()}>
+      <TableCell 
+        className="text-right" 
+        onClick={(e) => e.stopPropagation()} 
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-end gap-2">
           <Button
             variant="ghost"
             size="icon"
