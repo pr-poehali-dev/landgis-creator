@@ -6,13 +6,14 @@ from psycopg2.extras import RealDictCursor
 def handler(event: dict, context) -> dict:
     '''API для управления конфигурацией атрибутов'''
     method = event.get('httpMethod', 'GET')
+    path = event.get('queryStringParameters', {}).get('action', '')
     
     if method == 'OPTIONS':
         return {
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
@@ -35,6 +36,11 @@ def handler(event: dict, context) -> dict:
         elif method == 'PUT':
             body = json.loads(event.get('body', '{}'))
             return update_config(conn, body)
+        elif method == 'PATCH':
+            body = json.loads(event.get('body', '{}'))
+            if path == 'batch-order':
+                return batch_update_order(conn, body)
+            return error_response('Unknown action', 400)
         elif method == 'DELETE':
             attribute_key = event.get('queryStringParameters', {}).get('key')
             if not attribute_key:
@@ -185,6 +191,26 @@ def delete_config(conn, attribute_key):
             return error_response('Attribute config not found', 404)
         
         return success_response({'message': 'Attribute config deleted successfully'})
+
+def batch_update_order(conn, data):
+    '''Пакетное обновление порядка атрибутов'''
+    if not isinstance(data, list):
+        return error_response('Expected array of updates', 400)
+    
+    with conn.cursor() as cur:
+        for item in data:
+            if 'attributeKey' not in item or 'displayOrder' not in item:
+                return error_response('Each item must have attributeKey and displayOrder', 400)
+            
+            cur.execute('''
+                UPDATE attribute_config 
+                SET display_order = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE attribute_key = %s
+            ''', (item['displayOrder'], item['attributeKey']))
+        
+        conn.commit()
+        
+        return success_response({'message': f'Updated {len(data)} attributes'})
 
 def success_response(data, status_code=200):
     return {

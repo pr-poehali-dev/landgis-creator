@@ -9,7 +9,7 @@ interface AttributeConfig {
   updatedAt?: string;
 }
 
-const API_URL = 'https://functions.poehali.dev/a3036691-51a9-417e-bbf2-0b462f69207b';
+const API_URL = 'https://functions.poehali.dev/2a9b6783-7159-48c4-9f78-53ab09348fc1';
 
 class AttributeConfigService {
   private cache: AttributeConfig[] | null = null;
@@ -65,9 +65,17 @@ class AttributeConfigService {
   }
 
   async batchUpdateOrder(configs: Array<{attributeKey: string, displayOrder: number}>): Promise<void> {
-    for (const config of configs) {
-      await this.updateConfig(config);
+    const response = await fetch(`${API_URL}?action=batch-order`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(configs)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to update order: ${error}`);
     }
+    
     this.cache = null;
   }
 
