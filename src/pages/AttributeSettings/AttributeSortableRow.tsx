@@ -43,23 +43,23 @@ export const AttributeSortableRow = ({
     <TableRow
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
       className="hover:bg-muted/50"
     >
       <TableCell>
-        <Icon name="GripVertical" size={16} className="text-muted-foreground" />
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <Icon name="GripVertical" size={16} className="text-muted-foreground" />
+        </div>
       </TableCell>
       <TableCell className="font-mono text-xs">{config.displayOrder}</TableCell>
       <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
       <TableCell className="font-medium">{config.displayName}</TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Switch
           checked={config.visibleInTable}
           onCheckedChange={() => handleToggleVisibility(config)}
         />
       </TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Switch
           checked={config.visibleInPopup}
           onCheckedChange={() => handleTogglePopup(config)}
@@ -74,7 +74,7 @@ export const AttributeSortableRow = ({
           ))}
         </div>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-end gap-2">
           <Button
             variant="ghost"
