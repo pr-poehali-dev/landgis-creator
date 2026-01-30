@@ -44,9 +44,11 @@ export const AttributeSortableRow = ({
       ref={setNodeRef}
       style={style}
       className="hover:bg-muted/50"
+      {...attributes}
+      {...listeners}
     >
       <TableCell>
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+        <div className="cursor-grab active:cursor-grabbing">
           <Icon name="GripVertical" size={16} className="text-muted-foreground" />
         </div>
       </TableCell>
