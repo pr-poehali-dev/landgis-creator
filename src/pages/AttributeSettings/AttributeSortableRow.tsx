@@ -56,13 +56,19 @@ export const AttributeSortableRow = ({
       <TableCell>
         <Switch
           checked={config.visibleInTable}
-          onCheckedChange={() => handleToggleVisibility(config)}
+          onCheckedChange={() => {
+            console.log('Switch visibleInTable clicked for:', config.attributeKey);
+            handleToggleVisibility(config);
+          }}
         />
       </TableCell>
       <TableCell>
         <Switch
           checked={config.visibleInPopup}
-          onCheckedChange={() => handleTogglePopup(config)}
+          onCheckedChange={() => {
+            console.log('Switch visibleInPopup clicked for:', config.attributeKey);
+            handleTogglePopup(config);
+          }}
         />
       </TableCell>
       <TableCell>
