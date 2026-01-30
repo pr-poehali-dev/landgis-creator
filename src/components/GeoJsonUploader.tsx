@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { propertyService } from '@/services/propertyService';
-import { attributeConfigService } from '@/services/attributeConfigService';
 import { GeoJsonData, GeoJsonFeature, FieldMapping } from './geojson/GeoJsonTypes';
 import { 
   extractCoordinates, 
