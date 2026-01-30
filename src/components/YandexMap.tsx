@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AttributesDisplay from '@/components/AttributesDisplay';
-import { attributeConfigService, AttributeConfig } from '@/services/attributeConfigService';
 
 interface Property {
   id: number;
@@ -39,19 +38,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
   const clustererRef = useRef<any>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
-  const [attributeConfigs, setAttributeConfigs] = useState<AttributeConfig[]>([]);
-
-  useEffect(() => {
-    const loadConfigs = async () => {
-      try {
-        const configs = await attributeConfigService.getConfigs();
-        setAttributeConfigs(configs);
-      } catch (error) {
-        console.error('Failed to load attribute configs:', error);
-      }
-    };
-    loadConfigs();
-  }, []);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -181,37 +167,21 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
                 </div>
                 <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #0EA5E9;">${formatPrice(property.price)}</p>
                 ${property.boundary ? '<p style="margin: 0 0 8px 0; font-size: 12px; color: #0EA5E9;">✓ Границы загружены</p>' : ''}
-                ${property.attributes && Object.keys(property.attributes).length > 0 ? (() => {
-                  const visibleAttrs = Object.entries(property.attributes)
-                    .filter(([key]) => {
-                      if (key === 'geometry_name') return false;
-                      const config = attributeConfigs.find(c => c.attributeKey === key);
-                      return config?.visibleInPopup === true;
-                    })
-                    .sort((a, b) => {
-                      const configA = attributeConfigs.find(c => c.attributeKey === a[0]);
-                      const configB = attributeConfigs.find(c => c.attributeKey === b[0]);
-                      return (configA?.displayOrder || 999) - (configB?.displayOrder || 999);
-                    });
-                  
-                  if (visibleAttrs.length === 0) return '';
-                  
-                  return `
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5; max-height: 300px; overflow-y: auto;">
-                      <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #0EA5E9;">Атрибуты объекта (${visibleAttrs.length}):</p>
-                      ${visibleAttrs.map(([key, value]) => {
-                        const config = attributeConfigs.find(c => c.attributeKey === key);
-                        const displayName = config?.displayName || key;
+                ${property.attributes && Object.keys(property.attributes).length > 0 ? `
+                  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e5e5; max-height: 300px; overflow-y: auto;">
+                    <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 600; color: #0EA5E9;">Атрибуты объекта (${Object.keys(property.attributes).length}):</p>
+                    ${Object.entries(property.attributes)
+                      .filter(([key]) => key !== 'geometry_name')
+                      .map(([key, value]) => {
                         const strValue = value !== null && value !== undefined ? String(value) : '—';
                         const truncated = strValue.length > 200 ? strValue.substring(0, 200) + '...' : strValue;
                         return `<div style="font-size: 11px; margin: 6px 0; padding: 4px 0; border-bottom: 1px solid #f0f0f0;">
-                          <span style="color: #666; font-weight: 600; display: block; margin-bottom: 2px;">${displayName}</span>
+                          <span style="color: #666; font-weight: 600; display: block; margin-bottom: 2px;">${key}</span>
                           <span style="color: #333; word-break: break-word; white-space: pre-wrap;">${truncated}</span>
                         </div>`;
                       }).join('')}
-                    </div>
-                  `;
-                })() : ''}
+                  </div>
+                ` : ''}
               </div>
             `
           },
@@ -236,7 +206,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
         clustererRef.current = null;
       }
     };
-  }, [properties, attributeConfigs]);
+  }, [properties]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;
