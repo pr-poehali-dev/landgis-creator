@@ -121,12 +121,15 @@ const AttributeSettings = () => {
     }
   };
 
-  const handleDragStart = (index: number) => {
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move';
     setDraggedIndex(index);
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
     if (draggedIndex === null || draggedIndex === index) return;
 
     const newConfigs = [...configs];
@@ -138,7 +141,8 @@ const AttributeSettings = () => {
     setDraggedIndex(index);
   };
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = async (e: React.DragEvent) => {
+    e.preventDefault();
     if (draggedIndex === null) return;
 
     const updates = configs.map((config, index) => ({
@@ -315,7 +319,7 @@ const AttributeSettings = () => {
                     <TableRow
                       key={config.id}
                       draggable
-                      onDragStart={() => handleDragStart(index)}
+                      onDragStart={(e) => handleDragStart(e, index)}
                       onDragOver={(e) => handleDragOver(e, index)}
                       onDragEnd={handleDragEnd}
                       className="cursor-move hover:bg-muted/50"
