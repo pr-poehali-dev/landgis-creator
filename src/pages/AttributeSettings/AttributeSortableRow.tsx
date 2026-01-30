@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { TableRow, TableCell } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
 import { AttributeConfig } from '@/services/attributeConfigService';
@@ -51,17 +52,13 @@ export const AttributeSortableRow = ({
       <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
       <TableCell className="font-medium">{config.displayName}</TableCell>
       <TableCell>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleToggleVisibility(config)}
-        >
-          {config.visibleInTable ? (
-            <Icon name="Eye" size={16} className="text-green-400" />
-          ) : (
-            <Icon name="EyeOff" size={16} className="text-muted-foreground" />
-          )}
-        </Button>
+        <Switch
+          checked={config.visibleInTable}
+          onCheckedChange={(checked) => {
+            handleToggleVisibility(config);
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
       </TableCell>
       <TableCell>
         <div className="flex gap-1 flex-wrap">
@@ -78,7 +75,10 @@ export const AttributeSortableRow = ({
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => openEditDialog(config)}
+            onClick={(e) => {
+              e.stopPropagation();
+              openEditDialog(config);
+            }}
           >
             <Icon name="Pencil" size={16} />
           </Button>
@@ -86,7 +86,10 @@ export const AttributeSortableRow = ({
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => handleDelete(config.attributeKey)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(config.attributeKey);
+            }}
           >
             <Icon name="Trash2" size={16} />
           </Button>
