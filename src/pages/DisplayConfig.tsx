@@ -87,7 +87,7 @@ const DisplayConfigPage = () => {
   const handleMoveUp = async (index: number) => {
     if (index === 0) return;
 
-    const newConfigs = [...filteredConfigs];
+    const newConfigs = [...baseFilteredConfigs];
     [newConfigs[index - 1], newConfigs[index]] = [newConfigs[index], newConfigs[index - 1]];
 
     const updates = newConfigs.map((config, idx) => ({
@@ -106,9 +106,9 @@ const DisplayConfigPage = () => {
   };
 
   const handleMoveDown = async (index: number) => {
-    if (index === filteredConfigs.length - 1) return;
+    if (index === baseFilteredConfigs.length - 1) return;
 
-    const newConfigs = [...filteredConfigs];
+    const newConfigs = [...baseFilteredConfigs];
     [newConfigs[index], newConfigs[index + 1]] = [newConfigs[index + 1], newConfigs[index]];
 
     const updates = newConfigs.map((config, idx) => ({
@@ -177,7 +177,7 @@ const DisplayConfigPage = () => {
       return;
     }
 
-    const newConfigs = [...filteredConfigs];
+    const newConfigs = [...baseFilteredConfigs];
     const [draggedItem] = newConfigs.splice(draggedIndex, 1);
     newConfigs.splice(targetIndex, 0, draggedItem);
 
@@ -199,9 +199,20 @@ const DisplayConfigPage = () => {
     setDragOverIndex(null);
   };
 
-  const filteredConfigs = configs.filter(c => 
+  const baseFilteredConfigs = configs.filter(c => 
     activeTab === 'all' || c.configType === activeTab
   ).sort((a, b) => a.displayOrder - b.displayOrder);
+
+  const filteredConfigs = (() => {
+    if (draggedIndex === null || dragOverIndex === null) {
+      return baseFilteredConfigs;
+    }
+
+    const items = [...baseFilteredConfigs];
+    const [draggedItem] = items.splice(draggedIndex, 1);
+    items.splice(dragOverIndex, 0, draggedItem);
+    return items;
+  })();
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -284,20 +295,20 @@ const DisplayConfigPage = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredConfigs.map((config, index) => (
+                {filteredConfigs.map((config, index) => {
+                  const originalIndex = baseFilteredConfigs.findIndex(c => c.id === config.id);
+                  return (
                   <div
                     key={config.id}
                     draggable
-                    onDragStart={() => handleDragStart(index)}
+                    onDragStart={() => handleDragStart(originalIndex)}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDragEnd={handleDragEnd}
                     onDrop={() => handleDrop(index)}
-                    className={`flex items-center gap-3 p-4 border rounded-lg transition-all ${
+                    className={`flex items-center gap-3 p-4 border rounded-lg transition-all duration-200 ${
                       !config.enabled ? 'opacity-50' : ''
                     } ${
-                      draggedIndex === index ? 'opacity-40 scale-95' : ''
-                    } ${
-                      dragOverIndex === index && draggedIndex !== index ? 'border-primary border-2' : ''
+                      draggedIndex === originalIndex ? 'opacity-40' : ''
                     } cursor-move hover:border-primary/50`}
                   >
                     <Icon name="GripVertical" size={20} className="text-muted-foreground cursor-grab active:cursor-grabbing" />
@@ -336,7 +347,7 @@ const DisplayConfigPage = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleMoveDown(index)}
-                        disabled={index === filteredConfigs.length - 1}
+                        disabled={index === baseFilteredConfigs.length - 1}
                       >
                         <Icon name="ChevronDown" size={18} />
                       </Button>
@@ -358,7 +369,8 @@ const DisplayConfigPage = () => {
                       <Icon name="Trash2" size={18} className="text-destructive" />
                     </Button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
