@@ -42,11 +42,7 @@ const AttributeSettings = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const sensors = useSensors(
-    useSensor(MouseSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
+    useSensor(MouseSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
