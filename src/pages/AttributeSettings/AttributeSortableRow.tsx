@@ -51,13 +51,12 @@ export const AttributeSortableRow = ({
       <TableCell className="font-mono text-xs">{config.displayOrder}</TableCell>
       <TableCell className="font-mono text-sm">{config.attributeKey}</TableCell>
       <TableCell className="font-medium">{config.displayName}</TableCell>
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Switch
           checked={config.visibleInTable}
-          onCheckedChange={(checked) => {
+          onCheckedChange={() => {
             handleToggleVisibility(config);
           }}
-          onClick={(e) => e.stopPropagation()}
         />
       </TableCell>
       <TableCell>
@@ -69,16 +68,13 @@ export const AttributeSortableRow = ({
           ))}
         </div>
       </TableCell>
-      <TableCell className="text-right">
+      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-end gap-2">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              openEditDialog(config);
-            }}
+            onClick={() => openEditDialog(config)}
           >
             <Icon name="Pencil" size={16} />
           </Button>
@@ -86,10 +82,7 @@ export const AttributeSortableRow = ({
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(config.attributeKey);
-            }}
+            onClick={() => handleDelete(config.attributeKey)}
           >
             <Icon name="Trash2" size={16} />
           </Button>
