@@ -133,6 +133,19 @@ const AttributeSettings = () => {
     }
   };
 
+  const handleTogglePopup = async (config: AttributeConfig) => {
+    try {
+      await attributeConfigService.updateConfig({
+        attributeKey: config.attributeKey,
+        visibleInPopup: !config.visibleInPopup
+      });
+      loadConfigs();
+    } catch (error) {
+      console.error('Error toggling popup:', error);
+      toast.error('Ошибка изменения popup');
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
@@ -175,6 +188,7 @@ const AttributeSettings = () => {
       displayName: '',
       displayOrder: configs.length + 1,
       visibleInTable: false,
+      visibleInPopup: false,
       visibleRoles: ['admin']
     });
     setOriginalKey(config?.attributeKey || null);
@@ -207,6 +221,7 @@ const AttributeSettings = () => {
             displayName: attributeKey.charAt(0).toUpperCase() + attributeKey.slice(1).replace(/_/g, ' '),
             displayOrder: configs.length + createdCount + 1,
             visibleInTable: false,
+            visibleInPopup: false,
             visibleRoles: ['admin', 'user']
           });
           createdCount++;
@@ -309,6 +324,7 @@ const AttributeSettings = () => {
                       <TableHead>Ключ (латиница)</TableHead>
                       <TableHead>Отображаемое имя</TableHead>
                       <TableHead>В таблице</TableHead>
+                      <TableHead>В popup</TableHead>
                       <TableHead>Роли</TableHead>
                       <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
@@ -324,6 +340,7 @@ const AttributeSettings = () => {
                           config={config}
                           index={index}
                           handleToggleVisibility={handleToggleVisibility}
+                          handleTogglePopup={handleTogglePopup}
                           openEditDialog={openEditDialog}
                           handleDelete={handleDelete}
                         />

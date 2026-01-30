@@ -1,0 +1,1 @@
+ALTER TABLE attribute_config ADD COLUMN visible_in_popup BOOLEAN DEFAULT FALSE;

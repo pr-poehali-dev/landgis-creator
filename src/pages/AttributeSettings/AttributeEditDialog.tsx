@@ -76,6 +76,18 @@ export const AttributeEditDialog = ({
               Показывать в основной таблице
             </Label>
           </div>
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="visibleInPopup"
+              checked={editingConfig?.visibleInPopup || false}
+              onChange={(e) => onConfigChange({ ...editingConfig, visibleInPopup: e.target.checked })}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <Label htmlFor="visibleInPopup" className="cursor-pointer">
+              Показывать в popup на карте
+            </Label>
+          </div>
           <div className="space-y-2">
             <Label>Доступ для ролей</Label>
             <div className="flex gap-2">
