@@ -4,17 +4,27 @@
       "name": "Get all attribute configs",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "type"
     },
     {
-      "name": "Update attribute visibility",
-      "method": "PUT",
+      "name": "Create attribute config",
+      "method": "POST",
       "path": "/",
       "body": {
-        "attributeKey": "name",
-        "visibleInPopup": true
+        "attributeKey": "test_attr",
+        "displayName": "Test Attribute",
+        "displayOrder": 1,
+        "visibleInTable": true,
+        "visibleRoles": ["admin", "user"]
       },
-      "expectedStatus": 200
+      "expectedStatus": 201,
+      "expectedBody": {
+        "attributeKey": "string",
+        "displayName": "string"
+      },
+      "bodyMatcher": "partial"
     }
   ]
 }

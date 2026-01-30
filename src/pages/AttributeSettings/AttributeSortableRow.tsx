@@ -11,7 +11,6 @@ interface AttributeSortableRowProps {
   config: AttributeConfig;
   index: number;
   handleToggleVisibility: (config: AttributeConfig) => void;
-  handleTogglePopup: (config: AttributeConfig) => void;
   openEditDialog: (config: AttributeConfig) => void;
   handleDelete: (key: string) => void;
 }
@@ -20,7 +19,6 @@ export const AttributeSortableRow = ({
   config, 
   index, 
   handleToggleVisibility, 
-  handleTogglePopup,
   openEditDialog, 
   handleDelete 
 }: AttributeSortableRowProps) => {
@@ -58,14 +56,6 @@ export const AttributeSortableRow = ({
           checked={config.visibleInTable}
           onCheckedChange={() => {
             handleToggleVisibility(config);
-          }}
-        />
-      </TableCell>
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <Switch
-          checked={config.visibleInPopup}
-          onCheckedChange={() => {
-            handleTogglePopup(config);
           }}
         />
       </TableCell>

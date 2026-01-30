@@ -4,7 +4,6 @@ interface AttributeConfig {
   displayName: string;
   displayOrder: number;
   visibleInTable: boolean;
-  visibleInPopup: boolean;
   visibleRoles: string[];
   createdAt?: string;
   updatedAt?: string;
