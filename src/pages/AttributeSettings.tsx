@@ -17,7 +17,7 @@ import {
   DndContext,
   closestCenter,
   KeyboardSensor,
-  MouseSensor,
+  PointerSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -42,7 +42,12 @@ const AttributeSettings = () => {
   const [isSyncing, setIsSyncing] = useState(false);
 
   const sensors = useSensors(
-    useSensor(MouseSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 100,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
