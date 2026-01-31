@@ -1,6 +1,6 @@
 import func2url from '../../backend/func2url.json';
 
-const API_URL = func2url['display-config'] || '';
+const API_URL = func2url['attributes'] || '';
 
 export interface DisplayConfig {
   id: number;
