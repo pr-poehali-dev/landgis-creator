@@ -34,6 +34,7 @@ def handler(event: dict, context) -> dict:
     try:
         path_params = event.get('params', {})
         path = path_params.get('path', '')
+        print(f"[DEBUG] method={method}, path={path}, full_event={json.dumps(event)}")
         
         if method == 'GET':
             return handle_get(conn, event)
@@ -277,8 +278,10 @@ def handle_delete(conn, event) -> dict:
     }
 
 def handle_batch_order(conn, event) -> dict:
+    print(f"[DEBUG] handle_batch_order called, event: {json.dumps(event)}")
     data = json.loads(event.get('body', '{}'))
     updates = data.get('updates', [])
+    print(f"[DEBUG] updates: {updates}")
     
     if not updates:
         return {
