@@ -59,7 +59,7 @@ export const displayConfigService = {
   },
 
   async batchUpdateOrder(updates: { id: number; displayOrder: number }[]): Promise<void> {
-    const response = await fetch(`${API_URL}/batch-order`, {
+    const response = await fetch(`${API_URL}?action=batch-order`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ updates }),
