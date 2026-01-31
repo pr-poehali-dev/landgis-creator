@@ -32,16 +32,17 @@ def handler(event: dict, context) -> dict:
     conn = psycopg2.connect(dsn)
     
     try:
+        path_params = event.get('params', {})
+        path = path_params.get('path', '')
+        
         if method == 'GET':
             return handle_get(conn, event)
         elif method == 'POST':
-            path = event.get('params', {}).get('path', '')
-            if path == '/batch-order':
+            if 'batch-order' in path:
                 return handle_batch_order(conn, event)
             return handle_create(conn, event)
         elif method == 'PUT':
-            path = event.get('params', {}).get('path', '')
-            if path == '/batch-order':
+            if 'batch-order' in path:
                 return handle_batch_order(conn, event)
             return handle_update(conn, event)
         elif method == 'DELETE':
