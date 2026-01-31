@@ -277,10 +277,8 @@ def handle_delete(conn, event) -> dict:
     }
 
 def handle_batch_order(conn, event) -> dict:
-    print(f"[DEBUG] handle_batch_order called, event: {json.dumps(event)}")
     data = json.loads(event.get('body', '{}'))
     updates = data.get('updates', [])
-    print(f"[DEBUG] updates: {updates}")
     
     if not updates:
         return {
