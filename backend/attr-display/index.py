@@ -5,7 +5,7 @@ from psycopg2.extras import RealDictCursor
 
 
 def handler(event: dict, context) -> dict:
-    '''API для управления настройками отображения атрибутов и элементов интерфейса'''
+    '''Управление настройками отображения элементов в окне атрибутов'''
     method = event.get('httpMethod', 'GET')
     
     if method == 'OPTIONS':
