@@ -7,6 +7,7 @@ import { displayConfigService, DisplayConfig } from '@/services/displayConfigSer
 import ConfigListHeader from '@/components/display-config/ConfigListHeader';
 import ConfigItemCard from '@/components/display-config/ConfigItemCard';
 import ConfigDialog from '@/components/display-config/ConfigDialog';
+import ExportDialog from '@/components/display-config/ExportDialog';
 import { DEFAULT_DISPLAY_CONFIGS } from '@/config/defaultDisplayConfigs';
 
 const DisplayConfigPage = () => {
@@ -17,6 +18,8 @@ const DisplayConfigPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [exportJson, setExportJson] = useState('');
 
   useEffect(() => {
     loadConfigs();
@@ -140,10 +143,8 @@ const DisplayConfigPage = () => {
 
   const handleExportConfig = () => {
     const json = JSON.stringify(configs, null, 2);
-    navigator.clipboard.writeText(json);
-    toast.success('Настройки скопированы в буфер обмена! Вставьте их в консоль на карте: localStorage.setItem("displayConfigs", `скопированный_JSON`)', {
-      duration: 10000
-    });
+    setExportJson(json);
+    setIsExportDialogOpen(true);
   };
 
   const handleDragStart = (index: number) => {
@@ -267,6 +268,12 @@ const DisplayConfigPage = () => {
         editingConfig={editingConfig}
         onConfigChange={setEditingConfig}
         onSave={handleSave}
+      />
+
+      <ExportDialog
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+        configJson={exportJson}
       />
     </div>
   );
