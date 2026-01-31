@@ -3,9 +3,9 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+
 def handler(event: dict, context) -> dict:
     '''API для управления настройками отображения атрибутов и элементов интерфейса'''
-    
     method = event.get('httpMethod', 'GET')
     
     if method == 'OPTIONS':
@@ -271,24 +271,15 @@ def handle_delete(conn, event) -> dict:
     
     with conn.cursor() as cur:
         cur.execute('''
-            DELETE FROM t_p78972315_landgis_creator.display_config
+            DELETE FROM t_p78972315_landgis_creator.display_config 
             WHERE id = %s
         ''', (int(config_id),))
-        
         conn.commit()
-        
-        if cur.rowcount == 0:
-            return {
-                'statusCode': 404,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Config not found'}),
-                'isBase64Encoded': False
-            }
     
     return {
         'statusCode': 200,
         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-        'body': json.dumps({'message': 'Config deleted'}),
+        'body': json.dumps({'success': True}),
         'isBase64Encoded': False
     }
 
@@ -306,21 +297,16 @@ def handle_batch_order(conn, event) -> dict:
     
     with conn.cursor() as cur:
         for update in updates:
-            config_id = update.get('id')
-            display_order = update.get('displayOrder')
-            
-            if config_id is not None and display_order is not None:
-                cur.execute('''
-                    UPDATE t_p78972315_landgis_creator.display_config
-                    SET display_order = %s, updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s
-                ''', (display_order, config_id))
-        
+            cur.execute('''
+                UPDATE t_p78972315_landgis_creator.display_config 
+                SET display_order = %s, updated_at = CURRENT_TIMESTAMP 
+                WHERE id = %s
+            ''', (update['displayOrder'], update['id']))
         conn.commit()
     
     return {
         'statusCode': 200,
         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-        'body': json.dumps({'message': 'Order updated'}),
+        'body': json.dumps({'success': True}),
         'isBase64Encoded': False
     }

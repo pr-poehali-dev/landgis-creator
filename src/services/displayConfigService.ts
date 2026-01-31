@@ -1,6 +1,6 @@
 import func2url from '../../backend/func2url.json';
 
-const API_URL = func2url['display-config'];
+const API_URL = func2url['display-config'] || '';
 
 export interface DisplayConfig {
   id: number;
@@ -19,6 +19,10 @@ export interface DisplayConfig {
 
 export const displayConfigService = {
   async getConfigs(type?: string): Promise<DisplayConfig[]> {
+    if (!API_URL) {
+      console.error('display-config function not deployed yet');
+      return [];
+    }
     const url = type ? `${API_URL}?type=${type}` : API_URL;
     const response = await fetch(url);
     if (!response.ok) {
