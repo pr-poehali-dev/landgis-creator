@@ -124,7 +124,7 @@ const DisplayConfigPage = () => {
     }
   };
 
-  const handleMoveUp = async (index: number) => {
+  const handleMoveUp = (index: number) => {
     if (index === 0) return;
 
     const newConfigs = [...baseFilteredConfigs];
@@ -140,18 +140,10 @@ const DisplayConfigPage = () => {
       return update ? { ...c, displayOrder: update.displayOrder } : c;
     });
     setConfigs(updatedConfigs);
-
-    try {
-      await displayConfigService.batchUpdateOrder(updates);
-      toast.success('Порядок обновлён');
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Не удалось обновить порядок');
-      loadConfigs();
-    }
+    toast.success('Порядок изменён');
   };
 
-  const handleMoveDown = async (index: number) => {
+  const handleMoveDown = (index: number) => {
     if (index === baseFilteredConfigs.length - 1) return;
 
     const newConfigs = [...baseFilteredConfigs];
@@ -167,29 +159,13 @@ const DisplayConfigPage = () => {
       return update ? { ...c, displayOrder: update.displayOrder } : c;
     });
     setConfigs(updatedConfigs);
-
-    try {
-      await displayConfigService.batchUpdateOrder(updates);
-      toast.success('Порядок обновлён');
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Не удалось обновить порядок');
-      loadConfigs();
-    }
+    toast.success('Порядок изменён');
   };
 
-  const handleToggleEnabled = async (config: DisplayConfig) => {
+  const handleToggleEnabled = (config: DisplayConfig) => {
     const newEnabled = !config.enabled;
     setConfigs(configs.map(c => c.id === config.id ? { ...c, enabled: newEnabled } : c));
-
-    try {
-      await displayConfigService.updateConfig(config.id, { enabled: newEnabled });
-      toast.success(config.enabled ? 'Элемент скрыт' : 'Элемент отображается');
-    } catch (error) {
-      console.error('Error toggling enabled:', error);
-      toast.error('Не удалось изменить видимость');
-      loadConfigs();
-    }
+    toast.success(newEnabled ? 'Атрибут включён в таблице' : 'Атрибут скрыт из таблицы');
   };
 
   const openCreateDialog = (type: DisplayConfig['configType']) => {
@@ -227,7 +203,7 @@ const DisplayConfigPage = () => {
     setDragOverIndex(null);
   };
 
-  const handleDrop = async (targetIndex: number) => {
+  const handleDrop = (targetIndex: number) => {
     if (draggedIndex === null || draggedIndex === targetIndex) {
       setDraggedIndex(null);
       setDragOverIndex(null);
@@ -251,15 +227,7 @@ const DisplayConfigPage = () => {
 
     setDraggedIndex(null);
     setDragOverIndex(null);
-
-    try {
-      await displayConfigService.batchUpdateOrder(updates);
-      toast.success('Порядок обновлён');
-    } catch (error) {
-      console.error('Error updating order:', error);
-      toast.error('Не удалось обновить порядок');
-      loadConfigs();
-    }
+    toast.success('Порядок изменён перетаскиванием');
   };
 
   const baseFilteredConfigs = configs.filter(c => 
