@@ -124,6 +124,12 @@ const ConfigDialog = ({
                   <Input
                     value={editingConfig.formatOptions?.options?.join(', ') || ''}
                     onChange={(e) => {
+                      onConfigChange({ 
+                        ...editingConfig, 
+                        formatOptions: { options: [e.target.value] } 
+                      });
+                    }}
+                    onBlur={(e) => {
                       const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
                       onConfigChange({ 
                         ...editingConfig, 
