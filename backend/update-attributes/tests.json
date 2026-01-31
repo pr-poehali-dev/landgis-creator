@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "Update property attributes",
+      "method": "PUT",
+      "path": "/?id=1",
+      "body": {
+        "attributes": {
+          "test_field": "test_value",
+          "number_field": 123
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "id": "number",
+        "attributes": "object"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

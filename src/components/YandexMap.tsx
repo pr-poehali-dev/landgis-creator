@@ -251,7 +251,16 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
             </Badge>
           </CardHeader>
           <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
-            <AttributesDisplay attributes={selectedProperty.attributes} />
+            <AttributesDisplay 
+              attributes={selectedProperty.attributes}
+              featureId={selectedProperty.id}
+              onAttributesUpdate={(updatedAttrs) => {
+                setSelectedProperty({
+                  ...selectedProperty,
+                  attributes: updatedAttrs
+                });
+              }}
+            />
           </CardContent>
         </Card>
       )}
