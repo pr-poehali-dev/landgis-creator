@@ -1,6 +1,6 @@
 import func2url from '../../backend/func2url.json';
 
-const API_URL = func2url['properties'] ? `${func2url['properties']}?type=config` : '';
+const API_URL = func2url['attr-config'] || '';
 
 export interface DisplayConfig {
   id: number;
@@ -56,7 +56,7 @@ function mapFrontendToBackend(frontend: Partial<DisplayConfig>) {
 export const displayConfigService = {
   async getConfigs(type?: string): Promise<DisplayConfig[]> {
     if (!API_URL) {
-      console.error('properties function not available');
+      console.error('attr-config function not available');
       return [];
     }
     const response = await fetch(API_URL);
@@ -119,13 +119,18 @@ export const displayConfigService = {
   },
 
   async batchUpdateOrder(updates: { id: number; displayOrder: number }[]): Promise<void> {
-    const allConfigs = await this.getConfigs();
+    if (!API_URL) {
+      throw new Error('attr-config function not available');
+    }
     
-    for (const update of updates) {
-      const config = allConfigs.find(c => c.id === update.id);
-      if (config) {
-        await this.updateConfig(update.id, { displayOrder: update.displayOrder });
-      }
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ updates }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to batch update order');
     }
   },
 

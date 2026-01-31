@@ -34,6 +34,20 @@
         "title": "Test Property"
       },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get attribute configs",
+      "method": "GET",
+      "path": "/?type=config",
+      "expectedStatus": 200,
+      "expectedBody": [
+        {
+          "id": "number",
+          "attributeKey": "string",
+          "displayName": "string"
+        }
+      ],
+      "bodyMatcher": "partial"
     }
   ]
 }

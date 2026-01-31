@@ -30,7 +30,11 @@ def handler(event: dict, context) -> dict:
         if method == 'GET':
             return get_configs(conn)
         elif method == 'POST':
-            return create_or_update_config(conn, event)
+            body = json.loads(event.get('body', '{}'))
+            if 'updates' in body:
+                return batch_update_order(conn, body['updates'])
+            else:
+                return create_or_update_config(conn, event)
         elif method == 'PUT':
             return update_config(conn, event)
         elif method == 'DELETE':
@@ -182,6 +186,34 @@ def delete_config(conn, event):
             'Access-Control-Allow-Origin': '*'
         },
         'body': json.dumps({'message': 'Config deleted'}),
+        'isBase64Encoded': False
+    }
+
+def batch_update_order(conn, updates):
+    '''Массовое обновление порядка отображения'''
+    with conn.cursor() as cur:
+        for update in updates:
+            config_id = update.get('id')
+            display_order = update.get('displayOrder')
+            
+            if config_id is None or display_order is None:
+                continue
+            
+            cur.execute('''
+                UPDATE t_p78972315_landgis_creator.attribute_config
+                SET display_order = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            ''', (display_order, config_id))
+        
+        conn.commit()
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps({'message': 'Order updated successfully'}),
         'isBase64Encoded': False
     }
 
