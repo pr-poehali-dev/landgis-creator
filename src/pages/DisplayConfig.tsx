@@ -204,7 +204,7 @@ const DisplayConfigPage = () => {
   ).sort((a, b) => a.displayOrder - b.displayOrder);
 
   const filteredConfigs = (() => {
-    if (draggedIndex === null || dragOverIndex === null) {
+    if (draggedIndex === null || dragOverIndex === null || draggedIndex === dragOverIndex) {
       return baseFilteredConfigs;
     }
 
@@ -338,16 +338,16 @@ const DisplayConfigPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0}
+                        onClick={() => handleMoveUp(originalIndex)}
+                        disabled={originalIndex === 0}
                       >
                         <Icon name="ChevronUp" size={18} />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === baseFilteredConfigs.length - 1}
+                        onClick={() => handleMoveDown(originalIndex)}
+                        disabled={originalIndex === baseFilteredConfigs.length - 1}
                       >
                         <Icon name="ChevronDown" size={18} />
                       </Button>
