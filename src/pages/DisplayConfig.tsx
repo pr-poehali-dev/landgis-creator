@@ -1,30 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AdminNavigation from '@/components/admin/AdminNavigation';
 import { displayConfigService, DisplayConfig } from '@/services/displayConfigService';
+import ConfigListHeader from '@/components/display-config/ConfigListHeader';
+import ConfigItemCard from '@/components/display-config/ConfigItemCard';
+import ConfigDialog from '@/components/display-config/ConfigDialog';
 
 const DisplayConfigPage = () => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
@@ -216,81 +198,16 @@ const DisplayConfigPage = () => {
     return items;
   })();
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'attribute': return 'Tag';
-      case 'image': return 'Image';
-      case 'document': return 'FileText';
-      case 'contact_button': return 'Phone';
-      default: return 'Box';
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'attribute': return 'Атрибут';
-      case 'image': return 'Изображения';
-      case 'document': return 'Документы';
-      case 'contact_button': return 'Кнопка связи';
-      case 'custom_element': return 'Другое';
-      default: return type;
-    }
-  };
-
-  const getFormatLabel = (formatType?: string) => {
-    switch (formatType) {
-      case 'text': return 'Текст';
-      case 'textarea': return 'Многострочный текст';
-      case 'number': return 'Число';
-      case 'money': return 'Деньги';
-      case 'boolean': return 'Да/Нет';
-      case 'select': return 'Список';
-      case 'date': return 'Дата';
-      default: return null;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <AdminNavigation />
 
       <div className="container mx-auto px-4 lg:px-6 py-6">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold mb-2">Окно атрибутов</h2>
-          <p className="text-muted-foreground">
-            Настройте порядок отображения атрибутов и элементов на карточке объекта
-          </p>
-        </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList>
-            <TabsTrigger value="all">Все элементы</TabsTrigger>
-            <TabsTrigger value="attribute">Атрибуты</TabsTrigger>
-            <TabsTrigger value="image">Изображения</TabsTrigger>
-            <TabsTrigger value="document">Документы</TabsTrigger>
-            <TabsTrigger value="contact_button">Кнопки</TabsTrigger>
-            <TabsTrigger value="custom_element">Другое</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        <div className="flex gap-2 mb-4">
-          <Button onClick={() => openCreateDialog('attribute')} size="sm">
-            <Icon name="Plus" size={16} className="mr-2" />
-            Добавить атрибут
-          </Button>
-          <Button onClick={() => openCreateDialog('image')} variant="outline" size="sm">
-            <Icon name="Image" size={16} className="mr-2" />
-            Изображения
-          </Button>
-          <Button onClick={() => openCreateDialog('document')} variant="outline" size="sm">
-            <Icon name="FileText" size={16} className="mr-2" />
-            Документы
-          </Button>
-          <Button onClick={() => openCreateDialog('contact_button')} variant="outline" size="sm">
-            <Icon name="Phone" size={16} className="mr-2" />
-            Кнопка связи
-          </Button>
-        </div>
+        <ConfigListHeader
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onCreateConfig={openCreateDialog}
+        />
 
         <Card>
           <CardHeader>
@@ -313,80 +230,24 @@ const DisplayConfigPage = () => {
                 {filteredConfigs.map((config, index) => {
                   const originalIndex = baseFilteredConfigs.findIndex(c => c.id === config.id);
                   return (
-                  <div
-                    key={config.id}
-                    draggable
-                    onDragStart={() => handleDragStart(originalIndex)}
-                    onDragOver={(e) => handleDragOver(e, index)}
-                    onDragEnd={handleDragEnd}
-                    onDrop={() => handleDrop(index)}
-                    className={`flex items-center gap-3 p-4 border rounded-lg transition-all duration-200 ${
-                      !config.enabled ? 'opacity-50' : ''
-                    } ${
-                      draggedIndex === originalIndex ? 'opacity-40' : ''
-                    } cursor-move hover:border-primary/50`}
-                  >
-                    <Icon name="GripVertical" size={20} className="text-muted-foreground cursor-grab active:cursor-grabbing" />
-                    <Icon name={getTypeIcon(config.configType) as any} size={20} className="text-primary" />
-                    
-                    <div className="flex-1">
-                      <div className="font-medium">{config.displayName}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {getTypeLabel(config.configType)} · {config.configKey}
-                        {config.configType === 'attribute' && config.formatType && (
-                          <> · {getFormatLabel(config.formatType)}</>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {config.visibleRoles.map(role => (
-                        <Badge key={role} variant="secondary" className="text-xs">
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <Switch
-                      checked={config.enabled}
-                      onCheckedChange={() => handleToggleEnabled(config)}
+                    <ConfigItemCard
+                      key={config.id}
+                      config={config}
+                      index={index}
+                      originalIndex={originalIndex}
+                      draggedIndex={draggedIndex}
+                      isFirst={originalIndex === 0}
+                      isLast={originalIndex === baseFilteredConfigs.length - 1}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDragEnd={handleDragEnd}
+                      onDrop={handleDrop}
+                      onToggleEnabled={handleToggleEnabled}
+                      onMoveUp={handleMoveUp}
+                      onMoveDown={handleMoveDown}
+                      onEdit={openEditDialog}
+                      onDelete={handleDelete}
                     />
-
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveUp(originalIndex)}
-                        disabled={originalIndex === 0}
-                      >
-                        <Icon name="ChevronUp" size={18} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleMoveDown(originalIndex)}
-                        disabled={originalIndex === baseFilteredConfigs.length - 1}
-                      >
-                        <Icon name="ChevronDown" size={18} />
-                      </Button>
-                    </div>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEditDialog(config)}
-                    >
-                      <Icon name="Pencil" size={18} />
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(config.id)}
-                    >
-                      <Icon name="Trash2" size={18} className="text-destructive" />
-                    </Button>
-                  </div>
                   );
                 })}
               </div>
@@ -395,151 +256,13 @@ const DisplayConfigPage = () => {
         </Card>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingConfig?.id ? 'Редактировать элемент' : 'Создать элемент'}
-            </DialogTitle>
-            <DialogDescription>
-              Настройте параметры отображения элемента
-            </DialogDescription>
-          </DialogHeader>
-
-          {editingConfig && (
-            <div className="space-y-4">
-              <div>
-                <Label>Тип элемента</Label>
-                <Select
-                  value={editingConfig.configType}
-                  onValueChange={(value: any) =>
-                    setEditingConfig({ ...editingConfig, configType: value })
-                  }
-                  disabled={!!editingConfig.id}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="attribute">Атрибут</SelectItem>
-                    <SelectItem value="image">Изображения</SelectItem>
-                    <SelectItem value="document">Документы</SelectItem>
-                    <SelectItem value="contact_button">Кнопка связи</SelectItem>
-                    <SelectItem value="custom_element">Другое</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Ключ (для атрибутов - название поля)</Label>
-                <Input
-                  value={editingConfig.configKey}
-                  onChange={(e) =>
-                    setEditingConfig({ ...editingConfig, configKey: e.target.value })
-                  }
-                  placeholder="name"
-                />
-              </div>
-
-              <div>
-                <Label>Отображаемое название</Label>
-                <Input
-                  value={editingConfig.displayName}
-                  onChange={(e) =>
-                    setEditingConfig({ ...editingConfig, displayName: e.target.value })
-                  }
-                  placeholder="Название"
-                />
-              </div>
-
-              {editingConfig.configType === 'attribute' && (
-                <>
-                  <div>
-                    <Label>Формат атрибута</Label>
-                    <Select
-                      value={editingConfig.formatType || 'text'}
-                      onValueChange={(value: any) =>
-                        setEditingConfig({ ...editingConfig, formatType: value, formatOptions: value === 'select' ? { options: [] } : null })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Текст</SelectItem>
-                        <SelectItem value="textarea">Многострочный текст</SelectItem>
-                        <SelectItem value="number">Число</SelectItem>
-                        <SelectItem value="money">Денежная сумма</SelectItem>
-                        <SelectItem value="boolean">Да/Нет</SelectItem>
-                        <SelectItem value="select">Выпадающий список</SelectItem>
-                        <SelectItem value="date">Дата</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {editingConfig.formatType === 'select' && (
-                    <div>
-                      <Label>Варианты для списка (через запятую)</Label>
-                      <Input
-                        value={editingConfig.formatOptions?.options?.join(', ') || ''}
-                        onChange={(e) => {
-                          const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
-                          setEditingConfig({ 
-                            ...editingConfig, 
-                            formatOptions: { options } 
-                          });
-                        }}
-                        placeholder="Опция 1, Опция 2, Опция 3"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={editingConfig.enabled}
-                  onCheckedChange={(checked) =>
-                    setEditingConfig({ ...editingConfig, enabled: checked })
-                  }
-                />
-                <Label>Отображать на карточке</Label>
-              </div>
-
-              <div>
-                <Label>Роли с доступом</Label>
-                <div className="flex gap-2 mt-2">
-                  {['admin', 'user'].map((role) => (
-                    <label key={role} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={editingConfig.visibleRoles.includes(role)}
-                        onChange={(e) => {
-                          const roles = e.target.checked
-                            ? [...editingConfig.visibleRoles, role]
-                            : editingConfig.visibleRoles.filter(r => r !== role);
-                          setEditingConfig({ ...editingConfig, visibleRoles: roles });
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-sm">{role}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleSave}>
-              {editingConfig?.id ? 'Сохранить' : 'Создать'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfigDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        editingConfig={editingConfig}
+        onConfigChange={setEditingConfig}
+        onSave={handleSave}
+      />
     </div>
   );
 };
