@@ -38,7 +38,7 @@ export const displayConfigService = {
   },
 
   async updateConfig(id: number, config: Partial<DisplayConfig>): Promise<DisplayConfig> {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}?id=${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
@@ -50,7 +50,7 @@ export const displayConfigService = {
   },
 
   async deleteConfig(id: number): Promise<void> {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_URL}?id=${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

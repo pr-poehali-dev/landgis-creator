@@ -154,8 +154,8 @@ def handle_create(conn, event) -> dict:
     }
 
 def handle_update(conn, event) -> dict:
-    path_params = event.get('params', {})
-    config_id = path_params.get('id')
+    query_params = event.get('queryStringParameters', {}) or {}
+    config_id = query_params.get('id')
     
     if not config_id:
         return {
@@ -242,8 +242,8 @@ def handle_update(conn, event) -> dict:
     }
 
 def handle_delete(conn, event) -> dict:
-    path_params = event.get('params', {})
-    config_id = path_params.get('id')
+    query_params = event.get('queryStringParameters', {}) or {}
+    config_id = query_params.get('id')
     
     if not config_id:
         return {
