@@ -40,8 +40,8 @@ function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
     visibleRoles: backend.visibleRoles,
     enabled: backend.visibleInTable,
     settings: {},
-    formatType: backend.formatType as any,
-    formatOptions: backend.formatOptions,
+    formatType: (backend.formatType || 'text') as any,
+    formatOptions: backend.formatOptions || null,
     createdAt: backend.createdAt,
     updatedAt: backend.updatedAt
   };
