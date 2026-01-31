@@ -36,8 +36,13 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
     try {
       // Сначала пробуем загрузить из localStorage
       const localConfigs = displayConfigService.getLocalConfigs();
+      console.log('AttributesDisplay: Loaded configs from localStorage:', localConfigs.length);
+      
       if (localConfigs.length > 0) {
-        setConfigs(localConfigs);
+        // Сортируем по displayOrder
+        const sorted = [...localConfigs].sort((a, b) => a.displayOrder - b.displayOrder);
+        console.log('AttributesDisplay: First 5 configs:', sorted.slice(0, 5).map(c => ({ key: c.configKey, order: c.displayOrder, enabled: c.enabled })));
+        setConfigs(sorted);
         setIsLoading(false);
         return;
       }
