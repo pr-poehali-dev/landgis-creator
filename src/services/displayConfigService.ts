@@ -1,6 +1,6 @@
 import func2url from '../../backend/func2url.json';
 
-const API_URL = func2url['attributes'] || '';
+const API_URL = func2url['attr-config'] || '';
 
 export interface DisplayConfig {
   id: number;
@@ -56,7 +56,7 @@ function mapFrontendToBackend(frontend: Partial<DisplayConfig>) {
 export const displayConfigService = {
   async getConfigs(type?: string): Promise<DisplayConfig[]> {
     if (!API_URL) {
-      console.error('attributes function not deployed yet');
+      console.error('attr-config function not deployed yet');
       return [];
     }
     const response = await fetch(API_URL);
