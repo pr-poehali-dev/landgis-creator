@@ -7,7 +7,6 @@ import { displayConfigService, DisplayConfig } from '@/services/displayConfigSer
 import ConfigListHeader from '@/components/display-config/ConfigListHeader';
 import ConfigItemCard from '@/components/display-config/ConfigItemCard';
 import ConfigDialog from '@/components/display-config/ConfigDialog';
-import ExportDialog from '@/components/display-config/ExportDialog';
 import { DEFAULT_DISPLAY_CONFIGS } from '@/config/defaultDisplayConfigs';
 
 const DisplayConfigPage = () => {
@@ -18,8 +17,6 @@ const DisplayConfigPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [exportJson, setExportJson] = useState('');
 
   useEffect(() => {
     loadConfigs();
@@ -28,51 +25,72 @@ const DisplayConfigPage = () => {
   const loadConfigs = async () => {
     setIsLoading(true);
     try {
-      // Проверяем localStorage
-      const savedConfigs = localStorage.getItem('displayConfigs');
-      if (savedConfigs) {
-        const parsed: DisplayConfig[] = JSON.parse(savedConfigs);
-        setConfigs(parsed);
-      } else {
-        // Используем дефолтные данные из общего конфига
-        const defaultConfigs = JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS));
-        setConfigs(defaultConfigs);
-        localStorage.setItem('displayConfigs', JSON.stringify(defaultConfigs));
-      }
+      const response = await fetch('https://functions.poehali.dev/get-display-configs');
+      if (!response.ok) throw new Error('Failed to load configs');
+      
+      const data = await response.json();
+      setConfigs(data.sort((a: DisplayConfig, b: DisplayConfig) => a.displayOrder - b.displayOrder));
     } catch (error) {
       console.error('Error loading configs:', error);
+      toast.error('Не удалось загрузить настройки');
+      // Используем дефолтные данные при ошибке
+      setConfigs(JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS)));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingConfig) return;
 
     let updatedConfigs;
     if (editingConfig.id) {
       updatedConfigs = configs.map(c => c.id === editingConfig.id ? editingConfig : c);
-      toast.success('Настройки сохранены');
     } else {
       const newConfig = { ...editingConfig, id: Date.now() };
       updatedConfigs = [...configs, newConfig];
-      toast.success('Элемент создан');
     }
     
-    setConfigs(updatedConfigs);
-    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
-    setIsDialogOpen(false);
+    try {
+      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configs: updatedConfigs })
+      });
+      
+      if (!response.ok) throw new Error('Failed to save');
+      
+      setConfigs(updatedConfigs);
+      toast.success(editingConfig.id ? 'Настройки сохранены' : 'Элемент создан');
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving configs:', error);
+      toast.error('Не удалось сохранить настройки');
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Удалить этот элемент?')) return;
     const updatedConfigs = configs.filter(c => c.id !== id);
-    setConfigs(updatedConfigs);
-    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
-    toast.success('Элемент удалён');
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configs: updatedConfigs })
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete');
+      
+      setConfigs(updatedConfigs);
+      toast.success('Элемент удалён');
+    } catch (error) {
+      console.error('Error deleting config:', error);
+      toast.error('Не удалось удалить элемент');
+    }
   };
 
-  const handleMoveUp = (index: number) => {
+  const handleMoveUp = async (index: number) => {
     if (index === 0) return;
 
     const newConfigs = [...baseFilteredConfigs];
@@ -87,12 +105,25 @@ const DisplayConfigPage = () => {
       const update = updates.find(u => u.id === c.id);
       return update ? { ...c, displayOrder: update.displayOrder } : c;
     });
-    setConfigs(updatedConfigs);
-    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
-    toast.success('Порядок изменён');
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configs: updatedConfigs })
+      });
+      
+      if (!response.ok) throw new Error('Failed to save order');
+      
+      setConfigs(updatedConfigs);
+      toast.success('Порядок изменён');
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast.error('Не удалось изменить порядок');
+    }
   };
 
-  const handleMoveDown = (index: number) => {
+  const handleMoveDown = async (index: number) => {
     if (index === baseFilteredConfigs.length - 1) return;
 
     const newConfigs = [...baseFilteredConfigs];
@@ -107,17 +138,43 @@ const DisplayConfigPage = () => {
       const update = updates.find(u => u.id === c.id);
       return update ? { ...c, displayOrder: update.displayOrder } : c;
     });
-    setConfigs(updatedConfigs);
-    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
-    toast.success('Порядок изменён');
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configs: updatedConfigs })
+      });
+      
+      if (!response.ok) throw new Error('Failed to save order');
+      
+      setConfigs(updatedConfigs);
+      toast.success('Порядок изменён');
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast.error('Не удалось изменить порядок');
+    }
   };
 
-  const handleToggleEnabled = (config: DisplayConfig) => {
+  const handleToggleEnabled = async (config: DisplayConfig) => {
     const newEnabled = !config.enabled;
     const updatedConfigs = configs.map(c => c.id === config.id ? { ...c, enabled: newEnabled } : c);
-    setConfigs(updatedConfigs);
-    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
-    toast.success(newEnabled ? 'Атрибут включён в таблице' : 'Атрибут скрыт из таблицы');
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configs: updatedConfigs })
+      });
+      
+      if (!response.ok) throw new Error('Failed to toggle');
+      
+      setConfigs(updatedConfigs);
+      toast.success(newEnabled ? 'Атрибут включён в таблице' : 'Атрибут скрыт из таблицы');
+    } catch (error) {
+      console.error('Error toggling config:', error);
+      toast.error('Не удалось изменить настройку');
+    }
   };
 
   const openCreateDialog = (type: DisplayConfig['configType']) => {
@@ -141,11 +198,7 @@ const DisplayConfigPage = () => {
     setIsDialogOpen(true);
   };
 
-  const handleExportConfig = () => {
-    const json = JSON.stringify(configs, null, 2);
-    setExportJson(json);
-    setIsExportDialogOpen(true);
-  };
+
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -212,7 +265,6 @@ const DisplayConfigPage = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onCreateConfig={openCreateDialog}
-          onExportConfig={handleExportConfig}
         />
 
         <Card>
@@ -268,12 +320,6 @@ const DisplayConfigPage = () => {
         editingConfig={editingConfig}
         onConfigChange={setEditingConfig}
         onSave={handleSave}
-      />
-
-      <ExportDialog
-        open={isExportDialogOpen}
-        onOpenChange={setIsExportDialogOpen}
-        configJson={exportJson}
       />
     </div>
   );

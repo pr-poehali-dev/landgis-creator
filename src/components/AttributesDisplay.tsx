@@ -35,16 +35,14 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
 
   const loadConfigs = async () => {
     try {
-      // Пробуем загрузить из localStorage
-      const localConfigs = displayConfigService.getLocalConfigs();
-      if (localConfigs.length > 0) {
-        setConfigs(localConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
-      } else {
-        // Используем общий конфиг по умолчанию
-        setConfigs(JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS)));
-      }
+      const response = await fetch('https://functions.poehali.dev/get-display-configs');
+      if (!response.ok) throw new Error('Failed to load configs');
+      
+      const data = await response.json();
+      setConfigs(data.sort((a: DisplayConfig, b: DisplayConfig) => a.displayOrder - b.displayOrder));
     } catch (error) {
       console.error('Error loading display configs:', error);
+      setConfigs(JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS)));
     } finally {
       setIsLoading(false);
     }
