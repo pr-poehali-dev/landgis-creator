@@ -17,46 +17,94 @@ export interface DisplayConfig {
   updatedAt?: string;
 }
 
+type BackendConfig = {
+  id: number;
+  attributeKey: string;
+  displayName: string;
+  displayOrder: number;
+  visibleInTable: boolean;
+  visibleRoles: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
+  return {
+    id: backend.id,
+    configType: 'attribute',
+    configKey: backend.attributeKey,
+    displayName: backend.displayName,
+    displayOrder: backend.displayOrder,
+    visibleRoles: backend.visibleRoles,
+    enabled: backend.visibleInTable,
+    settings: {},
+    createdAt: backend.createdAt,
+    updatedAt: backend.updatedAt
+  };
+}
+
+function mapFrontendToBackend(frontend: Partial<DisplayConfig>) {
+  const result: any = {};
+  if (frontend.configKey !== undefined) result.attributeKey = frontend.configKey;
+  if (frontend.displayName !== undefined) result.displayName = frontend.displayName;
+  if (frontend.displayOrder !== undefined) result.displayOrder = frontend.displayOrder;
+  if (frontend.enabled !== undefined) result.visibleInTable = frontend.enabled;
+  if (frontend.visibleRoles !== undefined) result.visibleRoles = frontend.visibleRoles;
+  return result;
+}
+
 export const displayConfigService = {
   async getConfigs(type?: string): Promise<DisplayConfig[]> {
     if (!API_URL) {
-      console.error('display-config function not deployed yet');
+      console.error('attributes function not deployed yet');
       return [];
     }
-    const url = type ? `${API_URL}?type=${type}` : API_URL;
-    const response = await fetch(url);
+    const response = await fetch(API_URL);
     if (!response.ok) {
       throw new Error('Failed to fetch configs');
     }
-    return response.json();
+    const data: BackendConfig[] = await response.json();
+    return data.map(mapBackendToFrontend);
   },
 
   async createConfig(config: Omit<DisplayConfig, 'id' | 'createdAt' | 'updatedAt'>): Promise<DisplayConfig> {
+    const backendData = mapFrontendToBackend(config);
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config),
+      body: JSON.stringify(backendData),
     });
     if (!response.ok) {
       throw new Error('Failed to create config');
     }
-    return response.json();
+    const data: BackendConfig = await response.json();
+    return mapBackendToFrontend(data);
   },
 
   async updateConfig(id: number, config: Partial<DisplayConfig>): Promise<DisplayConfig> {
-    const response = await fetch(`${API_URL}?id=${id}`, {
+    const backendData = mapFrontendToBackend(config);
+    backendData.attributeKey = config.configKey;
+    
+    const response = await fetch(API_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config),
+      body: JSON.stringify(backendData),
     });
     if (!response.ok) {
       throw new Error('Failed to update config');
     }
-    return response.json();
+    const data: BackendConfig = await response.json();
+    return mapBackendToFrontend(data);
   },
 
   async deleteConfig(id: number): Promise<void> {
-    const response = await fetch(`${API_URL}?id=${id}`, {
+    const allConfigs = await this.getConfigs();
+    const configToDelete = allConfigs.find(c => c.id === id);
+    if (!configToDelete) {
+      throw new Error('Config not found');
+    }
+    
+    const response = await fetch(`${API_URL}?key=${encodeURIComponent(configToDelete.configKey)}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -65,13 +113,13 @@ export const displayConfigService = {
   },
 
   async batchUpdateOrder(updates: { id: number; displayOrder: number }[]): Promise<void> {
-    const response = await fetch(`${API_URL}?action=batch-order`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ updates }),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update order');
+    const allConfigs = await this.getConfigs();
+    
+    for (const update of updates) {
+      const config = allConfigs.find(c => c.id === update.id);
+      if (config) {
+        await this.updateConfig(update.id, { displayOrder: update.displayOrder, configKey: config.configKey });
+      }
     }
   },
 
