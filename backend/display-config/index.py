@@ -65,7 +65,7 @@ def handle_get(conn, event) -> dict:
         if config_type:
             cur.execute('''
                 SELECT id, config_type, config_key, display_name, display_order, 
-                       visible_roles, enabled, settings, created_at, updated_at
+                       visible_roles, enabled, settings, format_type, format_options, created_at, updated_at
                 FROM t_p78972315_landgis_creator.display_config
                 WHERE config_type = %s
                 ORDER BY display_order, id
@@ -73,7 +73,7 @@ def handle_get(conn, event) -> dict:
         else:
             cur.execute('''
                 SELECT id, config_type, config_key, display_name, display_order, 
-                       visible_roles, enabled, settings, created_at, updated_at
+                       visible_roles, enabled, settings, format_type, format_options, created_at, updated_at
                 FROM t_p78972315_landgis_creator.display_config
                 ORDER BY display_order, id
             ''')
@@ -91,6 +91,8 @@ def handle_get(conn, event) -> dict:
                 'visibleRoles': row['visible_roles'],
                 'enabled': row['enabled'],
                 'settings': row['settings'] or {},
+                'formatType': row.get('format_type'),
+                'formatOptions': row.get('format_options'),
                 'createdAt': row['created_at'].isoformat() if row['created_at'] else None,
                 'updatedAt': row['updated_at'].isoformat() if row['updated_at'] else None
             })
@@ -112,6 +114,8 @@ def handle_create(conn, event) -> dict:
     visible_roles = data.get('visibleRoles', ['admin'])
     enabled = data.get('enabled', True)
     settings = data.get('settings', {})
+    format_type = data.get('formatType', 'text')
+    format_options = data.get('formatOptions')
     
     if not all([config_type, config_key, display_name]):
         return {
@@ -124,11 +128,11 @@ def handle_create(conn, event) -> dict:
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute('''
             INSERT INTO t_p78972315_landgis_creator.display_config 
-            (config_type, config_key, display_name, display_order, visible_roles, enabled, settings)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (config_type, config_key, display_name, display_order, visible_roles, enabled, settings, format_type, format_options)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id, config_type, config_key, display_name, display_order, 
-                      visible_roles, enabled, settings, created_at, updated_at
-        ''', (config_type, config_key, display_name, display_order, visible_roles, enabled, json.dumps(settings)))
+                      visible_roles, enabled, settings, format_type, format_options, created_at, updated_at
+        ''', (config_type, config_key, display_name, display_order, visible_roles, enabled, json.dumps(settings), format_type, json.dumps(format_options) if format_options else None))
         
         row = cur.fetchone()
         conn.commit()
@@ -142,6 +146,8 @@ def handle_create(conn, event) -> dict:
             'visibleRoles': row['visible_roles'],
             'enabled': row['enabled'],
             'settings': row['settings'] or {},
+            'formatType': row.get('format_type'),
+            'formatOptions': row.get('format_options'),
             'createdAt': row['created_at'].isoformat() if row['created_at'] else None,
             'updatedAt': row['updated_at'].isoformat() if row['updated_at'] else None
         }
@@ -190,6 +196,14 @@ def handle_update(conn, event) -> dict:
         update_fields.append('settings = %s')
         params.append(json.dumps(data['settings']))
     
+    if 'formatType' in data:
+        update_fields.append('format_type = %s')
+        params.append(data['formatType'])
+    
+    if 'formatOptions' in data:
+        update_fields.append('format_options = %s')
+        params.append(json.dumps(data['formatOptions']) if data['formatOptions'] else None)
+    
     if not update_fields:
         return {
             'statusCode': 400,
@@ -207,7 +221,7 @@ def handle_update(conn, event) -> dict:
             SET {', '.join(update_fields)}
             WHERE id = %s
             RETURNING id, config_type, config_key, display_name, display_order, 
-                      visible_roles, enabled, settings, created_at, updated_at
+                      visible_roles, enabled, settings, format_type, format_options, created_at, updated_at
         ''', params)
         
         row = cur.fetchone()
@@ -230,6 +244,8 @@ def handle_update(conn, event) -> dict:
             'visibleRoles': row['visible_roles'],
             'enabled': row['enabled'],
             'settings': row['settings'] or {},
+            'formatType': row.get('format_type'),
+            'formatOptions': row.get('format_options'),
             'createdAt': row['created_at'].isoformat() if row['created_at'] else None,
             'updatedAt': row['updated_at'].isoformat() if row['updated_at'] else None
         }

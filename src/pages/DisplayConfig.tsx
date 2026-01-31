@@ -146,7 +146,9 @@ const DisplayConfigPage = () => {
       displayOrder: configs.length,
       visibleRoles: ['admin'],
       enabled: true,
-      settings: {}
+      settings: {},
+      formatType: 'text',
+      formatOptions: null
     });
     setIsDialogOpen(true);
   };
@@ -235,6 +237,19 @@ const DisplayConfigPage = () => {
     }
   };
 
+  const getFormatLabel = (formatType?: string) => {
+    switch (formatType) {
+      case 'text': return 'Текст';
+      case 'textarea': return 'Многострочный текст';
+      case 'number': return 'Число';
+      case 'money': return 'Деньги';
+      case 'boolean': return 'Да/Нет';
+      case 'select': return 'Список';
+      case 'date': return 'Дата';
+      default: return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AdminNavigation />
@@ -318,6 +333,9 @@ const DisplayConfigPage = () => {
                       <div className="font-medium">{config.displayName}</div>
                       <div className="text-sm text-muted-foreground">
                         {getTypeLabel(config.configType)} · {config.configKey}
+                        {config.configType === 'attribute' && config.formatType && (
+                          <> · {getFormatLabel(config.formatType)}</>
+                        )}
                       </div>
                     </div>
 
@@ -433,6 +451,50 @@ const DisplayConfigPage = () => {
                   placeholder="Название"
                 />
               </div>
+
+              {editingConfig.configType === 'attribute' && (
+                <>
+                  <div>
+                    <Label>Формат атрибута</Label>
+                    <Select
+                      value={editingConfig.formatType || 'text'}
+                      onValueChange={(value: any) =>
+                        setEditingConfig({ ...editingConfig, formatType: value, formatOptions: value === 'select' ? { options: [] } : null })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">Текст</SelectItem>
+                        <SelectItem value="textarea">Многострочный текст</SelectItem>
+                        <SelectItem value="number">Число</SelectItem>
+                        <SelectItem value="money">Денежная сумма</SelectItem>
+                        <SelectItem value="boolean">Да/Нет</SelectItem>
+                        <SelectItem value="select">Выпадающий список</SelectItem>
+                        <SelectItem value="date">Дата</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {editingConfig.formatType === 'select' && (
+                    <div>
+                      <Label>Варианты для списка (через запятую)</Label>
+                      <Input
+                        value={editingConfig.formatOptions?.options?.join(', ') || ''}
+                        onChange={(e) => {
+                          const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
+                          setEditingConfig({ 
+                            ...editingConfig, 
+                            formatOptions: { options } 
+                          });
+                        }}
+                        placeholder="Опция 1, Опция 2, Опция 3"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
 
               <div className="flex items-center gap-2">
                 <Switch
