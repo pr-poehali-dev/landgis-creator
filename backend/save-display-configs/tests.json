@@ -1,9 +1,0 @@
-{
-  "tests": [{
-    "name": "Save configs",
-    "method": "POST",
-    "path": "/",
-    "body": {"configs": [{"id": 1, "configKey": "test", "displayName": "Test", "displayOrder": 0, "enabled": true, "visibleRoles": ["admin"], "settings": {}}]},
-    "expectedStatus": 200
-  }]
-}

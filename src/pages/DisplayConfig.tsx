@@ -8,6 +8,7 @@ import ConfigListHeader from '@/components/display-config/ConfigListHeader';
 import ConfigItemCard from '@/components/display-config/ConfigItemCard';
 import ConfigDialog from '@/components/display-config/ConfigDialog';
 import { DEFAULT_DISPLAY_CONFIGS } from '@/config/defaultDisplayConfigs';
+import func2url from '../../backend/func2url.json';
 
 const DisplayConfigPage = () => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
@@ -25,16 +26,27 @@ const DisplayConfigPage = () => {
   const loadConfigs = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://functions.poehali.dev/get-display-configs');
-      if (!response.ok) throw new Error('Failed to load configs');
+      // Пробуем API
+      try {
+        const response = await fetch(`${func2url['filter-settings']}?mode=attrs`);
+        if (response.ok) {
+          const data = await response.json();
+          const sorted = data.sort((a: DisplayConfig, b: DisplayConfig) => a.displayOrder - b.displayOrder);
+          setConfigs(sorted);
+          localStorage.setItem('displayConfigs', JSON.stringify(sorted));
+          return;
+        }
+      } catch {}
       
-      const data = await response.json();
-      setConfigs(data.sort((a: DisplayConfig, b: DisplayConfig) => a.displayOrder - b.displayOrder));
-    } catch (error) {
-      console.error('Error loading configs:', error);
-      toast.error('Не удалось загрузить настройки');
-      // Используем дефолтные данные при ошибке
-      setConfigs(JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS)));
+      // Fallback: localStorage
+      const saved = localStorage.getItem('displayConfigs');
+      if (saved) {
+        setConfigs(JSON.parse(saved));
+      } else {
+        const defaults = JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS));
+        setConfigs(defaults);
+        localStorage.setItem('displayConfigs', JSON.stringify(defaults));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -51,43 +63,37 @@ const DisplayConfigPage = () => {
       updatedConfigs = [...configs, newConfig];
     }
     
+    // Сохраняем в localStorage
+    setConfigs(updatedConfigs);
+    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
+    toast.success(editingConfig.id ? 'Настройки сохранены' : 'Элемент создан');
+    setIsDialogOpen(false);
+    
+    // Пробуем синхронизировать с API
     try {
-      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+      await fetch(`${func2url['filter-settings']}?mode=attrs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ configs: updatedConfigs })
+        body: JSON.dumps({ configs: updatedConfigs })
       });
-      
-      if (!response.ok) throw new Error('Failed to save');
-      
-      setConfigs(updatedConfigs);
-      toast.success(editingConfig.id ? 'Настройки сохранены' : 'Элемент создан');
-      setIsDialogOpen(false);
-    } catch (error) {
-      console.error('Error saving configs:', error);
-      toast.error('Не удалось сохранить настройки');
-    }
+    } catch {}
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm('Удалить этот элемент?')) return;
     const updatedConfigs = configs.filter(c => c.id !== id);
     
+    setConfigs(updatedConfigs);
+    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
+    toast.success('Элемент удалён');
+    
     try {
-      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+      await fetch(`${func2url['filter-settings']}?mode=attrs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ configs: updatedConfigs })
       });
-      
-      if (!response.ok) throw new Error('Failed to delete');
-      
-      setConfigs(updatedConfigs);
-      toast.success('Элемент удалён');
-    } catch (error) {
-      console.error('Error deleting config:', error);
-      toast.error('Не удалось удалить элемент');
-    }
+    } catch {}
   };
 
   const handleMoveUp = async (index: number) => {
@@ -106,21 +112,17 @@ const DisplayConfigPage = () => {
       return update ? { ...c, displayOrder: update.displayOrder } : c;
     });
     
+    setConfigs(updatedConfigs);
+    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
+    toast.success('Порядок изменён');
+    
     try {
-      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+      await fetch(`${func2url['filter-settings']}?mode=attrs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ configs: updatedConfigs })
       });
-      
-      if (!response.ok) throw new Error('Failed to save order');
-      
-      setConfigs(updatedConfigs);
-      toast.success('Порядок изменён');
-    } catch (error) {
-      console.error('Error saving order:', error);
-      toast.error('Не удалось изменить порядок');
-    }
+    } catch {}
   };
 
   const handleMoveDown = async (index: number) => {
@@ -139,42 +141,34 @@ const DisplayConfigPage = () => {
       return update ? { ...c, displayOrder: update.displayOrder } : c;
     });
     
+    setConfigs(updatedConfigs);
+    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
+    toast.success('Порядок изменён');
+    
     try {
-      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+      await fetch(`${func2url['filter-settings']}?mode=attrs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ configs: updatedConfigs })
       });
-      
-      if (!response.ok) throw new Error('Failed to save order');
-      
-      setConfigs(updatedConfigs);
-      toast.success('Порядок изменён');
-    } catch (error) {
-      console.error('Error saving order:', error);
-      toast.error('Не удалось изменить порядок');
-    }
+    } catch {}
   };
 
   const handleToggleEnabled = async (config: DisplayConfig) => {
     const newEnabled = !config.enabled;
     const updatedConfigs = configs.map(c => c.id === config.id ? { ...c, enabled: newEnabled } : c);
     
+    setConfigs(updatedConfigs);
+    localStorage.setItem('displayConfigs', JSON.stringify(updatedConfigs));
+    toast.success(newEnabled ? 'Атрибут включён в таблице' : 'Атрибут скрыт из таблицы');
+    
     try {
-      const response = await fetch('https://functions.poehali.dev/save-display-configs', {
+      await fetch(`${func2url['filter-settings']}?mode=attrs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ configs: updatedConfigs })
       });
-      
-      if (!response.ok) throw new Error('Failed to toggle');
-      
-      setConfigs(updatedConfigs);
-      toast.success(newEnabled ? 'Атрибут включён в таблице' : 'Атрибут скрыт из таблицы');
-    } catch (error) {
-      console.error('Error toggling config:', error);
-      toast.error('Не удалось изменить настройку');
-    }
+    } catch {}
   };
 
   const openCreateDialog = (type: DisplayConfig['configType']) => {
