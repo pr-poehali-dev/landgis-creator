@@ -24,6 +24,8 @@ type BackendConfig = {
   displayOrder: number;
   visibleInTable: boolean;
   visibleRoles: string[];
+  formatType?: string;
+  formatOptions?: { options?: string[] } | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -38,6 +40,8 @@ function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
     visibleRoles: backend.visibleRoles,
     enabled: backend.visibleInTable,
     settings: {},
+    formatType: backend.formatType as any,
+    formatOptions: backend.formatOptions,
     createdAt: backend.createdAt,
     updatedAt: backend.updatedAt
   };
@@ -50,6 +54,8 @@ function mapFrontendToBackend(frontend: Partial<DisplayConfig>) {
   if (frontend.displayOrder !== undefined) result.displayOrder = frontend.displayOrder;
   if (frontend.enabled !== undefined) result.visibleInTable = frontend.enabled;
   if (frontend.visibleRoles !== undefined) result.visibleRoles = frontend.visibleRoles;
+  if (frontend.formatType !== undefined) result.formatType = frontend.formatType;
+  if (frontend.formatOptions !== undefined) result.formatOptions = frontend.formatOptions;
   return result;
 }
 

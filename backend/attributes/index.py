@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 def handler(event: dict, context) -> dict:
-    '''API для управления настройками атрибутов объектов'''
+    '''API для управления настройками атрибутов объектов с форматами'''
     
     method = event.get('httpMethod', 'GET')
     path = event.get('requestContext', {}).get('http', {}).get('path', '')
@@ -53,7 +53,8 @@ def get_configs(conn):
         cur.execute('''
             SELECT id, attribute_key as "attributeKey", display_name as "displayName",
                    display_order as "displayOrder", visible_in_table as "visibleInTable",
-                   visible_roles as "visibleRoles", created_at as "createdAt", 
+                   visible_roles as "visibleRoles", format_type as "formatType",
+                   format_options as "formatOptions", created_at as "createdAt", 
                    updated_at as "updatedAt"
             FROM t_p78972315_landgis_creator.attribute_config
             ORDER BY display_order, id
@@ -78,6 +79,8 @@ def create_or_update_config(conn, event):
     display_order = body.get('displayOrder', 0)
     visible_in_table = body.get('visibleInTable', False)
     visible_roles = body.get('visibleRoles', ['admin'])
+    format_type = body.get('formatType', 'text')
+    format_options = body.get('formatOptions')
     
     if not attribute_key or not display_name:
         return error_response('attributeKey and displayName are required', 400)
@@ -85,18 +88,21 @@ def create_or_update_config(conn, event):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute('''
             INSERT INTO t_p78972315_landgis_creator.attribute_config 
-            (attribute_key, display_name, display_order, visible_in_table, visible_roles)
-            VALUES (%s, %s, %s, %s, %s)
+            (attribute_key, display_name, display_order, visible_in_table, visible_roles, format_type, format_options)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (attribute_key) DO UPDATE SET
                 display_name = EXCLUDED.display_name,
                 display_order = EXCLUDED.display_order,
                 visible_in_table = EXCLUDED.visible_in_table,
                 visible_roles = EXCLUDED.visible_roles,
+                format_type = EXCLUDED.format_type,
+                format_options = EXCLUDED.format_options,
                 updated_at = CURRENT_TIMESTAMP
             RETURNING id, attribute_key as "attributeKey", display_name as "displayName",
                       display_order as "displayOrder", visible_in_table as "visibleInTable",
-                      visible_roles as "visibleRoles"
-        ''', (attribute_key, display_name, display_order, visible_in_table, visible_roles))
+                      visible_roles as "visibleRoles", format_type as "formatType",
+                      format_options as "formatOptions"
+        ''', (attribute_key, display_name, display_order, visible_in_table, visible_roles, format_type, json.dumps(format_options) if format_options else None))
         
         config = cur.fetchone()
     
@@ -132,6 +138,12 @@ def update_config(conn, event):
     if 'visibleRoles' in body:
         updates.append('visible_roles = %s')
         params.append(body['visibleRoles'])
+    if 'formatType' in body:
+        updates.append('format_type = %s')
+        params.append(body['formatType'])
+    if 'formatOptions' in body:
+        updates.append('format_options = %s')
+        params.append(json.dumps(body['formatOptions']) if body['formatOptions'] else None)
     
     if not updates:
         return error_response('No fields to update', 400)
@@ -146,7 +158,8 @@ def update_config(conn, event):
             WHERE attribute_key = %s
             RETURNING id, attribute_key as "attributeKey", display_name as "displayName",
                       display_order as "displayOrder", visible_in_table as "visibleInTable",
-                      visible_roles as "visibleRoles"
+                      visible_roles as "visibleRoles", format_type as "formatType",
+                      format_options as "formatOptions"
         ''', params)
         
         config = cur.fetchone()
