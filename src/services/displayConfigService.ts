@@ -144,8 +144,37 @@ export const displayConfigService = {
     return saved ? JSON.parse(saved) : [];
   },
 
-  // Сохранение конфига в localStorage
+  // Сохранение конфига в localStorage + синхронизация между доменами через BroadcastChannel
   saveLocalConfigs(configs: DisplayConfig[]): void {
     localStorage.setItem('displayConfigs', JSON.stringify(configs));
+    
+    // Отправляем событие для синхронизации между вкладками
+    try {
+      const channel = new BroadcastChannel('display_configs_sync');
+      channel.postMessage({ type: 'update', configs });
+      channel.close();
+    } catch (e) {
+      // BroadcastChannel не поддерживается
+    }
+  },
+
+  // Подписка на изменения конфига
+  subscribeToUpdates(callback: (configs: DisplayConfig[]) => void): () => void {
+    try {
+      const channel = new BroadcastChannel('display_configs_sync');
+      const handler = (event: MessageEvent) => {
+        if (event.data.type === 'update') {
+          localStorage.setItem('displayConfigs', JSON.stringify(event.data.configs));
+          callback(event.data.configs);
+        }
+      };
+      channel.addEventListener('message', handler);
+      return () => {
+        channel.removeEventListener('message', handler);
+        channel.close();
+      };
+    } catch (e) {
+      return () => {};
+    }
   },
 };

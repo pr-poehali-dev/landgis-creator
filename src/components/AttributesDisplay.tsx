@@ -34,22 +34,40 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
 
   const loadConfigs = async () => {
     try {
-      // Сначала пробуем загрузить из localStorage
-      const localConfigs = displayConfigService.getLocalConfigs();
-      console.log('AttributesDisplay: Loaded configs from localStorage:', localConfigs.length);
+      // Используем те же дефолтные данные, что и в DisplayConfig
+      const defaultConfigs: DisplayConfig[] = [
+        { id: 12, configType: 'attribute', configKey: 'ID', displayName: 'ID', displayOrder: 0, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 26, configType: 'attribute', configKey: 'test_attr', displayName: 'Test Attribute', displayOrder: 1, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 3, configType: 'attribute', configKey: 'prava', displayName: 'Права', displayOrder: 2, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 1, configType: 'attribute', configKey: 'name', displayName: 'Название', displayOrder: 3, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 2, configType: 'attribute', configKey: 'uchastok', displayName: 'Участок', displayOrder: 4, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 4, configType: 'attribute', configKey: 'ird', displayName: 'ИРД', displayOrder: 5, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 5, configType: 'attribute', configKey: 'grad_param', displayName: 'Градостроительные параметры', displayOrder: 6, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 6, configType: 'attribute', configKey: 'oks', displayName: 'Наличие ОКС', displayOrder: 7, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 7, configType: 'attribute', configKey: 'segment', displayName: 'Сегмент', displayOrder: 8, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 8, configType: 'attribute', configKey: 'ekspos', displayName: 'Экспозиция', displayOrder: 9, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 9, configType: 'attribute', configKey: 'date', displayName: 'Дата', displayOrder: 10, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 10, configType: 'attribute', configKey: 'status_publ', displayName: 'Статус публикации', displayOrder: 11, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 13, configType: 'attribute', configKey: 'id', displayName: 'Id', displayOrder: 12, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 14, configType: 'attribute', configKey: '_id', displayName: '_id', displayOrder: 13, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 15, configType: 'attribute', configKey: 'broker', displayName: 'Broker', displayOrder: 14, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 16, configType: 'attribute', configKey: 'insight', displayName: 'Insight', displayOrder: 15, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 17, configType: 'attribute', configKey: 'contacts', displayName: 'Contacts', displayOrder: 16, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 18, configType: 'attribute', configKey: 'pravoobl', displayName: 'Pravoobl', displayOrder: 17, visibleRoles: ['admin'], enabled: true, settings: {} },
+        { id: 19, configType: 'attribute', configKey: 'soinvest', displayName: 'Soinvest', displayOrder: 18, visibleRoles: ['admin'], enabled: false, settings: {} },
+        { id: 20, configType: 'attribute', configKey: 'str_soor', displayName: 'Str soor', displayOrder: 19, visibleRoles: ['admin'], enabled: false, settings: {} },
+        { id: 21, configType: 'attribute', configKey: 'telegram', displayName: 'Telegram', displayOrder: 20, visibleRoles: ['admin'], enabled: false, settings: {} },
+        { id: 22, configType: 'attribute', configKey: 'type_predl', displayName: 'Type predl', displayOrder: 21, visibleRoles: ['admin'], enabled: false, settings: {} },
+        { id: 23, configType: 'attribute', configKey: 'zareg_ogran', displayName: 'Zareg ogran', displayOrder: 22, visibleRoles: ['admin'], enabled: false, settings: {} },
+      ];
       
+      // Пробуем загрузить из localStorage (работает только на preview-домене)
+      const localConfigs = displayConfigService.getLocalConfigs();
       if (localConfigs.length > 0) {
-        // Сортируем по displayOrder
-        const sorted = [...localConfigs].sort((a, b) => a.displayOrder - b.displayOrder);
-        console.log('AttributesDisplay: First 5 configs:', sorted.slice(0, 5).map(c => ({ key: c.configKey, order: c.displayOrder, enabled: c.enabled })));
-        setConfigs(sorted);
-        setIsLoading(false);
-        return;
+        setConfigs(localConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+      } else {
+        setConfigs(defaultConfigs);
       }
-
-      // Если нет в localStorage — пробуем API
-      const allConfigs = await displayConfigService.getConfigs('attribute');
-      setConfigs(allConfigs);
     } catch (error) {
       console.error('Error loading display configs:', error);
     } finally {

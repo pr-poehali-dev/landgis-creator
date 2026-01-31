@@ -1,0 +1,8 @@
+{
+  "tests": [{
+    "name": "Get configs",
+    "method": "GET",
+    "path": "/",
+    "expectedStatus": 200
+  }]
+}

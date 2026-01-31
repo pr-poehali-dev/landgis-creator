@@ -24,15 +24,7 @@ const DisplayConfigPage = () => {
   const loadConfigs = async () => {
     setIsLoading(true);
     try {
-      // Сначала проверяем localStorage
-      const savedConfigs = localStorage.getItem('displayConfigs');
-      if (savedConfigs) {
-        setConfigs(JSON.parse(savedConfigs));
-        setIsLoading(false);
-        return;
-      }
-
-      // Если нет в localStorage — загружаем дефолтные данные
+      // Загружаем дефолтные данные
       const mockData: DisplayConfig[] = [
         { id: 12, configType: 'attribute', configKey: 'ID', displayName: 'ID', displayOrder: 0, visibleRoles: ['admin'], enabled: true, settings: {} },
         { id: 26, configType: 'attribute', configKey: 'test_attr', displayName: 'Test Attribute', displayOrder: 1, visibleRoles: ['admin'], enabled: true, settings: {} },
@@ -58,8 +50,17 @@ const DisplayConfigPage = () => {
         { id: 22, configType: 'attribute', configKey: 'type_predl', displayName: 'Type predl', displayOrder: 21, visibleRoles: ['admin'], enabled: false, settings: {} },
         { id: 23, configType: 'attribute', configKey: 'zareg_ogran', displayName: 'Zareg ogran', displayOrder: 22, visibleRoles: ['admin'], enabled: false, settings: {} },
       ];
-      setConfigs(mockData);
-      localStorage.setItem('displayConfigs', JSON.stringify(mockData));
+      
+      // Проверяем localStorage - если там есть данные, merge с дефолтными
+      const savedConfigs = localStorage.getItem('displayConfigs');
+      if (savedConfigs) {
+        const parsed: DisplayConfig[] = JSON.parse(savedConfigs);
+        // Используем сохранённый порядок и настройки
+        setConfigs(parsed);
+      } else {
+        setConfigs(mockData);
+        localStorage.setItem('displayConfigs', JSON.stringify(mockData));
+      }
     } catch (error) {
       console.error('Error loading configs:', error);
     } finally {
