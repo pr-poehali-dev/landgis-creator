@@ -82,8 +82,14 @@ export const displayConfigService = {
   },
 
   async updateConfig(id: number, config: Partial<DisplayConfig>): Promise<DisplayConfig> {
+    const allConfigs = await this.getConfigs();
+    const existingConfig = allConfigs.find(c => c.id === id);
+    if (!existingConfig) {
+      throw new Error('Config not found');
+    }
+    
     const backendData = mapFrontendToBackend(config);
-    backendData.attributeKey = config.configKey;
+    backendData.attributeKey = config.configKey || existingConfig.configKey;
     
     const response = await fetch(API_URL, {
       method: 'PUT',
@@ -118,7 +124,7 @@ export const displayConfigService = {
     for (const update of updates) {
       const config = allConfigs.find(c => c.id === update.id);
       if (config) {
-        await this.updateConfig(update.id, { displayOrder: update.displayOrder, configKey: config.configKey });
+        await this.updateConfig(update.id, { displayOrder: update.displayOrder });
       }
     }
   },
