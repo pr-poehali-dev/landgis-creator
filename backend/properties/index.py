@@ -27,6 +27,17 @@ def handler(event: dict, context) -> dict:
         
         conn = psycopg2.connect(dsn)
         
+        # Check if this is a config request
+        path = event.get('path', '')
+        if '/config' in path or event.get('queryStringParameters', {}).get('type') == 'config':
+            if method == 'GET':
+                return get_attribute_configs(conn)
+            elif method == 'PUT':
+                body = json.loads(event.get('body', '{}'))
+                return update_attribute_config(conn, body)
+            else:
+                return error_response('Method not allowed', 405)
+        
         if method == 'GET':
             return get_properties(conn)
         elif method == 'POST':
@@ -167,3 +178,64 @@ def error_response(message, status_code=400):
         'body': json.dumps({'error': message}),
         'isBase64Encoded': False
     }
+
+def get_attribute_configs(conn):
+    '''Получить настройки отображения атрибутов'''
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute('''
+            SELECT id, attribute_key as "attributeKey", display_name as "displayName",
+                   display_order as "displayOrder", visible_in_table as "visibleInTable",
+                   visible_roles as "visibleRoles", created_at as "createdAt", 
+                   updated_at as "updatedAt"
+            FROM t_p78972315_landgis_creator.attribute_config
+            ORDER BY display_order, id
+        ''')
+        configs = cur.fetchall()
+    
+    return success_response(configs)
+
+def update_attribute_config(conn, data):
+    '''Обновить настройки атрибута'''
+    attribute_key = data.get('attributeKey')
+    if not attribute_key:
+        return error_response('attributeKey is required', 400)
+    
+    updates = []
+    params = []
+    
+    if 'displayName' in data:
+        updates.append('display_name = %s')
+        params.append(data['displayName'])
+    if 'displayOrder' in data:
+        updates.append('display_order = %s')
+        params.append(data['displayOrder'])
+    if 'visibleInTable' in data:
+        updates.append('visible_in_table = %s')
+        params.append(data['visibleInTable'])
+    if 'visibleRoles' in data:
+        updates.append('visible_roles = %s')
+        params.append(data['visibleRoles'])
+    
+    if not updates:
+        return error_response('No fields to update', 400)
+    
+    updates.append('updated_at = CURRENT_TIMESTAMP')
+    params.append(attribute_key)
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        query = f'''
+            UPDATE t_p78972315_landgis_creator.attribute_config
+            SET {', '.join(updates)}
+            WHERE attribute_key = %s
+            RETURNING id, attribute_key as "attributeKey", display_name as "displayName",
+                      display_order as "displayOrder", visible_in_table as "visibleInTable",
+                      visible_roles as "visibleRoles"
+        '''
+        cur.execute(query, params)
+        config = cur.fetchone()
+        conn.commit()
+    
+    if not config:
+        return error_response('Config not found', 404)
+    
+    return success_response(config)

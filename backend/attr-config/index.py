@@ -5,9 +5,7 @@ from psycopg2.extras import RealDictCursor
 
 def handler(event: dict, context) -> dict:
     '''API для управления настройками атрибутов объектов'''
-    
     method = event.get('httpMethod', 'GET')
-    path = event.get('requestContext', {}).get('http', {}).get('path', '')
     
     if method == 'OPTIONS':
         return {
@@ -15,25 +13,23 @@ def handler(event: dict, context) -> dict:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type'
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Max-Age': '86400'
             },
             'body': '',
             'isBase64Encoded': False
         }
     
-    dsn = os.environ.get('DATABASE_URL')
-    if not dsn:
-        return error_response('DATABASE_URL not configured', 500)
-    
     try:
+        dsn = os.environ.get('DATABASE_URL')
+        if not dsn:
+            return error_response('DATABASE_URL not configured', 500)
+        
         conn = psycopg2.connect(dsn)
-        conn.set_session(autocommit=True)
         
         if method == 'GET':
             return get_configs(conn)
         elif method == 'POST':
-            if '/rename' in path:
-                return rename_attribute_key(conn, event)
             return create_or_update_config(conn, event)
         elif method == 'PUT':
             return update_config(conn, event)
@@ -41,11 +37,10 @@ def handler(event: dict, context) -> dict:
             return delete_config(conn, event)
         else:
             return error_response('Method not allowed', 405)
-            
     except Exception as e:
         return error_response(str(e), 500)
     finally:
-        if conn:
+        if 'conn' in locals():
             conn.close()
 
 def get_configs(conn):
@@ -99,6 +94,7 @@ def create_or_update_config(conn, event):
         ''', (attribute_key, display_name, display_order, visible_in_table, visible_roles))
         
         config = cur.fetchone()
+        conn.commit()
     
     return {
         'statusCode': 200,
@@ -140,16 +136,17 @@ def update_config(conn, event):
     params.append(attribute_key)
     
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute(f'''
+        query = f'''
             UPDATE t_p78972315_landgis_creator.attribute_config
             SET {', '.join(updates)}
             WHERE attribute_key = %s
             RETURNING id, attribute_key as "attributeKey", display_name as "displayName",
                       display_order as "displayOrder", visible_in_table as "visibleInTable",
                       visible_roles as "visibleRoles"
-        ''', params)
-        
+        '''
+        cur.execute(query, params)
         config = cur.fetchone()
+        conn.commit()
     
     if not config:
         return error_response('Config not found', 404)
@@ -176,6 +173,7 @@ def delete_config(conn, event):
             DELETE FROM t_p78972315_landgis_creator.attribute_config
             WHERE attribute_key = %s
         ''', (attribute_key,))
+        conn.commit()
     
     return {
         'statusCode': 200,
@@ -184,50 +182,6 @@ def delete_config(conn, event):
             'Access-Control-Allow-Origin': '*'
         },
         'body': json.dumps({'message': 'Config deleted'}),
-        'isBase64Encoded': False
-    }
-
-def rename_attribute_key(conn, event):
-    '''Переименовывает ключ атрибута во всех объектах БД и в конфигурации'''
-    
-    body = json.loads(event.get('body', '{}'))
-    old_key = body.get('oldKey')
-    new_key = body.get('newKey')
-    
-    if not old_key or not new_key:
-        return error_response('oldKey and newKey are required', 400)
-    
-    if old_key == new_key:
-        return error_response('Keys are the same', 400)
-    
-    with conn.cursor() as cur:
-        cur.execute('''
-            UPDATE t_p78972315_landgis_creator.properties
-            SET attributes = attributes - %s || jsonb_build_object(%s, attributes->%s)
-            WHERE attributes ? %s
-        ''', (old_key, new_key, old_key, old_key))
-        
-        affected_properties = cur.rowcount
-        
-        cur.execute('''
-            UPDATE t_p78972315_landgis_creator.attribute_config
-            SET attribute_key = %s, updated_at = CURRENT_TIMESTAMP
-            WHERE attribute_key = %s
-        ''', (new_key, old_key))
-        
-        affected_configs = cur.rowcount
-    
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps({
-            'message': 'Attribute key renamed successfully',
-            'affectedProperties': affected_properties,
-            'affectedConfigs': affected_configs
-        }),
         'isBase64Encoded': False
     }
 
