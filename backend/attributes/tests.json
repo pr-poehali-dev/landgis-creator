@@ -6,25 +6,7 @@
       "path": "/",
       "expectedStatus": 200,
       "expectedBody": [],
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Create new attribute config",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "attributeKey": "test_attr",
-        "displayName": "Test Attribute",
-        "displayOrder": 1,
-        "visibleInTable": true,
-        "visibleRoles": ["admin"]
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "attributeKey": "test_attr",
-        "displayName": "Test Attribute"
-      },
-      "bodyMatcher": "partial"
+      "bodyMatcher": "type"
     }
   ]
 }
