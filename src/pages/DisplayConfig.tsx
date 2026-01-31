@@ -92,36 +92,26 @@ const DisplayConfigPage = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!editingConfig) return;
 
-    try {
-      if (editingConfig.id) {
-        await displayConfigService.updateConfig(editingConfig.id, editingConfig);
-        toast.success('Настройки сохранены');
-      } else {
-        await displayConfigService.createConfig(editingConfig);
-        toast.success('Элемент создан');
-      }
-      setIsDialogOpen(false);
-      loadConfigs();
-    } catch (error) {
-      console.error('Error saving config:', error);
-      toast.error('Не удалось сохранить');
+    if (editingConfig.id) {
+      // Обновление существующего атрибута
+      setConfigs(configs.map(c => c.id === editingConfig.id ? editingConfig : c));
+      toast.success('Настройки сохранены');
+    } else {
+      // Создание нового атрибута
+      const newConfig = { ...editingConfig, id: Date.now() };
+      setConfigs([...configs, newConfig]);
+      toast.success('Элемент создан');
     }
+    setIsDialogOpen(false);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (!confirm('Удалить этот элемент?')) return;
-
-    try {
-      await displayConfigService.deleteConfig(id);
-      toast.success('Элемент удалён');
-      loadConfigs();
-    } catch (error) {
-      console.error('Error deleting config:', error);
-      toast.error('Не удалось удалить');
-    }
+    setConfigs(configs.filter(c => c.id !== id));
+    toast.success('Элемент удалён');
   };
 
   const handleMoveUp = (index: number) => {
