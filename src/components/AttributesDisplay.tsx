@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { displayConfigService, DisplayConfig } from '@/services/displayConfigService';
+import { DisplayConfig } from '@/services/displayConfigService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import func2url from '../../backend/func2url.json';
-import { DEFAULT_DISPLAY_CONFIGS } from '@/config/defaultDisplayConfigs';
 
 interface AttributesDisplayProps {
   attributes?: Record<string, any>;
@@ -19,13 +18,13 @@ interface AttributesDisplayProps {
 
 const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttributesUpdate }: AttributesDisplayProps) => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfigMode, setIsConfigMode] = useState(false);
   const [editedAttributes, setEditedAttributes] = useState<Record<string, any>>({});
 
   useEffect(() => {
     loadConfigs();
-  }, []);
+  }, [attributes]);
 
   useEffect(() => {
     if (attributes) {
@@ -33,28 +32,43 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
     }
   }, [attributes]);
 
-  const loadConfigs = async () => {
-    try {
-      // Пробуем API
-      try {
-        const response = await fetch(`${func2url['filter-settings']}?mode=attrs`);
-        if (response.ok) {
-          const data = await response.json();
-          setConfigs(data.sort((a: DisplayConfig, b: DisplayConfig) => a.displayOrder - b.displayOrder));
-          return;
-        }
-      } catch {}
-      
-      // Fallback: localStorage
-      const saved = localStorage.getItem('displayConfigs');
-      if (saved) {
-        setConfigs(JSON.parse(saved));
-      } else {
-        setConfigs(JSON.parse(JSON.stringify(DEFAULT_DISPLAY_CONFIGS)));
-      }
-    } finally {
-      setIsLoading(false);
+  const loadConfigs = () => {
+    if (!attributes) return;
+    
+    const saved = localStorage.getItem('attributeConfigs');
+    let savedConfigs: Record<string, DisplayConfig> = {};
+    
+    if (saved) {
+      savedConfigs = JSON.parse(saved);
     }
+    
+    const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
+    const newConfigs: DisplayConfig[] = attributeKeys.map((key, index) => {
+      const existing = savedConfigs[key];
+      return existing || {
+        id: Date.now() + index,
+        configType: 'attribute',
+        configKey: key,
+        displayName: key,
+        displayOrder: index,
+        visibleRoles: ['admin'],
+        enabled: true,
+        settings: {},
+        formatType: 'text'
+      };
+    });
+    
+    setConfigs(newConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+  };
+
+  const saveConfigs = () => {
+    const configsMap: Record<string, DisplayConfig> = {};
+    configs.forEach(c => {
+      configsMap[c.configKey] = c;
+    });
+    localStorage.setItem('attributeConfigs', JSON.stringify(configsMap));
+    toast.success('Настройки сохранены для всех объектов');
+    setIsConfigMode(false);
   };
 
   const handleSave = async () => {
@@ -70,9 +84,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
         body: JSON.stringify({ attributes: editedAttributes }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update attributes');
-      }
+      if (!response.ok) throw new Error('Failed to update attributes');
 
       toast.success('Атрибуты сохранены');
       setIsEditing(false);
@@ -98,35 +110,38 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
     }));
   };
 
+  const handleConfigChange = (index: number, field: keyof DisplayConfig, value: any) => {
+    const newConfigs = [...configs];
+    newConfigs[index] = { ...newConfigs[index], [field]: value };
+    setConfigs(newConfigs);
+  };
+
+  const moveConfig = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === configs.length - 1)
+    ) return;
+
+    const newConfigs = [...configs];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newConfigs[index], newConfigs[targetIndex]] = [newConfigs[targetIndex], newConfigs[index]];
+    
+    newConfigs.forEach((c, i) => {
+      c.displayOrder = i;
+    });
+    
+    setConfigs(newConfigs);
+  };
+
+  const toggleConfigEnabled = (index: number) => {
+    const newConfigs = [...configs];
+    newConfigs[index].enabled = !newConfigs[index].enabled;
+    setConfigs(newConfigs);
+  };
+
   if (!attributes || Object.keys(attributes).length === 0) {
     return <div className="text-sm text-muted-foreground">Нет атрибутов</div>;
   }
-
-  if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Загрузка...</div>;
-  }
-
-  const enabledConfigs = configs
-    .filter(c => c.enabled && displayConfigService.isVisibleForRole(c, userRole))
-    .sort((a, b) => a.displayOrder - b.displayOrder);
-
-  const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
-  
-  const orderedKeys = [
-    ...enabledConfigs
-      .map(c => c.configKey)
-      .filter(key => attributeKeys.includes(key)),
-    ...attributeKeys.filter(key => !enabledConfigs.find(c => c.configKey === key))
-  ];
-
-  const getDisplayName = (key: string): string => {
-    const config = configs.find(c => c.configKey === key);
-    return config?.displayName || key;
-  };
-
-  const getConfig = (key: string): DisplayConfig | undefined => {
-    return configs.find(c => c.configKey === key);
-  };
 
   const formatValue = (value: any, formatType?: string): string => {
     if (value === null || value === undefined) return '—';
@@ -219,19 +234,134 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
   };
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
+  const enabledConfigs = configs.filter(c => c.enabled);
+
+  if (isConfigMode) {
+    return (
+      <>
+        <div className="flex justify-between items-center mb-4 pb-2 border-b">
+          <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                loadConfigs();
+                setIsConfigMode(false);
+              }}
+            >
+              <Icon name="X" size={16} className="mr-2" />
+              Отмена
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={saveConfigs}
+            >
+              <Icon name="Check" size={16} className="mr-2" />
+              Сохранить
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {configs.map((config, index) => (
+            <div key={config.id} className="border rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={config.enabled}
+                    onCheckedChange={() => toggleConfigEnabled(index)}
+                  />
+                  <Input
+                    value={config.displayName}
+                    onChange={(e) => handleConfigChange(index, 'displayName', e.target.value)}
+                    className="text-sm w-40"
+                    placeholder="Название"
+                  />
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveConfig(index, 'up')}
+                    disabled={index === 0}
+                  >
+                    <Icon name="ChevronUp" size={16} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveConfig(index, 'down')}
+                    disabled={index === configs.length - 1}
+                  >
+                    <Icon name="ChevronDown" size={16} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Select
+                    value={config.formatType || 'text'}
+                    onValueChange={(value) => handleConfigChange(index, 'formatType', value)}
+                  >
+                    <SelectTrigger className="text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text">Текст</SelectItem>
+                      <SelectItem value="textarea">Многострочный текст</SelectItem>
+                      <SelectItem value="number">Число</SelectItem>
+                      <SelectItem value="money">Денежная сумма</SelectItem>
+                      <SelectItem value="boolean">Да/Нет</SelectItem>
+                      <SelectItem value="select">Выпадающий список</SelectItem>
+                      <SelectItem value="date">Дата</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {config.formatType === 'select' && (
+                <Input
+                  value={config.formatOptions?.options?.join(', ') || ''}
+                  onChange={(e) => {
+                    const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
+                    handleConfigChange(index, 'formatOptions', { options });
+                  }}
+                  placeholder="Варианты через запятую"
+                  className="text-xs"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
         {!isEditing ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
-            <Icon name="Pencil" size={16} className="mr-2" />
-            Редактировать
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsConfigMode(true)}
+            >
+              <Icon name="Settings" size={16} className="mr-2" />
+              Настроить
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+            >
+              <Icon name="Pencil" size={16} className="mr-2" />
+              Редактировать
+            </Button>
+          </>
         ) : (
           <>
             <Button
@@ -254,20 +384,19 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
         )}
       </div>
 
-      {orderedKeys.map((key) => {
-        const value = displayAttributes?.[key];
-        const config = getConfig(key);
+      {enabledConfigs.map((config) => {
+        const value = displayAttributes?.[config.configKey];
 
         return (
-          <div key={key} className="pb-3 border-b border-border last:border-0">
+          <div key={config.id} className="pb-3 border-b border-border last:border-0">
             <p className="text-xs font-semibold text-primary mb-1">
-              {getDisplayName(key)}
+              {config.displayName}
             </p>
             {isEditing ? (
-              renderEditField(key, value, config)
+              renderEditField(config.configKey, value, config)
             ) : (
               <p className="text-sm text-foreground break-words whitespace-pre-wrap">
-                {formatValue(value, config?.formatType)}
+                {formatValue(value, config.formatType)}
               </p>
             )}
           </div>
