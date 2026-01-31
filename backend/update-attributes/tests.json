@@ -1,6 +1,14 @@
 {
   "tests": [
     {
+      "name": "Get attribute configs",
+      "method": "GET",
+      "path": "/?type=config",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "type"
+    },
+    {
       "name": "Update property attributes",
       "method": "PUT",
       "path": "/?id=1",

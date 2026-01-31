@@ -1,6 +1,6 @@
 import func2url from '../../backend/func2url.json';
 
-const API_URL = func2url['attr-config'] || '';
+const API_URL = func2url['update-attributes'] ? `${func2url['update-attributes']}?type=config` : '';
 
 export interface DisplayConfig {
   id: number;
@@ -56,7 +56,7 @@ function mapFrontendToBackend(frontend: Partial<DisplayConfig>) {
 export const displayConfigService = {
   async getConfigs(type?: string): Promise<DisplayConfig[]> {
     if (!API_URL) {
-      console.error('attr-config function not available');
+      console.error('update-attributes function not available');
       return [];
     }
     const response = await fetch(API_URL);
@@ -120,7 +120,7 @@ export const displayConfigService = {
 
   async batchUpdateOrder(updates: { id: number; displayOrder: number }[]): Promise<void> {
     if (!API_URL) {
-      throw new Error('attr-config function not available');
+      throw new Error('update-attributes function not available');
     }
     
     const response = await fetch(API_URL, {
