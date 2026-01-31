@@ -34,6 +34,15 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
 
   const loadConfigs = async () => {
     try {
+      // Сначала пробуем загрузить из localStorage
+      const localConfigs = displayConfigService.getLocalConfigs();
+      if (localConfigs.length > 0) {
+        setConfigs(localConfigs);
+        setIsLoading(false);
+        return;
+      }
+
+      // Если нет в localStorage — пробуем API
       const allConfigs = await displayConfigService.getConfigs('attribute');
       setConfigs(allConfigs);
     } catch (error) {

@@ -137,4 +137,15 @@ export const displayConfigService = {
   isVisibleForRole(config: DisplayConfig, userRole: string): boolean {
     return config.visibleRoles.includes(userRole);
   },
+
+  // Получение конфига из localStorage
+  getLocalConfigs(): DisplayConfig[] {
+    const saved = localStorage.getItem('displayConfigs');
+    return saved ? JSON.parse(saved) : [];
+  },
+
+  // Сохранение конфига в localStorage
+  saveLocalConfigs(configs: DisplayConfig[]): void {
+    localStorage.setItem('displayConfigs', JSON.stringify(configs));
+  },
 };
