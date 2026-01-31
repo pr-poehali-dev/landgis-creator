@@ -13,19 +13,15 @@ interface ConfigListHeaderProps {
 const ConfigListHeader = ({ activeTab, onTabChange, onCreateConfig, onExportConfig }: ConfigListHeaderProps) => {
   return (
     <>
-      <div className="mb-6 flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">Окно атрибутов</h2>
-          <p className="text-muted-foreground">
-            Настройте порядок отображения атрибутов и элементов на карточке объекта
-          </p>
-        </div>
-        {onExportConfig && (
-          <Button onClick={onExportConfig} variant="outline" size="sm">
-            <Icon name="Download" size={16} className="mr-2" />
-            Скопировать настройки
-          </Button>
-        )}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-2">Окно атрибутов</h2>
+        <p className="text-muted-foreground">
+          Настройте порядок отображения атрибутов и элементов на карточке объекта.
+          <br />
+          <span className="text-xs text-amber-600 font-medium">
+            ⚠️ Важно: Открывайте эту страницу на том же домене, где карта (например, preview--landgis-creator.poehali.dev/admin/display-config)
+          </span>
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={onTabChange} className="mb-6">
