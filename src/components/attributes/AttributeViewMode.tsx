@@ -112,6 +112,15 @@ const AttributeViewMode = ({
         const dataSource = isEditing ? (editedAttributes || attributes) : attributes;
         const value = dataSource?.[actualKey];
         
+        // Скрываем пустые атрибуты в режиме просмотра
+        if (!isEditing && config.formatType !== 'button') {
+          const isEmpty = value === undefined || value === null || value === '' || 
+                         (Array.isArray(value) && value.length === 0);
+          if (isEmpty) {
+            return null;
+          }
+        }
+        
         console.log('Rendering field:', { actualKey, value, isEditing, dataSource });
 
         return (
