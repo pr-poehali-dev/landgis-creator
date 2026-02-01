@@ -51,16 +51,9 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       const existingConfigKeys = new Set(savedConfigsArray.map(c => c.configKey));
       const existingOriginalKeys = new Set(savedConfigsArray.map(c => c.originalKey).filter(Boolean));
       
-      console.log('Saved configs:', savedConfigsArray);
-      console.log('Attribute keys:', attributeKeys);
-      console.log('Existing config keys:', Array.from(existingConfigKeys));
-      console.log('Existing original keys:', Array.from(existingOriginalKeys));
-      
       const newAttributeKeys = attributeKeys.filter(key => 
         !existingConfigKeys.has(key) && !existingOriginalKeys.has(key)
       );
-      
-      console.log('New attribute keys to add:', newAttributeKeys);
       
       const newConfigs: DisplayConfig[] = newAttributeKeys.map((key, index) => {
         const defaultConfig: DisplayConfig = {
