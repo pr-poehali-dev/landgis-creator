@@ -28,6 +28,36 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     loadConfigs();
   }, [attributes]);
 
+  const cleanupObsoleteAttributes = () => {
+    if (!attributes) return;
+    
+    const savedConfigs = localStorage.getItem('attributeConfigs');
+    if (!savedConfigs) return;
+    
+    const savedConfigsMap = JSON.parse(savedConfigs);
+    const actualKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
+    
+    let hasChanges = false;
+    const cleanedConfigs: Record<string, DisplayConfig> = {};
+    
+    Object.entries(savedConfigsMap).forEach(([key, config]) => {
+      const cfg = config as DisplayConfig;
+      if (actualKeys.includes(cfg.originalKey || cfg.configKey)) {
+        cleanedConfigs[key] = cfg;
+      } else {
+        hasChanges = true;
+      }
+    });
+    
+    if (hasChanges) {
+      localStorage.setItem('attributeConfigs', JSON.stringify(cleanedConfigs));
+      loadConfigs();
+      toast.success('Удалены атрибуты, которых больше нет в базе данных');
+    } else {
+      toast.info('Все атрибуты актуальны');
+    }
+  };
+
   useEffect(() => {
     if (attributes) {
       setEditedAttributes(attributes);
@@ -268,6 +298,15 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
         <div className="flex justify-between items-center mb-4 pb-2 border-b">
           <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
           <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={cleanupObsoleteAttributes}
+              title="Очистить атрибуты, которых больше нет в базе"
+            >
+              <Icon name="Trash2" size={16} className="mr-2" />
+              Очистка
+            </Button>
             <Button
               variant="outline"
               size="sm"
