@@ -12,7 +12,7 @@ export interface DisplayConfig {
   visibleRoles: string[];
   enabled: boolean;
   settings: Record<string, any>;
-  formatType?: 'text' | 'textarea' | 'number' | 'money' | 'boolean' | 'select' | 'date';
+  formatType?: 'text' | 'textarea' | 'number' | 'money' | 'boolean' | 'select' | 'multiselect' | 'date';
   formatOptions?: { options?: string[] } | null;
   createdAt?: string;
   updatedAt?: string;

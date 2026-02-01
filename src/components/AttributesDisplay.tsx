@@ -107,6 +107,14 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
           };
         }
         
+        if (key === 'segment') {
+          defaultConfig.formatType = 'multiselect';
+          defaultConfig.displayName = 'Сегмент';
+          defaultConfig.formatOptions = {
+            options: ['МПТ', 'Жилищное строительство', 'Коммерческая недвижимость', 'Инфраструктура']
+          };
+        }
+        
         return defaultConfig;
       });
       
@@ -133,6 +141,14 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
           defaultConfig.displayName = 'Регион';
           defaultConfig.formatOptions = {
             options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
+          };
+        }
+        
+        if (key === 'segment') {
+          defaultConfig.formatType = 'multiselect';
+          defaultConfig.displayName = 'Сегмент';
+          defaultConfig.formatOptions = {
+            options: ['МПТ', 'Жилищное строительство', 'Коммерческая недвижимость', 'Инфраструктура']
           };
         }
         

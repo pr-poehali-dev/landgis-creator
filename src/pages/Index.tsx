@@ -63,7 +63,20 @@ const Index = () => {
     const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          property.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'all' || property.type === filterType;
-    const matchesSegment = filterSegment === 'all' || property.segment === filterSegment;
+    
+    let matchesSegment = filterSegment === 'all';
+    if (!matchesSegment) {
+      const segmentValue = property.attributes?.segment;
+      if (Array.isArray(segmentValue)) {
+        matchesSegment = segmentValue.includes(filterSegment);
+      } else if (typeof segmentValue === 'string') {
+        matchesSegment = segmentValue === filterSegment || 
+                        segmentValue.split(',').map(s => s.trim()).includes(filterSegment);
+      } else {
+        matchesSegment = property.segment === filterSegment;
+      }
+    }
+    
     return matchesSearch && matchesType && matchesSegment;
   });
 
@@ -147,9 +160,10 @@ const Index = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все сегменты</SelectItem>
-                <SelectItem value="premium">Премиум</SelectItem>
-                <SelectItem value="standard">Стандарт</SelectItem>
-                <SelectItem value="economy">Эконом</SelectItem>
+                <SelectItem value="МПТ">МПТ</SelectItem>
+                <SelectItem value="Жилищное строительство">Жилищное строительство</SelectItem>
+                <SelectItem value="Коммерческая недвижимость">Коммерческая недвижимость</SelectItem>
+                <SelectItem value="Инфраструктура">Инфраструктура</SelectItem>
               </SelectContent>
             </Select>
           </div>

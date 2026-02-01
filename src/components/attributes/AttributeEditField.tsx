@@ -2,7 +2,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Icon from '@/components/ui/icon';
 import { DisplayConfig } from '@/services/displayConfigService';
+import { useState } from 'react';
 
 interface AttributeEditFieldProps {
   value: any;
@@ -22,9 +26,67 @@ export const formatValue = (value: any, formatType?: string): string => {
       return value ? 'Да' : 'Нет';
     case 'date':
       return new Date(value).toLocaleDateString('ru-RU');
+    case 'multiselect':
+      if (Array.isArray(value)) return value.join(', ');
+      if (typeof value === 'string' && value.includes(',')) return value;
+      return String(value);
     default:
       return String(value);
   }
+};
+
+const MultiselectField = ({ value, config, onValueChange }: AttributeEditFieldProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const options = config?.formatOptions?.options || [];
+  
+  const selectedValues = Array.isArray(value) 
+    ? value 
+    : (typeof value === 'string' && value ? value.split(',').map(v => v.trim()) : []);
+  
+  const toggleOption = (option: string) => {
+    const newValues = selectedValues.includes(option)
+      ? selectedValues.filter(v => v !== option)
+      : [...selectedValues, option];
+    onValueChange(JSON.stringify(newValues));
+  };
+  
+  const removeOption = (option: string) => {
+    const newValues = selectedValues.filter(v => v !== option);
+    onValueChange(JSON.stringify(newValues));
+  };
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {selectedValues.map(val => (
+          <Badge key={val} variant="secondary" className="flex items-center gap-1">
+            {val}
+            <button
+              onClick={() => removeOption(val)}
+              className="ml-1 hover:text-destructive"
+            >
+              <Icon name="X" size={12} />
+            </button>
+          </Badge>
+        ))}
+      </div>
+      <Select open={isOpen} onOpenChange={setIsOpen} value="" onValueChange={toggleOption}>
+        <SelectTrigger className="text-sm">
+          <SelectValue placeholder="Добавить значение..." />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option: string) => (
+            <SelectItem key={option} value={option}>
+              <div className="flex items-center gap-2">
+                {selectedValues.includes(option) && <Icon name="Check" size={14} />}
+                {option}
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 };
 
 const AttributeEditField = ({ value, config, onValueChange }: AttributeEditFieldProps) => {
@@ -78,6 +140,9 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
           </SelectContent>
         </Select>
       );
+    
+    case 'multiselect':
+      return <MultiselectField value={value} config={config} onValueChange={onValueChange} />;
     
     case 'date':
       return (
