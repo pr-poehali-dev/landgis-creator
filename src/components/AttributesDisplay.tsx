@@ -44,37 +44,73 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       savedConfigs = JSON.parse(saved);
     }
     
-    const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
-    const newConfigs: DisplayConfig[] = attributeKeys.map((key, index) => {
-      const existing = Object.values(savedConfigs).find(c => c.originalKey === key || c.configKey === key);
-      
-      if (existing) return existing;
-      
-      const defaultConfig: DisplayConfig = {
-        id: Date.now() + index,
-        configType: 'attribute',
-        configKey: key,
-        originalKey: key,
-        displayName: key,
-        displayOrder: index,
-        visibleRoles: ['admin'],
-        enabled: true,
-        settings: {},
-        formatType: 'text'
-      };
-      
-      if (key === 'region') {
-        defaultConfig.formatType = 'select';
-        defaultConfig.displayName = 'Регион';
-        defaultConfig.formatOptions = {
-          options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
-        };
-      }
-      
-      return defaultConfig;
-    });
+    const savedConfigsArray = Object.values(savedConfigs);
     
-    setConfigs(newConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+    if (savedConfigsArray.length > 0) {
+      const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
+      const existingConfigKeys = new Set(savedConfigsArray.map(c => c.configKey));
+      const existingOriginalKeys = new Set(savedConfigsArray.map(c => c.originalKey).filter(Boolean));
+      
+      const newAttributeKeys = attributeKeys.filter(key => 
+        !existingConfigKeys.has(key) && !existingOriginalKeys.has(key)
+      );
+      
+      const newConfigs: DisplayConfig[] = newAttributeKeys.map((key, index) => {
+        const defaultConfig: DisplayConfig = {
+          id: Date.now() + index,
+          configType: 'attribute',
+          configKey: key,
+          originalKey: key,
+          displayName: key,
+          displayOrder: savedConfigsArray.length + index,
+          visibleRoles: ['admin'],
+          enabled: true,
+          settings: {},
+          formatType: 'text'
+        };
+        
+        if (key === 'region') {
+          defaultConfig.formatType = 'select';
+          defaultConfig.displayName = 'Регион';
+          defaultConfig.formatOptions = {
+            options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
+          };
+        }
+        
+        return defaultConfig;
+      });
+      
+      const mergedConfigs = [...savedConfigsArray, ...newConfigs];
+      setConfigs(mergedConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+    } else {
+      const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
+      const newConfigs: DisplayConfig[] = attributeKeys.map((key, index) => {
+        const defaultConfig: DisplayConfig = {
+          id: Date.now() + index,
+          configType: 'attribute',
+          configKey: key,
+          originalKey: key,
+          displayName: key,
+          displayOrder: index,
+          visibleRoles: ['admin'],
+          enabled: true,
+          settings: {},
+          formatType: 'text'
+        };
+        
+        if (key === 'region') {
+          defaultConfig.formatType = 'select';
+          defaultConfig.displayName = 'Регион';
+          defaultConfig.formatOptions = {
+            options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
+          };
+        }
+        
+        return defaultConfig;
+      });
+      
+      setConfigs(newConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+    }
   };
 
   const saveConfigs = async () => {
