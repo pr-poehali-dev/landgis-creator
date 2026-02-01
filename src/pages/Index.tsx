@@ -12,6 +12,8 @@ import Icon from '@/components/ui/icon';
 import YandexMap from '@/components/YandexMap';
 import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDialog';
 import { propertyService, Property } from '@/services/propertyService';
+import RoleSwitcher from '@/components/admin/RoleSwitcher';
+import { UserRole } from '@/types/userRoles';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,6 +25,7 @@ const Index = () => {
   const [filterSegment, setFilterSegment] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
 
   useEffect(() => {
     loadProperties();
@@ -376,15 +379,16 @@ const Index = () => {
           </Tabs>
 
           <div className="flex gap-1.5">
-            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs px-2.5 gap-1.5" onClick={() => navigate('/admin')}>
+            <RoleSwitcher currentRole={currentUserRole} onRoleChange={setCurrentUserRole} />
+            <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={() => navigate('/admin')}>
               <Icon name="Database" size={14} />
               Админка
             </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs px-2.5 gap-1.5">
+            <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5">
               <Icon name="Filter" size={14} />
               Фильтры
             </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs px-2.5 gap-1.5">
+            <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5">
               <Icon name="Layers" size={14} />
               Слои
             </Button>
@@ -401,6 +405,7 @@ const Index = () => {
             selectedProperty={selectedProperty}
             onSelectProperty={setSelectedProperty}
             mapType={mapType}
+            userRole={currentUserRole}
           />
         </div>
 

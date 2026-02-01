@@ -24,6 +24,7 @@ interface YandexMapProps {
   selectedProperty: Property | null;
   onSelectProperty: (property: Property | null) => void;
   mapType: 'scheme' | 'hybrid';
+  userRole?: string;
 }
 
 declare global {
@@ -32,7 +33,7 @@ declare global {
   }
 }
 
-const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: YandexMapProps) => {
+const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, userRole = 'user1' }: YandexMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
@@ -253,6 +254,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType }: 
           <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
             <AttributesDisplay 
               attributes={selectedProperty.attributes}
+              userRole={userRole}
               featureId={selectedProperty.id}
               onAttributesUpdate={(updatedAttrs) => {
                 setSelectedProperty({

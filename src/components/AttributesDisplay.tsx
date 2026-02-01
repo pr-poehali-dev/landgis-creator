@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import func2url from '../../backend/func2url.json';
+import { UserRole, canAccessAttribute } from '@/types/userRoles';
 
 interface AttributesDisplayProps {
   attributes?: Record<string, any>;
@@ -16,7 +17,7 @@ interface AttributesDisplayProps {
   onAttributesUpdate?: (attributes: Record<string, any>) => void;
 }
 
-const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttributesUpdate }: AttributesDisplayProps) => {
+const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttributesUpdate }: AttributesDisplayProps) => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isConfigMode, setIsConfigMode] = useState(false);
@@ -234,7 +235,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
   };
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
-  const enabledConfigs = configs.filter(c => c.enabled);
+  const enabledConfigs = configs.filter(c => c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles));
 
   if (isConfigMode) {
     return (
@@ -319,6 +320,28 @@ const AttributesDisplay = ({ attributes, userRole = 'user', featureId, onAttribu
                       <SelectItem value="date">Дата</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Доступно для ролей:</label>
+                <div className="flex flex-wrap gap-1">
+                  {['admin', 'user1', 'user2', 'user3', 'user4'].map((role) => (
+                    <label key={role} className="flex items-center gap-1 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={config.visibleRoles.includes(role)}
+                        onChange={(e) => {
+                          const roles = e.target.checked
+                            ? [...config.visibleRoles, role]
+                            : config.visibleRoles.filter(r => r !== role);
+                          handleConfigChange(index, 'visibleRoles', roles);
+                        }}
+                        className="rounded"
+                      />
+                      <span>{role === 'admin' ? 'Админ' : role === 'user1' ? 'Free' : role === 'user2' ? 'Light' : role === 'user3' ? 'Max' : 'VIP'}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
