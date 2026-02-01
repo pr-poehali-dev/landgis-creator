@@ -36,8 +36,11 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
     case 'date':
       return new Date(value).toLocaleDateString('ru-RU');
     case 'multiselect':
-      if (Array.isArray(value)) return value.join(', ');
+      if (Array.isArray(value)) {
+        return value.length > 0 ? value.join(', ') : '—';
+      }
       if (typeof value === 'string' && value.includes(',')) return value;
+      if (typeof value === 'string' && value.trim() === '') return '—';
       return String(value);
     default:
       return String(value);
