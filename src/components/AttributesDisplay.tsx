@@ -87,6 +87,28 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
         savedConfigs['ID'].formatType = 'text';
         localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
       }
+      
+      // Автоматическое добавление атрибута "Статус МПТ" если его нет
+      if (!savedConfigs['status_mpt']) {
+        const maxOrder = Math.max(...Object.values(savedConfigs).map((c: any) => c.displayOrder || 0), 0);
+        savedConfigs['status_mpt'] = {
+          id: Date.now() + 9999,
+          configType: 'attribute',
+          configKey: 'status_mpt',
+          originalKey: 'status_mpt',
+          displayName: 'Статус МПТ',
+          displayOrder: maxOrder + 1,
+          visibleRoles: ['admin'],
+          enabled: true,
+          settings: {},
+          formatType: 'toggle',
+          formatOptions: {
+            trueLabel: 'Да',
+            falseLabel: 'Нет'
+          }
+        };
+        localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
+      }
     }
     
     const savedConfigsArray = Object.values(savedConfigs);
