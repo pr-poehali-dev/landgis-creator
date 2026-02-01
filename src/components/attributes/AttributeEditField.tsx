@@ -52,6 +52,13 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
         return value.includes(',') ? value : value;
       }
       return String(value);
+    case 'button':
+      try {
+        const buttonData = typeof value === 'string' ? JSON.parse(value) : value;
+        return buttonData?.text || 'Кнопка';
+      } catch {
+        return 'Кнопка';
+      }
     default:
       return String(value);
   }
@@ -264,6 +271,60 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
     
     case 'multiselect':
       return <MultiselectField value={value} config={config} onValueChange={onValueChange} />;
+    
+    case 'button':
+      const buttonActions = config?.formatOptions?.actions || ['Добавить в корзину', 'Добавить в избранное'];
+      const buttonText = config?.formatOptions?.text || 'Кнопка';
+      
+      // value содержит объект { text: string, action: string }
+      let buttonValue = { text: buttonText, action: buttonActions[0] };
+      try {
+        if (typeof value === 'string' && value) {
+          buttonValue = JSON.parse(value);
+        } else if (typeof value === 'object' && value !== null) {
+          buttonValue = value;
+        }
+      } catch {
+        // Используем дефолтные значения
+      }
+      
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Текст кнопки</label>
+            <Input
+              value={buttonValue.text || ''}
+              onChange={(e) => {
+                const newValue = { ...buttonValue, text: e.target.value };
+                onValueChange(JSON.stringify(newValue));
+              }}
+              placeholder="Введите текст"
+              className="text-sm"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">Действие</label>
+            <Select
+              value={buttonValue.action || buttonActions[0]}
+              onValueChange={(action) => {
+                const newValue = { ...buttonValue, action };
+                onValueChange(JSON.stringify(newValue));
+              }}
+            >
+              <SelectTrigger className="text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {buttonActions.map((action: string) => (
+                  <SelectItem key={action} value={action}>
+                    {action}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
     
     case 'date':
       return (

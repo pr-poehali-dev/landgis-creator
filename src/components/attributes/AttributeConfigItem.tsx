@@ -126,6 +126,12 @@ const AttributeConfigItem = ({
             if (value === 'toggle' && !config.formatOptions?.trueLabel) {
               onConfigChange(index, 'formatOptions', { trueLabel: 'Да', falseLabel: 'Нет' });
             }
+            if (value === 'button' && !config.formatOptions?.actions) {
+              onConfigChange(index, 'formatOptions', { 
+                text: 'Кнопка',
+                actions: ['Добавить в корзину', 'Добавить в избранное'] 
+              });
+            }
           }}
         >
           <SelectTrigger className="text-xs h-7">
@@ -140,6 +146,7 @@ const AttributeConfigItem = ({
             <SelectItem value="select">Выпадающий список</SelectItem>
             <SelectItem value="multiselect">Множественный выбор</SelectItem>
             <SelectItem value="date">Дата</SelectItem>
+            <SelectItem value="button">Кнопка</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -185,6 +192,77 @@ const AttributeConfigItem = ({
               <Icon name="Plus" size={12} className="mr-1" />
               Добавить вариант
             </Button>
+          </div>
+        </div>
+      )}
+
+      {config.formatType === 'button' && (
+        <div className="space-y-2">
+          <label className="text-[10px] text-muted-foreground mb-1 block">Настройки кнопки</label>
+          <div>
+            <label className="text-[10px] text-muted-foreground mb-0.5 block">Текст по умолчанию</label>
+            <Input
+              value={config.formatOptions?.text || 'Кнопка'}
+              onChange={(e) => {
+                onConfigChange(index, 'formatOptions', {
+                  ...config.formatOptions,
+                  text: e.target.value
+                });
+              }}
+              className="text-xs h-7"
+              placeholder="Текст кнопки"
+            />
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground mb-1 block">Доступные действия</label>
+            <div className="space-y-1.5">
+              {(config.formatOptions?.actions || []).map((action, actIndex) => (
+                <div key={actIndex} className="flex items-center gap-1.5">
+                  <Input
+                    value={action}
+                    onChange={(e) => {
+                      const newActions = [...(config.formatOptions?.actions || [])];
+                      newActions[actIndex] = e.target.value;
+                      onConfigChange(index, 'formatOptions', { 
+                        ...config.formatOptions,
+                        actions: newActions 
+                      });
+                    }}
+                    className="text-xs h-7 flex-1"
+                    placeholder={`Действие ${actIndex + 1}`}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-red-400 hover:text-red-300"
+                    onClick={() => {
+                      const newActions = (config.formatOptions?.actions || []).filter((_, i) => i !== actIndex);
+                      onConfigChange(index, 'formatOptions', { 
+                        ...config.formatOptions,
+                        actions: newActions 
+                      });
+                    }}
+                  >
+                    <Icon name="X" size={12} />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full h-7 text-xs"
+                onClick={() => {
+                  const newActions = [...(config.formatOptions?.actions || []), ''];
+                  onConfigChange(index, 'formatOptions', { 
+                    ...config.formatOptions,
+                    actions: newActions 
+                  });
+                }}
+              >
+                <Icon name="Plus" size={12} className="mr-1" />
+                Добавить действие
+              </Button>
+            </div>
           </div>
         </div>
       )}

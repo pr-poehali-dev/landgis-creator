@@ -121,6 +121,29 @@ const AttributeViewMode = ({
             </p>
             {isEditing ? (
               renderEditField(actualKey, value, config)
+            ) : config.formatType === 'button' ? (
+              (() => {
+                let buttonData = { text: 'Кнопка', action: 'Добавить в корзину' };
+                try {
+                  if (typeof value === 'string' && value) {
+                    buttonData = JSON.parse(value);
+                  } else if (typeof value === 'object' && value !== null) {
+                    buttonData = value;
+                  }
+                } catch {}
+                
+                return (
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      console.log('Button action:', buttonData.action);
+                      // Здесь будет логика действий
+                    }}
+                  >
+                    {buttonData.text}
+                  </Button>
+                );
+              })()
             ) : (
               <p className="text-sm text-foreground break-words whitespace-pre-wrap">
                 {formatValue(value, config.formatType, config.formatOptions)}
