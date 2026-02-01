@@ -39,8 +39,18 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
       if (Array.isArray(value)) {
         return value.length > 0 ? value.join(', ') : '—';
       }
-      if (typeof value === 'string' && value.includes(',')) return value;
-      if (typeof value === 'string' && value.trim() === '') return '—';
+      if (typeof value === 'string') {
+        if (value.trim() === '') return '—';
+        try {
+          const parsed = JSON.parse(value);
+          if (Array.isArray(parsed)) {
+            return parsed.length > 0 ? parsed.join(', ') : '—';
+          }
+        } catch {
+          // Если не JSON, возвращаем как есть
+        }
+        return value.includes(',') ? value : value;
+      }
       return String(value);
     default:
       return String(value);
