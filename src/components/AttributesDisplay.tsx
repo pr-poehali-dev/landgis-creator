@@ -65,14 +65,48 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     setConfigs(newConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
   };
 
-  const saveConfigs = () => {
+  const saveConfigs = async () => {
     const configsMap: Record<string, DisplayConfig> = {};
     configs.forEach(c => {
       configsMap[c.configKey] = c;
     });
     localStorage.setItem('attributeConfigs', JSON.stringify(configsMap));
+    
+    const renamedKeys = configs.filter(c => c.originalKey && c.originalKey !== c.configKey);
+    
+    if (renamedKeys.length > 0) {
+      for (const config of renamedKeys) {
+        try {
+          const response = await fetch(`${func2url['update-attributes']}?action=rename_key`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              oldKey: config.originalKey,
+              newKey: config.configKey
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Failed to rename ${config.originalKey} to ${config.configKey}`);
+          }
+          
+          const result = await response.json();
+          toast.success(`Ключ "${config.originalKey}" переименован в "${config.configKey}" (${result.affectedRows} объектов)`);
+          
+          config.originalKey = config.configKey;
+        } catch (error) {
+          console.error('Error renaming key:', error);
+          toast.error(`Не удалось переименовать ключ "${config.originalKey}"`);
+        }
+      }
+    }
+    
     toast.success('Настройки сохранены для всех объектов');
     setIsConfigMode(false);
+    
+    if (renamedKeys.length > 0 && onAttributesUpdate) {
+      window.location.reload();
+    }
   };
 
   const handleSave = async () => {
@@ -283,13 +317,20 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
                   />
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Ключ (БД)</label>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">
+                        Ключ
+                        {config.originalKey && config.originalKey !== config.configKey && (
+                          <span className="ml-1 text-orange-400" title={`Будет переименован из "${config.originalKey}"`}>
+                            (было: {config.originalKey})
+                          </span>
+                        )}
+                      </label>
                       <Input
-                        value={config.originalKey || config.configKey}
-                        disabled
-                        className="text-xs h-7 bg-muted cursor-not-allowed"
+                        value={config.configKey}
+                        onChange={(e) => handleConfigChange(index, 'configKey', e.target.value)}
+                        className="text-xs h-7"
                         placeholder="key_name"
-                        title="Ключ из базы данных (только для чтения)"
+                        title="Ключ атрибута в базе данных"
                       />
                     </div>
                     <div>

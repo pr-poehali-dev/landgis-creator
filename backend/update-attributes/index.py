@@ -28,6 +28,14 @@ def handler(event: dict, context) -> dict:
     try:
         conn = psycopg2.connect(dsn)
         
+        # Handle attribute key renaming
+        if query_params.get('action') == 'rename_key':
+            if method == 'POST':
+                body = json.loads(event.get('body', '{}'))
+                return rename_attribute_key(conn, body)
+            else:
+                return error_response('Method not allowed', 405)
+        
         # Handle attribute config requests
         if query_params.get('type') == 'config':
             if method == 'GET':
@@ -179,6 +187,34 @@ def success_response(data, status_code=200):
         'body': json.dumps(data, default=str),
         'isBase64Encoded': False
     }
+
+def rename_attribute_key(conn, data):
+    '''Переименование ключа атрибута во всех объектах'''
+    old_key = data.get('oldKey')
+    new_key = data.get('newKey')
+    
+    if not old_key or not new_key:
+        return error_response('oldKey and newKey are required', 400)
+    
+    if old_key == new_key:
+        return error_response('Keys must be different', 400)
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute('''
+            UPDATE t_p78972315_landgis_creator.properties
+            SET attributes = attributes - %s || jsonb_build_object(%s, attributes->%s),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE attributes ? %s
+        ''', (old_key, new_key, old_key, old_key))
+        
+        affected_rows = cur.rowcount
+        conn.commit()
+    
+    return success_response({
+        'success': True,
+        'message': f'Renamed {old_key} to {new_key}',
+        'affectedRows': affected_rows
+    })
 
 def error_response(message, status_code=400):
     return {
