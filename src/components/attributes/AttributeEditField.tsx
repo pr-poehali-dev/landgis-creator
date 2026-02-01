@@ -141,11 +141,34 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       );
     
     case 'boolean':
+      const boolValue = value === 'true' || value === true || value === 'Да';
+      const currentBoolValue = boolValue ? 'true' : 'false';
+      
       return (
-        <Switch
-          checked={Boolean(value)}
-          onCheckedChange={(checked) => onValueChange(String(checked))}
-        />
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onValueChange('true')}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              currentBoolValue === 'true'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            Да
+          </button>
+          <button
+            type="button"
+            onClick={() => onValueChange('false')}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              currentBoolValue === 'false'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            Нет
+          </button>
+        </div>
       );
     
     case 'toggle':

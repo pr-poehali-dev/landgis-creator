@@ -123,6 +123,9 @@ const AttributeConfigItem = ({
             if ((value === 'select' || value === 'multiselect') && (!config.formatOptions?.options || config.formatOptions.options.length === 0)) {
               onConfigChange(index, 'formatOptions', { options: [''] });
             }
+            if (value === 'toggle' && !config.formatOptions?.trueLabel) {
+              onConfigChange(index, 'formatOptions', { trueLabel: 'Да', falseLabel: 'Нет' });
+            }
           }}
         >
           <SelectTrigger className="text-xs h-7">
@@ -133,7 +136,7 @@ const AttributeConfigItem = ({
             <SelectItem value="textarea">Многострочный текст</SelectItem>
             <SelectItem value="number">Число</SelectItem>
             <SelectItem value="money">Денежная сумма</SelectItem>
-            <SelectItem value="boolean">Да/Нет</SelectItem>
+            <SelectItem value="toggle">Переключатель (Да/Нет)</SelectItem>
             <SelectItem value="select">Выпадающий список</SelectItem>
             <SelectItem value="multiselect">Множественный выбор</SelectItem>
             <SelectItem value="date">Дата</SelectItem>
