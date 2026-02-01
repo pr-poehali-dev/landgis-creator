@@ -109,6 +109,11 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
           };
         }
         
+        if (key === 'ekspos') {
+          defaultConfig.formatType = 'money';
+          defaultConfig.displayName = 'Стоимость';
+        }
+        
         return defaultConfig;
       });
       
@@ -136,6 +141,11 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
           defaultConfig.formatOptions = {
             options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
           };
+        }
+        
+        if (key === 'ekspos') {
+          defaultConfig.formatType = 'money';
+          defaultConfig.displayName = 'Стоимость';
         }
         
         return defaultConfig;
