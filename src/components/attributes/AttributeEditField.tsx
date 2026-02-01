@@ -148,11 +148,15 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
     
     case 'toggle':
       const toggleValue = value === 'true' || value === true || value === 'Да';
+      console.log('Toggle render:', { value, toggleValue, type: typeof value });
       return (
         <div className="flex items-center gap-3">
           <Switch
             checked={toggleValue}
-            onCheckedChange={(checked) => onValueChange(checked ? 'true' : 'false')}
+            onCheckedChange={(checked) => {
+              console.log('Toggle changed:', { checked, newValue: checked ? 'true' : 'false' });
+              onValueChange(checked ? 'true' : 'false');
+            }}
           />
           <span className="text-sm text-muted-foreground">
             {toggleValue ? (config?.formatOptions?.trueLabel || 'Да') : (config?.formatOptions?.falseLabel || 'Нет')}

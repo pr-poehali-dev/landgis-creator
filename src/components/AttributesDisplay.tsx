@@ -287,10 +287,15 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
   };
 
   const handleAttributeChange = (key: string, value: string) => {
-    setEditedAttributes(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    console.log('handleAttributeChange:', { key, value, type: typeof value });
+    setEditedAttributes(prev => {
+      const updated = {
+        ...prev,
+        [key]: value
+      };
+      console.log('Updated editedAttributes:', updated);
+      return updated;
+    });
   };
 
   const handleConfigChange = (index: number, field: keyof DisplayConfig, value: any) => {
