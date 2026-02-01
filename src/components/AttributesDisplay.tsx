@@ -88,6 +88,17 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
         localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
       }
       
+      // Автоматическое обновление типа oks на toggle
+      if (savedConfigs['oks'] && savedConfigs['oks'].formatType !== 'toggle') {
+        savedConfigs['oks'].formatType = 'toggle';
+        savedConfigs['oks'].displayName = 'Наличие ОКС';
+        savedConfigs['oks'].formatOptions = {
+          trueLabel: 'Да',
+          falseLabel: 'Нет'
+        };
+        localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
+      }
+      
       // Автоматическое добавление атрибута "Статус МПТ" если его нет
       if (!savedConfigs['status_mpt']) {
         const maxOrder = Math.max(...Object.values(savedConfigs).map((c: any) => c.displayOrder || 0), 0);
