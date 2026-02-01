@@ -11,7 +11,6 @@ import Companies from "./pages/Companies";
 import Users from "./pages/Users";
 import FilterSettings from "./pages/FilterSettings";
 import NotFound from "./pages/NotFound";
-import TestSwitch from "./test-switch";
 
 const queryClient = new QueryClient();
 
@@ -28,7 +27,6 @@ const App = () => (
           <Route path="/admin/companies" element={<Companies />} />
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/filter-settings" element={<FilterSettings />} />
-          <Route path="/test-switch" element={<TestSwitch />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

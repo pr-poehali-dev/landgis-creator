@@ -149,22 +149,35 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       );
     
     case 'toggle':
-      // Правильная проверка: исключаем 'false' и false явно
-      const toggleValue = value === 'true' || value === true || value === 'Да';
-      const isFalse = value === 'false' || value === false || value === 'Нет' || value === '' || value === null || value === undefined;
-      const actualToggleValue = isFalse ? false : toggleValue;
+      const trueLabel = config?.formatOptions?.trueLabel || 'Да';
+      const falseLabel = config?.formatOptions?.falseLabel || 'Нет';
+      const isTrue = value === 'true' || value === true || value === trueLabel;
+      const currentValue = isTrue ? 'true' : 'false';
       
       return (
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={actualToggleValue}
-            onCheckedChange={(checked) => {
-              onValueChange(checked ? 'true' : 'false');
-            }}
-          />
-          <span className="text-sm text-muted-foreground">
-            {actualToggleValue ? (config?.formatOptions?.trueLabel || 'Да') : (config?.formatOptions?.falseLabel || 'Нет')}
-          </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => onValueChange('true')}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              currentValue === 'true'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            {trueLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => onValueChange('false')}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              currentValue === 'false'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
+          >
+            {falseLabel}
+          </button>
         </div>
       );
     
