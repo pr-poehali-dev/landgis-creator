@@ -12,6 +12,7 @@ interface AttributeConfigItemProps {
   onConfigChange: (index: number, field: keyof DisplayConfig, value: any) => void;
   onMoveConfig: (index: number, direction: 'up' | 'down') => void;
   onToggleEnabled: (index: number) => void;
+  onDelete: (index: number) => void;
 }
 
 const AttributeConfigItem = ({
@@ -20,7 +21,8 @@ const AttributeConfigItem = ({
   totalConfigs,
   onConfigChange,
   onMoveConfig,
-  onToggleEnabled
+  onToggleEnabled,
+  onDelete
 }: AttributeConfigItemProps) => {
   return (
     <div className="border rounded-lg p-3 space-y-3 bg-card">
@@ -77,6 +79,15 @@ const AttributeConfigItem = ({
             disabled={index === totalConfigs - 1}
           >
             <Icon name="ChevronDown" size={14} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            onClick={() => onDelete(index)}
+            title="Удалить атрибут"
+          >
+            <Icon name="Trash2" size={14} />
           </Button>
         </div>
       </div>

@@ -189,6 +189,22 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     setConfigs(newConfigs);
   };
 
+  const deleteConfig = (index: number) => {
+    const configToDelete = configs[index];
+    const confirmed = window.confirm(
+      `Удалить атрибут "${configToDelete.displayName}" (${configToDelete.configKey})?\n\nВнимание: данные из базы не удалятся, просто атрибут перестанет отображаться.`
+    );
+    
+    if (!confirmed) return;
+    
+    const newConfigs = configs.filter((_, i) => i !== index);
+    newConfigs.forEach((c, i) => {
+      c.displayOrder = i;
+    });
+    setConfigs(newConfigs);
+    toast.success(`Атрибут "${configToDelete.displayName}" удалён из отображения`);
+  };
+
   if (!attributes || Object.keys(attributes).length === 0) {
     return <div className="text-sm text-muted-foreground">Нет атрибутов</div>;
   }
@@ -248,6 +264,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
               onConfigChange={handleConfigChange}
               onMoveConfig={moveConfig}
               onToggleEnabled={toggleConfigEnabled}
+              onDelete={deleteConfig}
             />
           ))}
 
