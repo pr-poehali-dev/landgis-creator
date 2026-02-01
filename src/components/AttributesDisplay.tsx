@@ -464,7 +464,21 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       attributes={displayAttributes}
       isEditing={isEditing}
       onEdit={() => {
-        setEditedAttributes(attributes || {});
+        // Инициализируем editedAttributes со всеми атрибутами из конфигурации
+        const initialEdited = { ...(attributes || {}) };
+        
+        // Добавляем пустые значения для атрибутов без данных
+        configs.forEach(config => {
+          if (config.configType === 'attribute') {
+            const key = config.originalKey || config.configKey;
+            if (initialEdited[key] === undefined) {
+              initialEdited[key] = config.formatType === 'toggle' ? 'false' : '';
+            }
+          }
+        });
+        
+        console.log('Initializing edit mode:', initialEdited);
+        setEditedAttributes(initialEdited);
         setIsEditing(true);
       }}
       onConfigure={() => setIsConfigMode(true)}
