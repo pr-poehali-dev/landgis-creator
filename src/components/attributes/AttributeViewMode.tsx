@@ -94,14 +94,16 @@ const AttributeViewMode = ({
 
       {configs.map((config) => {
         const actualKey = config.originalKey || config.configKey;
-        const value = attributes?.[actualKey];
         
         if (!shouldShowField(config)) {
           return null;
         }
 
+        // Получаем значение динамически при каждом рендере
+        const value = attributes?.[actualKey];
+
         return (
-          <div key={config.id} className="pb-3 border-b border-border last:border-0">
+          <div key={`${config.id}-${actualKey}-${value}`} className="pb-3 border-b border-border last:border-0">
             <p className="text-xs font-semibold text-primary mb-1">
               {config.displayName}
             </p>
