@@ -272,8 +272,10 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
   const addConfig = (type: string) => {
     const newConfig: DisplayConfig = {
       id: Date.now(),
-      configType: type,
-      configKey: type === 'attribute' ? `new_field_${configs.length + 1}` : `${type}_${configs.length + 1}`,
+      configType: type === 'button' ? 'attribute' : type,
+      configKey: type === 'attribute' ? `new_field_${configs.length + 1}` : 
+                 type === 'button' ? `button_${configs.length + 1}` :
+                 `${type}_${configs.length + 1}`,
       displayName: type === 'attribute' ? 'Новое поле' : 
                   type === 'button' ? 'Кнопка' :
                   type === 'iframe' ? 'Iframe' :
@@ -283,7 +285,12 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       visibleRoles: ['admin'],
       enabled: true,
       settings: {},
-      formatType: type === 'attribute' ? 'text' : undefined
+      formatType: type === 'button' ? 'button' : 
+                  type === 'attribute' ? 'text' : undefined,
+      formatOptions: type === 'button' ? {
+        text: 'Кнопка',
+        actions: ['Добавить в корзину', 'Добавить в избранное']
+      } : undefined
     };
     setConfigs([...configs, newConfig]);
   };
