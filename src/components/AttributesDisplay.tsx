@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import func2url from '../../backend/func2url.json';
 import { UserRole, canAccessAttribute } from '@/types/userRoles';
 import AddElementDialog from '@/components/AddElementDialog';
+import { Badge } from '@/components/ui/badge';
 
 interface AttributesDisplayProps {
   attributes?: Record<string, any>;
@@ -48,7 +49,10 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
     const newConfigs: DisplayConfig[] = attributeKeys.map((key, index) => {
       const existing = Object.values(savedConfigs).find(c => c.originalKey === key || c.configKey === key);
-      return existing || {
+      
+      if (existing) return existing;
+      
+      const defaultConfig: DisplayConfig = {
         id: Date.now() + index,
         configType: 'attribute',
         configKey: key,
@@ -60,6 +64,16 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
         settings: {},
         formatType: 'text'
       };
+      
+      if (key === 'region') {
+        defaultConfig.formatType = 'select';
+        defaultConfig.displayName = 'Регион';
+        defaultConfig.formatOptions = {
+          options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
+        };
+      }
+      
+      return defaultConfig;
     });
     
     setConfigs(newConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
@@ -370,7 +384,12 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
                 <label className="text-[10px] text-muted-foreground mb-1 block">Тип поля</label>
                 <Select
                   value={config.formatType || 'text'}
-                  onValueChange={(value) => handleConfigChange(index, 'formatType', value)}
+                  onValueChange={(value) => {
+                    handleConfigChange(index, 'formatType', value);
+                    if (value === 'select' && (!config.formatOptions?.options || config.formatOptions.options.length === 0)) {
+                      handleConfigChange(index, 'formatOptions', { options: [''] });
+                    }
+                  }}
                 >
                   <SelectTrigger className="text-xs h-7">
                     <SelectValue />
@@ -388,17 +407,47 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
               </div>
 
               {config.formatType === 'select' && (
-                <div>
+                <div className="space-y-2">
                   <label className="text-[10px] text-muted-foreground mb-1 block">Варианты списка</label>
-                  <Input
-                    value={config.formatOptions?.options?.join(', ') || ''}
-                    onChange={(e) => {
-                      const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
-                      handleConfigChange(index, 'formatOptions', { options });
-                    }}
-                    placeholder="Опция 1, Опция 2, Опция 3"
-                    className="text-xs h-7"
-                  />
+                  <div className="space-y-1.5">
+                    {(config.formatOptions?.options || []).map((option, optIndex) => (
+                      <div key={optIndex} className="flex items-center gap-1.5">
+                        <Input
+                          value={option}
+                          onChange={(e) => {
+                            const newOptions = [...(config.formatOptions?.options || [])];
+                            newOptions[optIndex] = e.target.value;
+                            handleConfigChange(index, 'formatOptions', { options: newOptions });
+                          }}
+                          className="text-xs h-7 flex-1"
+                          placeholder={`Вариант ${optIndex + 1}`}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-400 hover:text-red-300"
+                          onClick={() => {
+                            const newOptions = (config.formatOptions?.options || []).filter((_, i) => i !== optIndex);
+                            handleConfigChange(index, 'formatOptions', { options: newOptions });
+                          }}
+                        >
+                          <Icon name="X" size={12} />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full h-7 text-xs"
+                      onClick={() => {
+                        const newOptions = [...(config.formatOptions?.options || []), ''];
+                        handleConfigChange(index, 'formatOptions', { options: newOptions });
+                      }}
+                    >
+                      <Icon name="Plus" size={12} className="mr-1" />
+                      Добавить вариант
+                    </Button>
+                  </div>
                 </div>
               )}
 
