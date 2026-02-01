@@ -358,7 +358,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
                 </>
               );
             })()}
-            </div>
 
             <div className="flex gap-2 pt-2">
               <Button className="flex-1" size="sm">
