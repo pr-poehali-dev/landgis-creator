@@ -94,6 +94,12 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         };
         localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
       }
+      
+      // Исправляем conditionalDisplay для lgota: mpt → status_mpt
+      if (savedConfigs['lgota']?.conditionalDisplay?.dependsOn === 'mpt') {
+        savedConfigs['lgota'].conditionalDisplay.dependsOn = 'status_mpt';
+        localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
+      }
     }
     
     const savedConfigsArray = Object.values(savedConfigs);

@@ -34,20 +34,27 @@ const AttributeViewMode = ({
     
     const parentValue = attributes?.[dependsOn];
     
+    // Normalize values for comparison (handle boolean, "Да"/"да", true, etc.)
+    const normalizeValue = (val: any): string => {
+      if (typeof val === 'boolean') return val ? 'да' : 'нет';
+      if (typeof val === 'string') return val.toLowerCase().trim();
+      return String(val).toLowerCase().trim();
+    };
+    
     if (Array.isArray(showWhen)) {
       return showWhen.some(val => {
         if (Array.isArray(parentValue)) {
-          return parentValue.includes(val);
+          return parentValue.some(pv => normalizeValue(pv) === normalizeValue(val));
         }
-        return String(parentValue) === String(val);
+        return normalizeValue(parentValue) === normalizeValue(val);
       });
     }
     
     if (Array.isArray(parentValue)) {
-      return parentValue.includes(showWhen);
+      return parentValue.some(pv => normalizeValue(pv) === normalizeValue(showWhen));
     }
     
-    return String(parentValue) === String(showWhen);
+    return normalizeValue(parentValue) === normalizeValue(showWhen);
   };
 
   return (
