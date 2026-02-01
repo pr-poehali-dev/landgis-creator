@@ -104,9 +104,11 @@ const AttributeViewMode = ({
         // В режиме редактирования берём из editedAttributes, в режиме просмотра - из attributes
         const dataSource = isEditing ? (editedAttributes || attributes) : attributes;
         const value = dataSource?.[actualKey];
+        
+        console.log('Rendering field:', { actualKey, value, isEditing, dataSource });
 
         return (
-          <div key={`${config.id}-${actualKey}-${value}`} className="pb-3 border-b border-border last:border-0">
+          <div key={`${config.id}-${actualKey}`} className="pb-3 border-b border-border last:border-0">
             <p className="text-xs font-semibold text-primary mb-1">
               {config.displayName}
             </p>
