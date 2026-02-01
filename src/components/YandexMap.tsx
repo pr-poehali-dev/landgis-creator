@@ -39,6 +39,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   const clustererRef = useRef<any>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
+  const [cardPosition, setCardPosition] = useState<{ top?: string; left?: string; right?: string; bottom?: string }>({});
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -243,6 +244,50 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
     mapInstanceRef.current.setCenter(selectedProperty.coordinates, 15, {
       duration: 500
     });
+
+    // Вычисляем позицию карточки относительно объекта
+    setTimeout(() => {
+      if (!mapInstanceRef.current || !mapRef.current) return;
+
+      const map = mapInstanceRef.current;
+      const container = mapRef.current;
+      const containerRect = container.getBoundingClientRect();
+      
+      // Получаем пиксельные координаты объекта на карте
+      const pixelCoords = map.converter.globalToPage(selectedProperty.coordinates);
+      
+      if (!pixelCoords) return;
+
+      const cardWidth = 384; // w-96 = 384px
+      const cardHeight = 400; // примерная высота карточки
+      const margin = 24;
+
+      // Определяем положение относительно центра экрана
+      const centerX = containerRect.width / 2;
+      const centerY = containerRect.height / 2;
+      
+      const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
+
+      // Горизонтальное позиционирование
+      if (pixelCoords[0] < centerX) {
+        // Объект слева - показываем карточку справа
+        position.left = `${Math.min(pixelCoords[0] + margin, containerRect.width - cardWidth - margin)}px`;
+      } else {
+        // Объект справа - показываем карточку слева
+        position.right = `${Math.min(containerRect.width - pixelCoords[0] + margin, containerRect.width - cardWidth - margin)}px`;
+      }
+
+      // Вертикальное позиционирование
+      if (pixelCoords[1] < centerY) {
+        // Объект сверху - показываем карточку ниже
+        position.top = `${Math.min(pixelCoords[1] + margin, containerRect.height - cardHeight - margin)}px`;
+      } else {
+        // Объект снизу - показываем карточку выше
+        position.bottom = `${Math.min(containerRect.height - pixelCoords[1] + margin, containerRect.height - cardHeight - margin)}px`;
+      }
+
+      setCardPosition(position);
+    }, 600); // Задержка после анимации центрирования
   }, [selectedProperty]);
 
   return (
@@ -289,7 +334,10 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       )}
 
       {selectedProperty && !showAttributesPanel && (
-        <Card className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-auto sm:w-96 max-w-md shadow-2xl animate-fade-in">
+        <Card 
+          className="absolute w-96 max-w-md shadow-2xl animate-fade-in transition-all duration-300"
+          style={cardPosition}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex-1">
