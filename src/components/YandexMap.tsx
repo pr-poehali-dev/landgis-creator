@@ -254,9 +254,22 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       const containerRect = container.getBoundingClientRect();
       
       // Получаем пиксельные координаты объекта на карте
-      const pixelCoords = map.converter.globalToPage(selectedProperty.coordinates);
-      
-      if (!pixelCoords) return;
+      let pixelCoords;
+      try {
+        const projection = map.options.get('projection');
+        const globalPixels = projection.toGlobalPixels(selectedProperty.coordinates, map.getZoom());
+        const mapCenter = projection.toGlobalPixels(map.getCenter(), map.getZoom());
+        
+        pixelCoords = [
+          globalPixels[0] - mapCenter[0] + containerRect.width / 2,
+          globalPixels[1] - mapCenter[1] + containerRect.height / 2
+        ];
+      } catch (error) {
+        console.error('Error calculating pixel coordinates:', error);
+        // Фолбек: используем дефолтную позицию
+        setCardPosition({ bottom: '24px', left: '24px' });
+        return;
+      }
 
       const cardWidth = 384; // w-96 = 384px
       const cardHeight = 400; // примерная высота карточки
