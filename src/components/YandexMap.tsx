@@ -84,6 +84,27 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
     return colors[segment as keyof typeof colors];
   };
 
+  const calculatePolygonArea = (boundary?: Array<[number, number]>) => {
+    if (!boundary || boundary.length < 3) return 0;
+    
+    // Формула площади полигона по координатам (Shoelace formula)
+    // Результат в квадратных градусах, конвертируем в га
+    let area = 0;
+    for (let i = 0; i < boundary.length; i++) {
+      const j = (i + 1) % boundary.length;
+      area += boundary[i][0] * boundary[j][1];
+      area -= boundary[j][0] * boundary[i][1];
+    }
+    area = Math.abs(area) / 2;
+    
+    // Конвертация квадратных градусов в гектары (приблизительно)
+    // На широте Москвы: 1 градус ≈ 111 км
+    const areaInSquareMeters = area * 111000 * 111000;
+    const areaInHectares = areaInSquareMeters / 10000;
+    
+    return areaInHectares;
+  };
+
   useEffect(() => {
     if (!window.ymaps) {
       console.warn('Яндекс.Карты не загружены');
@@ -288,38 +309,55 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             </div>
           </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">Тип</div>
-                <Badge variant="secondary" className="text-xs">{getTypeLabel(selectedProperty.type)}</Badge>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1">Сегмент</div>
-                <Badge className={`${getSegmentColor(selectedProperty.segment)} text-xs`} variant="outline">
-                  {selectedProperty.segment === 'premium' ? 'Премиум' :
-                   selectedProperty.segment === 'standard' ? 'Стандарт' : 'Эконом'}
-                </Badge>
-              </div>
-            </div>
+            {(() => {
+              const attrs = selectedProperty.attributes || {};
+              const statusPub = attrs.status_publ || 'Не указан';
+              const segment = attrs.segment ? 
+                (Array.isArray(attrs.segment) ? attrs.segment.join(', ') : 
+                 typeof attrs.segment === 'string' && attrs.segment.startsWith('[') ? 
+                 JSON.parse(attrs.segment).join(', ') : attrs.segment) : 'Не указан';
+              const region = attrs.region || 'Не указан';
+              const price = attrs.ekspos || attrs.price || '0';
+              const priceNum = typeof price === 'string' ? parseFloat(price) : price;
+              const area = calculatePolygonArea(selectedProperty.boundary);
+              const areaText = area > 0 ? `${area.toFixed(2)} га` : 'Не рассчитано';
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Площадь</span>
-                <span className="font-semibold text-sm sm:text-base">{selectedProperty.area} м²</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Цена</span>
-                <span className="font-bold text-lg sm:text-xl text-primary">
-                  {formatPrice(selectedProperty.price)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Статус</span>
-                <Badge className={getStatusColor(selectedProperty.status)} variant="outline">
-                  {selectedProperty.status === 'available' ? 'Доступен' : 
-                   selectedProperty.status === 'reserved' ? 'Резерв' : 'Продан'}
-                </Badge>
-              </div>
+              return (
+                <>
+                  <div className="flex items-center justify-between">
+                    <Badge className={getStatusColor(selectedProperty.status)} variant="outline">
+                      {statusPub}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Регион</span>
+                      <span className="text-sm font-medium">{region}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Площадь</span>
+                      <span className="font-semibold text-sm sm:text-base">{areaText}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Цена</span>
+                      <span className="font-bold text-lg sm:text-xl text-primary">
+                        {formatPrice(priceNum)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary" className="text-xs">{getTypeLabel(selectedProperty.type)}</Badge>
+                    {segment !== 'Не указан' && (
+                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs" variant="outline">
+                        {segment}
+                      </Badge>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
             </div>
 
             <div className="flex gap-2 pt-2">
