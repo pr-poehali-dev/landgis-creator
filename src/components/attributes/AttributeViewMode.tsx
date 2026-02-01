@@ -123,7 +123,15 @@ const AttributeViewMode = ({
               renderEditField(actualKey, value, config)
             ) : config.formatType === 'button' ? (
               (() => {
-                let buttonData = { text: 'Кнопка', action: 'Добавить в корзину' };
+                // Дефолтные значения из formatOptions или общие дефолты
+                const defaultText = config.formatOptions?.text || 'Кнопка';
+                const defaultAction = Array.isArray(config.formatOptions?.actions) && config.formatOptions.actions.length > 0
+                  ? config.formatOptions.actions[0]
+                  : 'Добавить в корзину';
+                
+                let buttonData = { text: defaultText, action: defaultAction };
+                
+                // Если есть сохранённые данные - используем их
                 try {
                   if (typeof value === 'string' && value) {
                     buttonData = JSON.parse(value);
