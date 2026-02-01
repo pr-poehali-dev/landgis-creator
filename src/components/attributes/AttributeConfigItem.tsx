@@ -30,10 +30,30 @@ const AttributeConfigItem = ({
     <div className="border rounded-lg p-3 space-y-3 bg-card">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 flex-1">
-          <Switch
-            checked={config.enabled}
-            onCheckedChange={() => onToggleEnabled(index)}
-          />
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => config.enabled || onToggleEnabled(index)}
+              className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                config.enabled
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              Вкл
+            </button>
+            <button
+              type="button"
+              onClick={() => !config.enabled || onToggleEnabled(index)}
+              className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                !config.enabled
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              Выкл
+            </button>
+          </div>
           <div className="flex-1 grid grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] text-muted-foreground mb-0.5 block">
@@ -170,16 +190,38 @@ const AttributeConfigItem = ({
         <label className="text-[10px] text-muted-foreground mb-1 block">Условное отображение</label>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Switch
-              checked={!!config.conditionalDisplay}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  onConfigChange(index, 'conditionalDisplay', { dependsOn: '', showWhen: '' });
-                } else {
-                  onConfigChange(index, 'conditionalDisplay', null);
-                }
-              }}
-            />
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!config.conditionalDisplay) {
+                    onConfigChange(index, 'conditionalDisplay', { dependsOn: '', showWhen: '' });
+                  }
+                }}
+                className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                  config.conditionalDisplay
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Да
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (config.conditionalDisplay) {
+                    onConfigChange(index, 'conditionalDisplay', null);
+                  }
+                }}
+                className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
+                  !config.conditionalDisplay
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Нет
+              </button>
+            </div>
             <span className="text-[11px] text-muted-foreground">Показывать при условии</span>
           </div>
           
