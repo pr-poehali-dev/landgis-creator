@@ -109,7 +109,7 @@ const AttributeViewMode = ({
               renderEditField(actualKey, value, config)
             ) : (
               <p className="text-sm text-foreground break-words whitespace-pre-wrap">
-                {formatValue(value, config.formatType)}
+                {formatValue(value, config.formatType, config.formatOptions)}
               </p>
             )}
           </div>

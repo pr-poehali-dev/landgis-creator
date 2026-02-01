@@ -14,7 +14,7 @@ interface AttributeEditFieldProps {
   onValueChange: (value: string) => void;
 }
 
-export const formatValue = (value: any, formatType?: string): string => {
+export const formatValue = (value: any, formatType?: string, formatOptions?: any): string => {
   if (value === null || value === undefined) return '—';
   
   switch (formatType) {
@@ -28,6 +28,9 @@ export const formatValue = (value: any, formatType?: string): string => {
       return new Intl.NumberFormat('ru-RU').format(num);
     case 'boolean':
       return value ? 'Да' : 'Нет';
+    case 'toggle':
+      const isTrue = value === 'true' || value === true || value === 'Да';
+      return isTrue ? (formatOptions?.trueLabel || 'Да') : (formatOptions?.falseLabel || 'Нет');
     case 'date':
       return new Date(value).toLocaleDateString('ru-RU');
     case 'multiselect':
@@ -141,6 +144,20 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
           checked={Boolean(value)}
           onCheckedChange={(checked) => onValueChange(String(checked))}
         />
+      );
+    
+    case 'toggle':
+      const toggleValue = value === 'true' || value === true || value === 'Да';
+      return (
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={toggleValue}
+            onCheckedChange={(checked) => onValueChange(checked ? 'true' : 'false')}
+          />
+          <span className="text-sm text-muted-foreground">
+            {toggleValue ? (config?.formatOptions?.trueLabel || 'Да') : (config?.formatOptions?.falseLabel || 'Нет')}
+          </span>
+        </div>
       );
     
     case 'select':
