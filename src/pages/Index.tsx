@@ -103,23 +103,23 @@ const Index = () => {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <div className="hidden lg:flex w-96 border-r border-border flex-col bg-card/50 backdrop-blur">
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon name="Map" className="text-primary" size={24} />
+      <div className="hidden lg:flex w-80 border-r border-border flex-col bg-card/50 backdrop-blur">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Icon name="Map" className="text-primary" size={18} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">LandGis</h1>
-              <p className="text-xs text-muted-foreground">Картографическая CRM</p>
+              <h1 className="text-xl font-bold">LandGis</h1>
+              <p className="text-[10px] text-muted-foreground">Картографическая CRM</p>
             </div>
           </div>
 
-          <div className="relative mb-4">
-            <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <div className="relative mb-3">
+            <Icon name="Search" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
             <Input
               placeholder="Поиск объектов..."
-              className="pl-10"
+              className="pl-8 h-9 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -152,7 +152,7 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {filteredProperties.map(property => (
             <Card
               key={property.id}
@@ -161,34 +161,34 @@ const Index = () => {
               }`}
               onClick={() => setSelectedProperty(property)}
             >
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2 p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-base">{property.title}</CardTitle>
-                  <Badge className={getStatusColor(property.status)} variant="outline">
+                  <CardTitle className="text-sm">{property.title}</CardTitle>
+                  <Badge className={`text-[10px] px-2 py-0 ${getStatusColor(property.status)}`} variant="outline">
                     {property.status === 'available' ? 'Доступен' : 
                      property.status === 'reserved' ? 'Резерв' : 'Продан'}
                   </Badge>
                 </div>
-                <CardDescription className="flex items-center gap-1 text-xs">
-                  <Icon name="MapPin" size={12} />
+                <CardDescription className="flex items-center gap-1 text-[11px]">
+                  <Icon name="MapPin" size={11} />
                   {property.location}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+              <CardContent className="p-3 pt-0">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Площадь</span>
-                    <span className="font-medium">{property.area} м²</span>
+                    <span className="text-xs text-muted-foreground">Площадь</span>
+                    <span className="text-sm font-medium">{property.area} м²</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Цена</span>
-                    <span className="font-bold text-primary">{formatPrice(property.price)}</span>
+                    <span className="text-xs text-muted-foreground">Цена</span>
+                    <span className="text-sm font-bold text-primary">{formatPrice(property.price)}</span>
                   </div>
-                  <div className="flex gap-2 pt-2">
-                    <Badge variant="secondary" className="text-xs">
+                  <div className="flex gap-1.5 pt-1">
+                    <Badge variant="secondary" className="text-[10px] px-2 py-0">
                       {getTypeLabel(property.type)}
                     </Badge>
-                    <Badge className={`text-xs ${getSegmentColor(property.segment)}`} variant="outline">
+                    <Badge className={`text-[10px] px-2 py-0 ${getSegmentColor(property.segment)}`} variant="outline">
                       {property.segment === 'premium' ? 'Премиум' :
                        property.segment === 'standard' ? 'Стандарт' : 'Эконом'}
                     </Badge>
@@ -199,20 +199,20 @@ const Index = () => {
           ))}
         </div>
 
-        <div className="p-4 border-t border-border bg-card/80 backdrop-blur">
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+        <div className="p-3 border-t border-border bg-card/80 backdrop-blur">
+          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
             <div>
-              <div className="font-bold text-lg text-primary">{properties.length}</div>
+              <div className="font-bold text-base text-primary">{properties.length}</div>
               <div className="text-muted-foreground">Объектов</div>
             </div>
             <div>
-              <div className="font-bold text-lg text-green-400">
+              <div className="font-bold text-base text-green-400">
                 {properties.filter(p => p.status === 'available').length}
               </div>
               <div className="text-muted-foreground">Доступно</div>
             </div>
             <div>
-              <div className="font-bold text-lg text-secondary">
+              <div className="font-bold text-base text-secondary">
                 {formatPrice(properties.reduce((sum, p) => sum + p.price, 0) / properties.length).replace(/\s₽/, '')}
               </div>
               <div className="text-muted-foreground">Средняя цена</div>
@@ -222,12 +222,12 @@ const Index = () => {
       </div>
 
       <div className="flex-1 flex flex-col">
-        <div className="h-16 border-b border-border flex items-center justify-between px-4 lg:px-6 bg-card/30 backdrop-blur">
-          <div className="flex items-center gap-3">
+        <div className="h-12 border-b border-border flex items-center justify-between px-3 lg:px-4 bg-card/30 backdrop-blur">
+          <div className="flex items-center gap-2">
             <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="lg:hidden">
-                  <Icon name="Menu" size={20} />
+                <Button variant="outline" size="icon" className="lg:hidden h-8 w-8">
+                  <Icon name="Menu" size={16} />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[85vw] sm:w-96 p-0">
@@ -363,33 +363,33 @@ const Index = () => {
           </div>
 
           <Tabs value={mapType} onValueChange={(v) => setMapType(v as 'scheme' | 'hybrid')} className="hidden sm:block">
-            <TabsList>
-              <TabsTrigger value="scheme" className="gap-2">
-                <Icon name="Map" size={16} />
+            <TabsList className="h-8">
+              <TabsTrigger value="scheme" className="gap-1.5 text-xs px-3">
+                <Icon name="Map" size={14} />
                 <span className="hidden md:inline">Схема</span>
               </TabsTrigger>
-              <TabsTrigger value="hybrid" className="gap-2">
-                <Icon name="Satellite" size={16} />
+              <TabsTrigger value="hybrid" className="gap-1.5 text-xs px-3">
+                <Icon name="Satellite" size={14} />
                 <span className="hidden md:inline">Гибрид</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="hidden md:flex" onClick={() => navigate('/admin')}>
-              <Icon name="Database" size={16} className="mr-2" />
+          <div className="flex gap-1.5">
+            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs px-2.5 gap-1.5" onClick={() => navigate('/admin')}>
+              <Icon name="Database" size={14} />
               Админка
             </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex">
-              <Icon name="Filter" size={16} className="mr-2" />
+            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs px-2.5 gap-1.5">
+              <Icon name="Filter" size={14} />
               Фильтры
             </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex">
-              <Icon name="Layers" size={16} className="mr-2" />
+            <Button variant="outline" size="sm" className="hidden md:flex h-8 text-xs px-2.5 gap-1.5">
+              <Icon name="Layers" size={14} />
               Слои
             </Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => setIsAddDialogOpen(true)}>
-              <Icon name="Plus" size={16} className="md:mr-2" />
+            <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={() => setIsAddDialogOpen(true)}>
+              <Icon name="Plus" size={14} />
               <span className="hidden md:inline">Добавить объект</span>
             </Button>
           </div>
@@ -404,24 +404,24 @@ const Index = () => {
           />
         </div>
 
-        <div className="hidden sm:flex h-20 border-t border-border bg-card/30 backdrop-blur px-4 lg:px-6 items-center justify-between">
-          <div className="flex gap-3 lg:gap-6 text-xs lg:text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+        <div className="hidden sm:flex h-14 border-t border-border bg-card/30 backdrop-blur px-3 lg:px-4 items-center justify-between">
+          <div className="flex gap-2 lg:gap-4 text-[11px]">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
               <span className="text-muted-foreground"><span className="hidden md:inline">Доступно: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'available').length}</span></span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
               <span className="text-muted-foreground"><span className="hidden md:inline">Резерв: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'reserved').length}</span></span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-gray-500"></div>
               <span className="text-muted-foreground"><span className="hidden md:inline">Продано: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'sold').length}</span></span>
             </div>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground">
-            <Icon name="Sparkles" size={14} className="text-secondary" />
+          <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Icon name="Sparkles" size={12} className="text-secondary" />
             <span>AI-кластеризация активна</span>
           </div>
         </div>
