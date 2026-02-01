@@ -218,8 +218,8 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
               value="true"
               checked={toggleCheckedValue === 'true'}
               onChange={() => {
-                console.log('Toggle onChange TRUE:', config?.configKey);
-                onValueChange('true');
+                console.log('Toggle onChange TRUE:', config?.configKey, 'saving as:', trueLabel.toLowerCase());
+                onValueChange(trueLabel.toLowerCase());
               }}
               className="w-4 h-4 cursor-pointer"
             />
@@ -232,8 +232,8 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
               value="false"
               checked={toggleCheckedValue === 'false'}
               onChange={() => {
-                console.log('Toggle onChange FALSE:', config?.configKey);
-                onValueChange('false');
+                console.log('Toggle onChange FALSE:', config?.configKey, 'saving as:', falseLabel.toLowerCase());
+                onValueChange(falseLabel.toLowerCase());
               }}
               className="w-4 h-4 cursor-pointer"
             />
