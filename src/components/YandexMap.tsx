@@ -257,7 +257,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               userRole={userRole}
               featureId={selectedProperty.id}
               onAttributesUpdate={(updatedAttrs) => {
-                setSelectedProperty({
+                onSelectProperty({
                   ...selectedProperty,
                   attributes: updatedAttrs
                 });
