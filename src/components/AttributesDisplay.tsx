@@ -188,19 +188,35 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
   };
 
   const handleSave = async () => {
+    console.log('handleSave called', { featureId, editedAttributes });
+    
     if (!featureId) {
       toast.error('Не удалось определить объект');
       return;
     }
 
     try {
-      const response = await fetch(`${func2url['update-attributes']}?id=${featureId}`, {
+      const url = `${func2url['update-attributes']}?id=${featureId}`;
+      const payload = { attributes: editedAttributes };
+      
+      console.log('Sending PUT request:', { url, payload });
+      
+      const response = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ attributes: editedAttributes }),
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error('Failed to update attributes');
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error('Failed to update attributes');
+      }
+
+      const result = await response.json();
+      console.log('Save result:', result);
 
       toast.success('Атрибуты сохранены');
       setIsEditing(false);
