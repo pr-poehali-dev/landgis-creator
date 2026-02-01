@@ -355,6 +355,11 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
   const displayAttributes = isEditing ? editedAttributes : attributes;
   const enabledConfigs = configs.filter(c => {
     const hasAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
+    // В режиме редактирования показываем все настроенные атрибуты
+    if (isEditing && c.configType === 'attribute') {
+      return hasAccess;
+    }
+    // В режиме просмотра показываем только если есть данные
     const hasData = attributes && (attributes[c.originalKey || c.configKey] !== undefined);
     return hasAccess && hasData;
   });
