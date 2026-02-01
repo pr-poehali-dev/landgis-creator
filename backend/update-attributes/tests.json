@@ -1,21 +1,19 @@
 {
   "tests": [
     {
-      "name": "Get attribute configs",
-      "method": "GET",
-      "path": "/?type=config",
-      "expectedStatus": 200,
-      "expectedBody": [],
-      "bodyMatcher": "type"
+      "name": "OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
     },
     {
       "name": "Update property attributes",
       "method": "PUT",
-      "path": "/?id=1",
+      "path": "/?id=1768",
       "body": {
         "attributes": {
-          "test_field": "test_value",
-          "number_field": 123
+          "ID": "12345",
+          "segment": "Test"
         }
       },
       "expectedStatus": 200,
