@@ -247,60 +247,79 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
 
     // Вычисляем позицию карточки относительно объекта
     setTimeout(() => {
-      if (!mapInstanceRef.current || !mapRef.current) return;
+      if (!window.ymaps || !mapInstanceRef.current || !mapRef.current) return;
 
       const map = mapInstanceRef.current;
       const container = mapRef.current;
-      const containerRect = container.getBoundingClientRect();
       
-      // Получаем пиксельные координаты объекта на карте
-      let pixelCoords;
       try {
-        const projection = map.options.get('projection');
-        const globalPixels = projection.toGlobalPixels(selectedProperty.coordinates, map.getZoom());
-        const mapCenter = projection.toGlobalPixels(map.getCenter(), map.getZoom());
+        // Используем встроенный метод для преобразования географических координат в пиксели
+        const pixelCoords = map.converter.globalToPage(selectedProperty.coordinates);
         
-        pixelCoords = [
-          globalPixels[0] - mapCenter[0] + containerRect.width / 2,
-          globalPixels[1] - mapCenter[1] + containerRect.height / 2
-        ];
+        if (!pixelCoords) {
+          console.log('Cannot convert coordinates to pixels');
+          setCardPosition({ bottom: '24px', left: '24px' });
+          return;
+        }
+
+        const cardWidth = 384; // w-96 = 384px
+        const cardHeight = 400; // примерная высота
+        const margin = 24;
+
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const centerX = containerWidth / 2;
+        const centerY = containerHeight / 2;
+        
+        const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
+
+        console.log('Pixel coords:', pixelCoords, 'Center:', [centerX, centerY]);
+
+        // Определяем положение по горизонтали
+        if (pixelCoords[0] < centerX) {
+          // Объект слева - карточка справа от него
+          const leftPos = pixelCoords[0] + margin;
+          if (leftPos + cardWidth <= containerWidth - margin) {
+            position.left = `${leftPos}px`;
+          } else {
+            position.left = `${containerWidth - cardWidth - margin}px`;
+          }
+        } else {
+          // Объект справа - карточка слева от него
+          const rightPos = containerWidth - pixelCoords[0] + margin;
+          if (rightPos + cardWidth <= containerWidth - margin) {
+            position.right = `${rightPos}px`;
+          } else {
+            position.right = `${containerWidth - cardWidth - margin}px`;
+          }
+        }
+
+        // Определяем положение по вертикали
+        if (pixelCoords[1] < centerY) {
+          // Объект вверху - карточка ниже
+          const topPos = pixelCoords[1] + margin;
+          if (topPos + cardHeight <= containerHeight - margin) {
+            position.top = `${topPos}px`;
+          } else {
+            position.bottom = `${margin}px`;
+          }
+        } else {
+          // Объект внизу - карточка выше
+          const bottomPos = containerHeight - pixelCoords[1] + margin;
+          if (bottomPos + cardHeight <= containerHeight - margin) {
+            position.bottom = `${bottomPos}px`;
+          } else {
+            position.top = `${margin}px`;
+          }
+        }
+
+        console.log('Card position:', position);
+        setCardPosition(position);
       } catch (error) {
-        console.error('Error calculating pixel coordinates:', error);
-        // Фолбек: используем дефолтную позицию
+        console.error('Error calculating card position:', error);
         setCardPosition({ bottom: '24px', left: '24px' });
-        return;
       }
-
-      const cardWidth = 384; // w-96 = 384px
-      const cardHeight = 400; // примерная высота карточки
-      const margin = 24;
-
-      // Определяем положение относительно центра экрана
-      const centerX = containerRect.width / 2;
-      const centerY = containerRect.height / 2;
-      
-      const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
-
-      // Горизонтальное позиционирование
-      if (pixelCoords[0] < centerX) {
-        // Объект слева - показываем карточку справа
-        position.left = `${Math.min(pixelCoords[0] + margin, containerRect.width - cardWidth - margin)}px`;
-      } else {
-        // Объект справа - показываем карточку слева
-        position.right = `${Math.min(containerRect.width - pixelCoords[0] + margin, containerRect.width - cardWidth - margin)}px`;
-      }
-
-      // Вертикальное позиционирование
-      if (pixelCoords[1] < centerY) {
-        // Объект сверху - показываем карточку ниже
-        position.top = `${Math.min(pixelCoords[1] + margin, containerRect.height - cardHeight - margin)}px`;
-      } else {
-        // Объект снизу - показываем карточку выше
-        position.bottom = `${Math.min(containerRect.height - pixelCoords[1] + margin, containerRect.height - cardHeight - margin)}px`;
-      }
-
-      setCardPosition(position);
-    }, 600); // Задержка после анимации центрирования
+    }, 600);
   }, [selectedProperty]);
 
   return (
