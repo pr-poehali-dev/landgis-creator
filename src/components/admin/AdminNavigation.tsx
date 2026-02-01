@@ -9,7 +9,6 @@ const AdminNavigation = () => {
 
   const tabs = [
     { path: '/admin', icon: 'Database', label: 'База данных' },
-    { path: '/admin/display-config', icon: 'Layout', label: 'Окно атрибутов' },
     { path: '/admin/map-settings', icon: 'Map', label: 'Карта' },
     { path: '/admin/companies', icon: 'Building2', label: 'Компании' },
     { path: '/admin/users', icon: 'Users', label: 'Пользователи' },
