@@ -141,68 +141,65 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       );
     
     case 'boolean':
-      const isTrueBool = value === 'true' || value === true || value === 'Да';
-      const isFalseBool = value === 'false' || value === false || value === 'Нет' || value === '' || value === null || value === undefined;
-      const currentBoolValue = isFalseBool ? 'false' : (isTrueBool ? 'true' : 'false');
+      const boolCheckedValue = (value === 'true' || value === true || value === 'Да') ? 'true' : 'false';
       
       return (
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => onValueChange('true')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              currentBoolValue === 'true'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            }`}
-          >
-            Да
-          </button>
-          <button
-            type="button"
-            onClick={() => onValueChange('false')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              currentBoolValue === 'false'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            }`}
-          >
-            Нет
-          </button>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name={`bool-${Math.random()}`}
+              value="true"
+              checked={boolCheckedValue === 'true'}
+              onChange={() => onValueChange('true')}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm">Да</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name={`bool-${Math.random()}`}
+              value="false"
+              checked={boolCheckedValue === 'false'}
+              onChange={() => onValueChange('false')}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm">Нет</span>
+          </label>
         </div>
       );
     
     case 'toggle':
       const trueLabel = config?.formatOptions?.trueLabel || 'Да';
       const falseLabel = config?.formatOptions?.falseLabel || 'Нет';
-      const isTrueToggle = value === 'true' || value === true || value === trueLabel;
-      const isFalseToggle = value === 'false' || value === false || value === falseLabel || value === '' || value === null || value === undefined;
-      const currentValue = isFalseToggle ? 'false' : (isTrueToggle ? 'true' : 'false');
+      const toggleCheckedValue = (value === 'true' || value === true || value === trueLabel) ? 'true' : 'false';
+      const radioName = `toggle-${config?.configKey || Math.random()}`;
       
       return (
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => onValueChange('true')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              currentValue === 'true'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            }`}
-          >
-            {trueLabel}
-          </button>
-          <button
-            type="button"
-            onClick={() => onValueChange('false')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              currentValue === 'false'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            }`}
-          >
-            {falseLabel}
-          </button>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name={radioName}
+              value="true"
+              checked={toggleCheckedValue === 'true'}
+              onChange={() => onValueChange('true')}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm">{trueLabel}</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name={radioName}
+              value="false"
+              checked={toggleCheckedValue === 'false'}
+              onChange={() => onValueChange('false')}
+              className="w-4 h-4 cursor-pointer"
+            />
+            <span className="text-sm">{falseLabel}</span>
+          </label>
         </div>
       );
     
