@@ -19,9 +19,13 @@ export const formatValue = (value: any, formatType?: string): string => {
   
   switch (formatType) {
     case 'money':
-      return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(Number(value));
+      const moneyNum = Number(value);
+      if (isNaN(moneyNum)) return String(value);
+      return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(moneyNum);
     case 'number':
-      return new Intl.NumberFormat('ru-RU').format(Number(value));
+      const num = Number(value);
+      if (isNaN(num)) return String(value);
+      return new Intl.NumberFormat('ru-RU').format(num);
     case 'boolean':
       return value ? 'Да' : 'Нет';
     case 'date':

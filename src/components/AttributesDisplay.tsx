@@ -74,6 +74,13 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     
     if (saved) {
       savedConfigs = JSON.parse(saved);
+      
+      // Автоматическое обновление типа ekspos на money
+      if (savedConfigs['ekspos'] && savedConfigs['ekspos'].formatType !== 'money') {
+        savedConfigs['ekspos'].formatType = 'money';
+        savedConfigs['ekspos'].displayName = 'Стоимость';
+        localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
+      }
     }
     
     const savedConfigsArray = Object.values(savedConfigs);
