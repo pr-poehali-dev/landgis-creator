@@ -33,7 +33,7 @@ const AttributeConfigItem = ({
           <div className="flex gap-1">
             <button
               type="button"
-              onClick={() => config.enabled || onToggleEnabled(index)}
+              onClick={() => !config.enabled && onToggleEnabled(index)}
               className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
                 config.enabled
                   ? 'bg-primary text-primary-foreground'
@@ -44,7 +44,7 @@ const AttributeConfigItem = ({
             </button>
             <button
               type="button"
-              onClick={() => !config.enabled || onToggleEnabled(index)}
+              onClick={() => config.enabled && onToggleEnabled(index)}
               className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
                 !config.enabled
                   ? 'bg-primary text-primary-foreground'
