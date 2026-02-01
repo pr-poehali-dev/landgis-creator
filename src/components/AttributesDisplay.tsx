@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
 import { DisplayConfig } from '@/services/displayConfigService';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import func2url from '../../backend/func2url.json';
 import { UserRole, canAccessAttribute } from '@/types/userRoles';
 import AddElementDialog from '@/components/AddElementDialog';
-import { Badge } from '@/components/ui/badge';
+import AttributeEditField from '@/components/attributes/AttributeEditField';
+import AttributeConfigItem from '@/components/attributes/AttributeConfigItem';
+import AttributeViewMode from '@/components/attributes/AttributeViewMode';
 
 interface AttributesDisplayProps {
   attributes?: Record<string, any>;
@@ -195,94 +193,14 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     return <div className="text-sm text-muted-foreground">Нет атрибутов</div>;
   }
 
-  const formatValue = (value: any, formatType?: string): string => {
-    if (value === null || value === undefined) return '—';
-    
-    switch (formatType) {
-      case 'money':
-        return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(Number(value));
-      case 'number':
-        return new Intl.NumberFormat('ru-RU').format(Number(value));
-      case 'boolean':
-        return value ? 'Да' : 'Нет';
-      case 'date':
-        return new Date(value).toLocaleDateString('ru-RU');
-      default:
-        return String(value);
-    }
-  };
-
   const renderEditField = (key: string, value: any, config?: DisplayConfig) => {
-    const formatType = config?.formatType || 'text';
-    
-    switch (formatType) {
-      case 'textarea':
-        return (
-          <Textarea
-            value={value !== null && value !== undefined ? String(value) : ''}
-            onChange={(e) => handleAttributeChange(key, e.target.value)}
-            className="text-sm min-h-[80px]"
-          />
-        );
-      
-      case 'number':
-      case 'money':
-        return (
-          <Input
-            type="number"
-            value={value !== null && value !== undefined ? String(value) : ''}
-            onChange={(e) => handleAttributeChange(key, e.target.value)}
-            className="text-sm"
-          />
-        );
-      
-      case 'boolean':
-        return (
-          <Switch
-            checked={Boolean(value)}
-            onCheckedChange={(checked) => handleAttributeChange(key, String(checked))}
-          />
-        );
-      
-      case 'select':
-        const options = config?.formatOptions?.options || [];
-        return (
-          <Select
-            value={value !== null && value !== undefined ? String(value) : ''}
-            onValueChange={(val) => handleAttributeChange(key, val)}
-          >
-            <SelectTrigger className="text-sm">
-              <SelectValue placeholder="Выберите значение" />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((option: string) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
-      
-      case 'date':
-        return (
-          <Input
-            type="date"
-            value={value !== null && value !== undefined ? String(value) : ''}
-            onChange={(e) => handleAttributeChange(key, e.target.value)}
-            className="text-sm"
-          />
-        );
-      
-      default:
-        return (
-          <Input
-            value={value !== null && value !== undefined ? String(value) : ''}
-            onChange={(e) => handleAttributeChange(key, e.target.value)}
-            className="text-sm"
-          />
-        );
-    }
+    return (
+      <AttributeEditField
+        value={value}
+        config={config}
+        onValueChange={(newValue) => handleAttributeChange(key, newValue)}
+      />
+    );
   };
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
@@ -322,157 +240,15 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
         <div className="space-y-2">
           {configs.map((config, index) => (
-            <div key={config.id} className="border rounded-lg p-3 space-y-3 bg-card">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-1">
-                  <Switch
-                    checked={config.enabled}
-                    onCheckedChange={() => toggleConfigEnabled(index)}
-                  />
-                  <div className="flex-1 grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] text-muted-foreground mb-0.5 block">
-                        Ключ
-                        {config.originalKey && config.originalKey !== config.configKey && (
-                          <span className="ml-1 text-orange-400" title={`Будет переименован из "${config.originalKey}"`}>
-                            (было: {config.originalKey})
-                          </span>
-                        )}
-                      </label>
-                      <Input
-                        value={config.configKey}
-                        onChange={(e) => handleConfigChange(index, 'configKey', e.target.value)}
-                        className="text-xs h-7"
-                        placeholder="key_name"
-                        title="Ключ атрибута в базе данных"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Название</label>
-                      <Input
-                        value={config.displayName}
-                        onChange={(e) => handleConfigChange(index, 'displayName', e.target.value)}
-                        className="text-xs h-7"
-                        placeholder="Отображаемое имя"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveConfig(index, 'up')}
-                    disabled={index === 0}
-                  >
-                    <Icon name="ChevronUp" size={14} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveConfig(index, 'down')}
-                    disabled={index === configs.length - 1}
-                  >
-                    <Icon name="ChevronDown" size={14} />
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] text-muted-foreground mb-1 block">Тип поля</label>
-                <Select
-                  value={config.formatType || 'text'}
-                  onValueChange={(value) => {
-                    handleConfigChange(index, 'formatType', value);
-                    if (value === 'select' && (!config.formatOptions?.options || config.formatOptions.options.length === 0)) {
-                      handleConfigChange(index, 'formatOptions', { options: [''] });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="text-xs h-7">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="text">Текст</SelectItem>
-                    <SelectItem value="textarea">Многострочный текст</SelectItem>
-                    <SelectItem value="number">Число</SelectItem>
-                    <SelectItem value="money">Денежная сумма</SelectItem>
-                    <SelectItem value="boolean">Да/Нет</SelectItem>
-                    <SelectItem value="select">Выпадающий список</SelectItem>
-                    <SelectItem value="date">Дата</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {config.formatType === 'select' && (
-                <div className="space-y-2">
-                  <label className="text-[10px] text-muted-foreground mb-1 block">Варианты списка</label>
-                  <div className="space-y-1.5">
-                    {(config.formatOptions?.options || []).map((option, optIndex) => (
-                      <div key={optIndex} className="flex items-center gap-1.5">
-                        <Input
-                          value={option}
-                          onChange={(e) => {
-                            const newOptions = [...(config.formatOptions?.options || [])];
-                            newOptions[optIndex] = e.target.value;
-                            handleConfigChange(index, 'formatOptions', { options: newOptions });
-                          }}
-                          className="text-xs h-7 flex-1"
-                          placeholder={`Вариант ${optIndex + 1}`}
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-red-400 hover:text-red-300"
-                          onClick={() => {
-                            const newOptions = (config.formatOptions?.options || []).filter((_, i) => i !== optIndex);
-                            handleConfigChange(index, 'formatOptions', { options: newOptions });
-                          }}
-                        >
-                          <Icon name="X" size={12} />
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full h-7 text-xs"
-                      onClick={() => {
-                        const newOptions = [...(config.formatOptions?.options || []), ''];
-                        handleConfigChange(index, 'formatOptions', { options: newOptions });
-                      }}
-                    >
-                      <Icon name="Plus" size={12} className="mr-1" />
-                      Добавить вариант
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="text-[10px] text-muted-foreground mb-1 block">Доступно для ролей</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {['admin', 'user1', 'user2', 'user3', 'user4'].map((role) => (
-                    <label key={role} className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-border hover:bg-accent cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={config.visibleRoles.includes(role)}
-                        onChange={(e) => {
-                          const roles = e.target.checked
-                            ? [...config.visibleRoles, role]
-                            : config.visibleRoles.filter(r => r !== role);
-                          handleConfigChange(index, 'visibleRoles', roles);
-                        }}
-                        className="rounded h-3 w-3"
-                      />
-                      <span>{role === 'admin' ? 'Админ' : role === 'user1' ? 'Free' : role === 'user2' ? 'Light' : role === 'user3' ? 'Max' : 'VIP'}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <AttributeConfigItem
+              key={config.id}
+              config={config}
+              index={index}
+              totalConfigs={configs.length}
+              onConfigChange={handleConfigChange}
+              onMoveConfig={moveConfig}
+              onToggleEnabled={toggleConfigEnabled}
+            />
           ))}
 
           <Button
@@ -513,69 +289,16 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
   }
 
   return (
-    <>
-      <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
-        {!isEditing ? (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsConfigMode(true)}
-            >
-              <Icon name="Settings" size={16} className="mr-2" />
-              Настроить
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-            >
-              <Icon name="Pencil" size={16} className="mr-2" />
-              Редактировать
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-            >
-              <Icon name="X" size={16} className="mr-2" />
-              Отмена
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleSave}
-            >
-              <Icon name="Check" size={16} className="mr-2" />
-              Сохранить
-            </Button>
-          </>
-        )}
-      </div>
-
-      {enabledConfigs.map((config) => {
-        const actualKey = config.originalKey || config.configKey;
-        const value = displayAttributes?.[actualKey];
-
-        return (
-          <div key={config.id} className="pb-3 border-b border-border last:border-0">
-            <p className="text-xs font-semibold text-primary mb-1">
-              {config.displayName}
-            </p>
-            {isEditing ? (
-              renderEditField(actualKey, value, config)
-            ) : (
-              <p className="text-sm text-foreground break-words whitespace-pre-wrap">
-                {formatValue(value, config.formatType)}
-              </p>
-            )}
-          </div>
-        );
-      })}
-    </>
+    <AttributeViewMode
+      configs={enabledConfigs}
+      attributes={displayAttributes}
+      isEditing={isEditing}
+      onEdit={() => setIsEditing(true)}
+      onConfigure={() => setIsConfigMode(true)}
+      onSave={handleSave}
+      onCancel={handleCancel}
+      renderEditField={renderEditField}
+    />
   );
 };
 
