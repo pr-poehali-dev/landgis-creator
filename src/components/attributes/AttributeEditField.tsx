@@ -30,7 +30,9 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
       return value ? 'Да' : 'Нет';
     case 'toggle':
       const isTrue = value === 'true' || value === true || value === 'Да';
-      return isTrue ? (formatOptions?.trueLabel || 'Да') : (formatOptions?.falseLabel || 'Нет');
+      const isFalseValue = value === 'false' || value === false || value === 'Нет' || value === '' || value === null || value === undefined;
+      const actualValue = isFalseValue ? false : isTrue;
+      return actualValue ? (formatOptions?.trueLabel || 'Да') : (formatOptions?.falseLabel || 'Нет');
     case 'date':
       return new Date(value).toLocaleDateString('ru-RU');
     case 'multiselect':
@@ -147,19 +149,21 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       );
     
     case 'toggle':
+      // Правильная проверка: исключаем 'false' и false явно
       const toggleValue = value === 'true' || value === true || value === 'Да';
-      console.log('Toggle render:', { value, toggleValue, type: typeof value });
+      const isFalse = value === 'false' || value === false || value === 'Нет' || value === '' || value === null || value === undefined;
+      const actualToggleValue = isFalse ? false : toggleValue;
+      
       return (
         <div className="flex items-center gap-3">
           <Switch
-            checked={toggleValue}
+            checked={actualToggleValue}
             onCheckedChange={(checked) => {
-              console.log('Toggle changed:', { checked, newValue: checked ? 'true' : 'false' });
               onValueChange(checked ? 'true' : 'false');
             }}
           />
           <span className="text-sm text-muted-foreground">
-            {toggleValue ? (config?.formatOptions?.trueLabel || 'Да') : (config?.formatOptions?.falseLabel || 'Нет')}
+            {actualToggleValue ? (config?.formatOptions?.trueLabel || 'Да') : (config?.formatOptions?.falseLabel || 'Нет')}
           </span>
         </div>
       );
