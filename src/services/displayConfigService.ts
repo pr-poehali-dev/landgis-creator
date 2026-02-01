@@ -14,6 +14,10 @@ export interface DisplayConfig {
   settings: Record<string, any>;
   formatType?: 'text' | 'textarea' | 'number' | 'money' | 'boolean' | 'select' | 'multiselect' | 'date';
   formatOptions?: { options?: string[] } | null;
+  conditionalDisplay?: {
+    dependsOn: string;
+    showWhen: string | string[];
+  } | null;
   createdAt?: string;
   updatedAt?: string;
 }

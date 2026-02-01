@@ -381,6 +381,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
               config={config}
               index={index}
               totalConfigs={configs.length}
+              allConfigs={configs}
               onConfigChange={handleConfigChange}
               onMoveConfig={moveConfig}
               onToggleEnabled={toggleConfigEnabled}

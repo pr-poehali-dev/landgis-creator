@@ -9,6 +9,7 @@ interface AttributeConfigItemProps {
   config: DisplayConfig;
   index: number;
   totalConfigs: number;
+  allConfigs: DisplayConfig[];
   onConfigChange: (index: number, field: keyof DisplayConfig, value: any) => void;
   onMoveConfig: (index: number, direction: 'up' | 'down') => void;
   onToggleEnabled: (index: number) => void;
@@ -19,6 +20,7 @@ const AttributeConfigItem = ({
   config,
   index,
   totalConfigs,
+  allConfigs,
   onConfigChange,
   onMoveConfig,
   onToggleEnabled,
@@ -163,6 +165,129 @@ const AttributeConfigItem = ({
           </div>
         </div>
       )}
+
+      <div>
+        <label className="text-[10px] text-muted-foreground mb-1 block">Условное отображение</label>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={!!config.conditionalDisplay}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  onConfigChange(index, 'conditionalDisplay', { dependsOn: '', showWhen: '' });
+                } else {
+                  onConfigChange(index, 'conditionalDisplay', null);
+                }
+              }}
+            />
+            <span className="text-[11px] text-muted-foreground">Показывать при условии</span>
+          </div>
+          
+          {config.conditionalDisplay && (
+            <div className="space-y-2 pl-8">
+              <div>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">Зависит от атрибута</label>
+                <Select
+                  value={config.conditionalDisplay.dependsOn || ''}
+                  onValueChange={(value) => {
+                    onConfigChange(index, 'conditionalDisplay', {
+                      ...config.conditionalDisplay,
+                      dependsOn: value,
+                      showWhen: ''
+                    });
+                  }}
+                >
+                  <SelectTrigger className="text-xs h-7">
+                    <SelectValue placeholder="Выберите атрибут" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allConfigs
+                      .filter(c => c.configKey !== config.configKey && c.configType === 'attribute')
+                      .map(c => (
+                        <SelectItem key={c.configKey} value={c.configKey}>
+                          {c.displayName} ({c.configKey})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {config.conditionalDisplay.dependsOn && (() => {
+                const parentConfig = allConfigs.find(c => c.configKey === config.conditionalDisplay?.dependsOn);
+                const parentOptions = parentConfig?.formatOptions?.options || [];
+                
+                if (parentConfig?.formatType === 'boolean') {
+                  return (
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда</label>
+                      <Select
+                        value={String(config.conditionalDisplay.showWhen)}
+                        onValueChange={(value) => {
+                          onConfigChange(index, 'conditionalDisplay', {
+                            ...config.conditionalDisplay,
+                            showWhen: value
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="text-xs h-7">
+                          <SelectValue placeholder="Выберите значение" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Да</SelectItem>
+                          <SelectItem value="false">Нет</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                }
+                
+                if (parentConfig?.formatType === 'select' && parentOptions.length > 0) {
+                  return (
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда</label>
+                      <Select
+                        value={String(config.conditionalDisplay.showWhen)}
+                        onValueChange={(value) => {
+                          onConfigChange(index, 'conditionalDisplay', {
+                            ...config.conditionalDisplay,
+                            showWhen: value
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="text-xs h-7">
+                          <SelectValue placeholder="Выберите значение" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {parentOptions.map((opt: string) => (
+                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div>
+                    <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда значение равно</label>
+                    <Input
+                      value={String(config.conditionalDisplay.showWhen || '')}
+                      onChange={(e) => {
+                        onConfigChange(index, 'conditionalDisplay', {
+                          ...config.conditionalDisplay,
+                          showWhen: e.target.value
+                        });
+                      }}
+                      className="text-xs h-7"
+                      placeholder="Введите значение"
+                    />
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </div>
+      </div>
 
       <div>
         <label className="text-[10px] text-muted-foreground mb-1 block">Доступно для ролей</label>

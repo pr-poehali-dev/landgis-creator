@@ -24,6 +24,30 @@ const AttributeViewMode = ({
   onCancel,
   renderEditField
 }: AttributeViewModeProps) => {
+  const shouldShowField = (config: DisplayConfig): boolean => {
+    if (!config.conditionalDisplay) return true;
+    
+    const { dependsOn, showWhen } = config.conditionalDisplay;
+    if (!dependsOn) return true;
+    
+    const parentValue = attributes?.[dependsOn];
+    
+    if (Array.isArray(showWhen)) {
+      return showWhen.some(val => {
+        if (Array.isArray(parentValue)) {
+          return parentValue.includes(val);
+        }
+        return String(parentValue) === String(val);
+      });
+    }
+    
+    if (Array.isArray(parentValue)) {
+      return parentValue.includes(showWhen);
+    }
+    
+    return String(parentValue) === String(showWhen);
+  };
+
   return (
     <>
       <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
@@ -71,6 +95,10 @@ const AttributeViewMode = ({
       {configs.map((config) => {
         const actualKey = config.originalKey || config.configKey;
         const value = attributes?.[actualKey];
+        
+        if (!shouldShowField(config)) {
+          return null;
+        }
 
         return (
           <div key={config.id} className="pb-3 border-b border-border last:border-0">
