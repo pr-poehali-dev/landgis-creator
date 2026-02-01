@@ -4,7 +4,7 @@ const API_URL = func2url['update-attributes'] ? `${func2url['update-attributes']
 
 export interface DisplayConfig {
   id: number;
-  configType: 'attribute' | 'image' | 'document' | 'contact_button' | 'custom_element';
+  configType: 'attribute' | 'image' | 'document' | 'contact_button' | 'custom_element' | 'iframe' | 'button';
   configKey: string;
   displayName: string;
   displayOrder: number;

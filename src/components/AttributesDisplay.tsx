@@ -9,6 +9,7 @@ import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import func2url from '../../backend/func2url.json';
 import { UserRole, canAccessAttribute } from '@/types/userRoles';
+import AddElementDialog from '@/components/AddElementDialog';
 
 interface AttributesDisplayProps {
   attributes?: Record<string, any>;
@@ -22,6 +23,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
   const [isEditing, setIsEditing] = useState(false);
   const [isConfigMode, setIsConfigMode] = useState(false);
   const [editedAttributes, setEditedAttributes] = useState<Record<string, any>>({});
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   useEffect(() => {
     loadConfigs();
@@ -267,67 +269,97 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
         <div className="space-y-2">
           {configs.map((config, index) => (
-            <div key={config.id} className="border rounded-lg p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div key={config.id} className="border rounded-lg p-3 space-y-3 bg-card">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-1">
                   <Switch
                     checked={config.enabled}
                     onCheckedChange={() => toggleConfigEnabled(index)}
                   />
-                  <Input
-                    value={config.displayName}
-                    onChange={(e) => handleConfigChange(index, 'displayName', e.target.value)}
-                    className="text-sm w-40"
-                    placeholder="Название"
-                  />
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Ключ</label>
+                      <Input
+                        value={config.configKey}
+                        onChange={(e) => handleConfigChange(index, 'configKey', e.target.value)}
+                        className="text-xs h-7"
+                        placeholder="key_name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Псевдоним</label>
+                      <Input
+                        value={config.displayName}
+                        onChange={(e) => handleConfigChange(index, 'displayName', e.target.value)}
+                        className="text-xs h-7"
+                        placeholder="Отображаемое имя"
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className="flex gap-1">
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    className="h-7 w-7"
                     onClick={() => moveConfig(index, 'up')}
                     disabled={index === 0}
                   >
-                    <Icon name="ChevronUp" size={16} />
+                    <Icon name="ChevronUp" size={14} />
                   </Button>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    className="h-7 w-7"
                     onClick={() => moveConfig(index, 'down')}
                     disabled={index === configs.length - 1}
                   >
-                    <Icon name="ChevronDown" size={16} />
+                    <Icon name="ChevronDown" size={14} />
                   </Button>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Select
-                    value={config.formatType || 'text'}
-                    onValueChange={(value) => handleConfigChange(index, 'formatType', value)}
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">Текст</SelectItem>
-                      <SelectItem value="textarea">Многострочный текст</SelectItem>
-                      <SelectItem value="number">Число</SelectItem>
-                      <SelectItem value="money">Денежная сумма</SelectItem>
-                      <SelectItem value="boolean">Да/Нет</SelectItem>
-                      <SelectItem value="select">Выпадающий список</SelectItem>
-                      <SelectItem value="date">Дата</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Доступно для ролей:</label>
-                <div className="flex flex-wrap gap-1">
+                <label className="text-[10px] text-muted-foreground mb-1 block">Тип поля</label>
+                <Select
+                  value={config.formatType || 'text'}
+                  onValueChange={(value) => handleConfigChange(index, 'formatType', value)}
+                >
+                  <SelectTrigger className="text-xs h-7">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Текст</SelectItem>
+                    <SelectItem value="textarea">Многострочный текст</SelectItem>
+                    <SelectItem value="number">Число</SelectItem>
+                    <SelectItem value="money">Денежная сумма</SelectItem>
+                    <SelectItem value="boolean">Да/Нет</SelectItem>
+                    <SelectItem value="select">Выпадающий список</SelectItem>
+                    <SelectItem value="date">Дата</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {config.formatType === 'select' && (
+                <div>
+                  <label className="text-[10px] text-muted-foreground mb-1 block">Варианты списка</label>
+                  <Input
+                    value={config.formatOptions?.options?.join(', ') || ''}
+                    onChange={(e) => {
+                      const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
+                      handleConfigChange(index, 'formatOptions', { options });
+                    }}
+                    placeholder="Опция 1, Опция 2, Опция 3"
+                    className="text-xs h-7"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="text-[10px] text-muted-foreground mb-1 block">Доступно для ролей</label>
+                <div className="flex flex-wrap gap-1.5">
                   {['admin', 'user1', 'user2', 'user3', 'user4'].map((role) => (
-                    <label key={role} className="flex items-center gap-1 text-xs">
+                    <label key={role} className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-border hover:bg-accent cursor-pointer">
                       <input
                         type="checkbox"
                         checked={config.visibleRoles.includes(role)}
@@ -337,27 +369,48 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
                             : config.visibleRoles.filter(r => r !== role);
                           handleConfigChange(index, 'visibleRoles', roles);
                         }}
-                        className="rounded"
+                        className="rounded h-3 w-3"
                       />
                       <span>{role === 'admin' ? 'Админ' : role === 'user1' ? 'Free' : role === 'user2' ? 'Light' : role === 'user3' ? 'Max' : 'VIP'}</span>
                     </label>
                   ))}
                 </div>
               </div>
-
-              {config.formatType === 'select' && (
-                <Input
-                  value={config.formatOptions?.options?.join(', ') || ''}
-                  onChange={(e) => {
-                    const options = e.target.value.split(',').map(o => o.trim()).filter(Boolean);
-                    handleConfigChange(index, 'formatOptions', { options });
-                  }}
-                  placeholder="Варианты через запятую"
-                  className="text-xs"
-                />
-              )}
             </div>
           ))}
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2 mt-2"
+            onClick={() => setIsAddDialogOpen(true)}
+          >
+            <Icon name="Plus" size={16} />
+            Добавить элемент
+          </Button>
+          
+          <AddElementDialog
+            open={isAddDialogOpen}
+            onOpenChange={setIsAddDialogOpen}
+            onAdd={(type) => {
+              const newConfig: DisplayConfig = {
+                id: Date.now(),
+                configType: type,
+                configKey: type === 'attribute' ? `new_field_${configs.length + 1}` : `${type}_${configs.length + 1}`,
+                displayName: type === 'attribute' ? 'Новое поле' : 
+                            type === 'button' ? 'Кнопка' :
+                            type === 'iframe' ? 'Iframe' :
+                            type === 'image' ? 'Изображение' :
+                            type === 'document' ? 'Файл' : 'Кнопка связи',
+                displayOrder: configs.length,
+                visibleRoles: ['admin'],
+                enabled: true,
+                settings: {},
+                formatType: type === 'attribute' ? 'text' : undefined
+              };
+              setConfigs([...configs, newConfig]);
+            }}
+          />
         </div>
       </>
     );
