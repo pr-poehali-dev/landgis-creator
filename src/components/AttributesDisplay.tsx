@@ -47,11 +47,12 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     
     const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
     const newConfigs: DisplayConfig[] = attributeKeys.map((key, index) => {
-      const existing = savedConfigs[key];
+      const existing = Object.values(savedConfigs).find(c => c.originalKey === key || c.configKey === key);
       return existing || {
         id: Date.now() + index,
         configType: 'attribute',
         configKey: key,
+        originalKey: key,
         displayName: key,
         displayOrder: index,
         visibleRoles: ['admin'],
@@ -237,7 +238,11 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
   };
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
-  const enabledConfigs = configs.filter(c => c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles));
+  const enabledConfigs = configs.filter(c => {
+    const hasAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
+    const hasData = attributes && (attributes[c.originalKey || c.configKey] !== undefined);
+    return hasAccess && hasData;
+  });
 
   if (isConfigMode) {
     return (
@@ -278,16 +283,17 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
                   />
                   <div className="flex-1 grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Ключ</label>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Ключ (БД)</label>
                       <Input
-                        value={config.configKey}
-                        onChange={(e) => handleConfigChange(index, 'configKey', e.target.value)}
-                        className="text-xs h-7"
+                        value={config.originalKey || config.configKey}
+                        disabled
+                        className="text-xs h-7 bg-muted cursor-not-allowed"
                         placeholder="key_name"
+                        title="Ключ из базы данных (только для чтения)"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Псевдоним</label>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Название</label>
                       <Input
                         value={config.displayName}
                         onChange={(e) => handleConfigChange(index, 'displayName', e.target.value)}
@@ -461,7 +467,8 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       </div>
 
       {enabledConfigs.map((config) => {
-        const value = displayAttributes?.[config.configKey];
+        const actualKey = config.originalKey || config.configKey;
+        const value = displayAttributes?.[actualKey];
 
         return (
           <div key={config.id} className="pb-3 border-b border-border last:border-0">
@@ -469,7 +476,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
               {config.displayName}
             </p>
             {isEditing ? (
-              renderEditField(config.configKey, value, config)
+              renderEditField(actualKey, value, config)
             ) : (
               <p className="text-sm text-foreground break-words whitespace-pre-wrap">
                 {formatValue(value, config.formatType)}

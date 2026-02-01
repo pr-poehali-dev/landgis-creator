@@ -6,6 +6,7 @@ export interface DisplayConfig {
   id: number;
   configType: 'attribute' | 'image' | 'document' | 'contact_button' | 'custom_element' | 'iframe' | 'button';
   configKey: string;
+  originalKey?: string;
   displayName: string;
   displayOrder: number;
   visibleRoles: string[];
