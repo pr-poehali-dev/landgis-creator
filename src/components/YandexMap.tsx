@@ -349,7 +349,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       {selectedProperty && !showAttributesPanel && (
         <Card 
           className="absolute w-96 max-w-md shadow-2xl animate-fade-in transition-all duration-300"
-          style={cardPosition}
+          style={Object.keys(cardPosition).length > 0 ? cardPosition : { bottom: '24px', left: '24px' }}
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
