@@ -81,6 +81,12 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
         savedConfigs['ekspos'].displayName = 'Стоимость';
         localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
       }
+      
+      // Автоматическое обновление типа ID на text (для сохранения ведущих нулей)
+      if (savedConfigs['ID'] && savedConfigs['ID'].formatType !== 'text') {
+        savedConfigs['ID'].formatType = 'text';
+        localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigs));
+      }
     }
     
     const savedConfigsArray = Object.values(savedConfigs);

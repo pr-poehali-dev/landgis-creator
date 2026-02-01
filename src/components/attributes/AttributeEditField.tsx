@@ -106,15 +106,14 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
         />
       );
     
-    case 'number':
     case 'money':
-      const numericValue = value !== null && value !== undefined ? String(value).replace(/\s/g, '') : '';
-      const formattedInput = numericValue ? new Intl.NumberFormat('ru-RU').format(Number(numericValue)) : '';
+      const moneyValue = value !== null && value !== undefined ? String(value).replace(/\s/g, '') : '';
+      const formattedMoney = moneyValue ? new Intl.NumberFormat('ru-RU').format(Number(moneyValue)) : '';
       
       return (
         <Input
           type="text"
-          value={formattedInput}
+          value={formattedMoney}
           onChange={(e) => {
             const cleaned = e.target.value.replace(/\s/g, '');
             if (cleaned === '' || /^\d+$/.test(cleaned)) {
@@ -123,6 +122,16 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
           }}
           className="text-sm"
           placeholder="0"
+        />
+      );
+    
+    case 'number':
+      return (
+        <Input
+          type="number"
+          value={value !== null && value !== undefined ? String(value) : ''}
+          onChange={(e) => onValueChange(e.target.value)}
+          className="text-sm"
         />
       );
     
