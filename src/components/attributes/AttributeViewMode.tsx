@@ -7,6 +7,7 @@ interface AttributeViewModeProps {
   configs: DisplayConfig[];
   attributes: Record<string, any>;
   isEditing: boolean;
+  editedAttributes?: Record<string, any>;
   onEdit: () => void;
   onConfigure: () => void;
   onSave: () => void;
@@ -18,6 +19,7 @@ const AttributeViewMode = ({
   configs,
   attributes,
   isEditing,
+  editedAttributes,
   onEdit,
   onConfigure,
   onSave,
@@ -99,8 +101,9 @@ const AttributeViewMode = ({
           return null;
         }
 
-        // Получаем значение динамически при каждом рендере
-        const value = attributes?.[actualKey];
+        // В режиме редактирования берём из editedAttributes, в режиме просмотра - из attributes
+        const dataSource = isEditing ? (editedAttributes || attributes) : attributes;
+        const value = dataSource?.[actualKey];
 
         return (
           <div key={`${config.id}-${actualKey}-${value}`} className="pb-3 border-b border-border last:border-0">

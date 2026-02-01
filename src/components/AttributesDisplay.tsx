@@ -462,6 +462,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     <AttributeViewMode
       configs={enabledConfigs}
       attributes={displayAttributes}
+      editedAttributes={editedAttributes}
       isEditing={isEditing}
       onEdit={() => {
         // Инициализируем editedAttributes со всеми атрибутами из конфигурации
