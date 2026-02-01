@@ -51,9 +51,20 @@ const MultiselectField = ({ value, config, onValueChange }: AttributeEditFieldPr
   const [isOpen, setIsOpen] = useState(false);
   const options = config?.formatOptions?.options || [];
   
-  const selectedValues = Array.isArray(value) 
-    ? value 
-    : (typeof value === 'string' && value ? value.split(',').map(v => v.trim()) : []);
+  const parseValue = (val: any): string[] => {
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'string' && val) {
+      try {
+        const parsed = JSON.parse(val);
+        return Array.isArray(parsed) ? parsed : [val];
+      } catch {
+        return val.split(',').map(v => v.trim());
+      }
+    }
+    return [];
+  };
+  
+  const selectedValues = parseValue(value);
   
   const toggleOption = (option: string) => {
     const newValues = selectedValues.includes(option)
