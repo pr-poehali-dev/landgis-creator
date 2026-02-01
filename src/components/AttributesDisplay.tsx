@@ -58,25 +58,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     }
   };
 
-  const updateSegmentConfig = () => {
-    const savedConfigs = localStorage.getItem('attributeConfigs');
-    if (!savedConfigs) return;
-    
-    const savedConfigsMap = JSON.parse(savedConfigs);
-    
-    if (savedConfigsMap['segment']) {
-      savedConfigsMap['segment'].formatType = 'multiselect';
-      savedConfigsMap['segment'].formatOptions = {
-        options: ['МПТ', 'Жилищное строительство', 'Коммерческая недвижимость', 'Инфраструктура']
-      };
-      
-      localStorage.setItem('attributeConfigs', JSON.stringify(savedConfigsMap));
-      loadConfigs();
-      toast.success('Конфигурация сегмента обновлена на мультиселект');
-    } else {
-      toast.error('Атрибут segment не найден');
-    }
-  };
+
 
   useEffect(() => {
     if (attributes) {
@@ -127,14 +109,6 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
           };
         }
         
-        if (key === 'segment') {
-          defaultConfig.formatType = 'multiselect';
-          defaultConfig.displayName = 'Сегмент';
-          defaultConfig.formatOptions = {
-            options: ['МПТ', 'Жилищное строительство', 'Коммерческая недвижимость', 'Инфраструктура']
-          };
-        }
-        
         return defaultConfig;
       });
       
@@ -161,14 +135,6 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
           defaultConfig.displayName = 'Регион';
           defaultConfig.formatOptions = {
             options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
-          };
-        }
-        
-        if (key === 'segment') {
-          defaultConfig.formatType = 'multiselect';
-          defaultConfig.displayName = 'Сегмент';
-          defaultConfig.formatOptions = {
-            options: ['МПТ', 'Жилищное строительство', 'Коммерческая недвижимость', 'Инфраструктура']
           };
         }
         
@@ -354,15 +320,6 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
         <div className="flex justify-between items-center mb-4 pb-2 border-b">
           <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={updateSegmentConfig}
-              title="Обновить segment на мультиселект"
-            >
-              <Icon name="RefreshCw" size={16} className="mr-2" />
-              Обновить segment
-            </Button>
             <Button
               variant="ghost"
               size="sm"

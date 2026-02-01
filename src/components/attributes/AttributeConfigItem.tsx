@@ -98,7 +98,7 @@ const AttributeConfigItem = ({
           value={config.formatType || 'text'}
           onValueChange={(value) => {
             onConfigChange(index, 'formatType', value);
-            if (value === 'select' && (!config.formatOptions?.options || config.formatOptions.options.length === 0)) {
+            if ((value === 'select' || value === 'multiselect') && (!config.formatOptions?.options || config.formatOptions.options.length === 0)) {
               onConfigChange(index, 'formatOptions', { options: [''] });
             }
           }}
@@ -113,12 +113,13 @@ const AttributeConfigItem = ({
             <SelectItem value="money">Денежная сумма</SelectItem>
             <SelectItem value="boolean">Да/Нет</SelectItem>
             <SelectItem value="select">Выпадающий список</SelectItem>
+            <SelectItem value="multiselect">Множественный выбор</SelectItem>
             <SelectItem value="date">Дата</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {config.formatType === 'select' && (
+      {(config.formatType === 'select' || config.formatType === 'multiselect') && (
         <div className="space-y-2">
           <label className="text-[10px] text-muted-foreground mb-1 block">Варианты списка</label>
           <div className="space-y-1.5">
