@@ -141,8 +141,9 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       );
     
     case 'boolean':
-      const boolValue = value === 'true' || value === true || value === 'Да';
-      const currentBoolValue = boolValue ? 'true' : 'false';
+      const isTrueBool = value === 'true' || value === true || value === 'Да';
+      const isFalseBool = value === 'false' || value === false || value === 'Нет' || value === '' || value === null || value === undefined;
+      const currentBoolValue = isFalseBool ? 'false' : (isTrueBool ? 'true' : 'false');
       
       return (
         <div className="flex gap-2">
@@ -174,8 +175,9 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
     case 'toggle':
       const trueLabel = config?.formatOptions?.trueLabel || 'Да';
       const falseLabel = config?.formatOptions?.falseLabel || 'Нет';
-      const isTrue = value === 'true' || value === true || value === trueLabel;
-      const currentValue = isTrue ? 'true' : 'false';
+      const isTrueToggle = value === 'true' || value === true || value === trueLabel;
+      const isFalseToggle = value === 'false' || value === false || value === falseLabel || value === '' || value === null || value === undefined;
+      const currentValue = isFalseToggle ? 'false' : (isTrueToggle ? 'true' : 'false');
       
       return (
         <div className="flex gap-2">
