@@ -458,7 +458,10 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       configs={enabledConfigs}
       attributes={displayAttributes}
       isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
+      onEdit={() => {
+        setEditedAttributes(attributes || {});
+        setIsEditing(true);
+      }}
       onConfigure={() => setIsConfigMode(true)}
       onSave={handleSave}
       onCancel={handleCancel}
