@@ -173,7 +173,14 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
     case 'toggle':
       const trueLabel = config?.formatOptions?.trueLabel || 'Да';
       const falseLabel = config?.formatOptions?.falseLabel || 'Нет';
-      const toggleCheckedValue = (value === 'true' || value === true || value === trueLabel) ? 'true' : 'false';
+      
+      // Проверяем все варианты истины: true, 'true', 'да', 'Да', и custom trueLabel
+      const isTrueValue = value === true || 
+                         value === 'true' || 
+                         String(value).toLowerCase() === 'да' ||
+                         String(value).toLowerCase() === trueLabel.toLowerCase();
+      
+      const toggleCheckedValue = isTrueValue ? 'true' : 'false';
       const radioName = `toggle-${config?.configKey || Math.random()}`;
       
       return (
