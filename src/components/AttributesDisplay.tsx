@@ -47,7 +47,10 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       <AttributeEditField
         value={value}
         config={config}
-        onValueChange={(newValue) => handleAttributeChange(key, newValue)}
+        onValueChange={(newValue) => {
+          console.log('renderEditField onValueChange:', { key, newValue });
+          handleAttributeChange(key, newValue);
+        }}
       />
     );
   };
