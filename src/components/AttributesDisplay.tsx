@@ -222,7 +222,11 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       setIsEditing(false);
       
       if (onAttributesUpdate) {
-        onAttributesUpdate(editedAttributes);
+        try {
+          onAttributesUpdate(editedAttributes);
+        } catch (callbackError) {
+          console.error('Error in onAttributesUpdate callback:', callbackError);
+        }
       }
     } catch (error) {
       console.error('Error saving attributes:', error);
