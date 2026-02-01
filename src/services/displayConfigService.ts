@@ -12,7 +12,7 @@ export interface DisplayConfig {
   visibleRoles: string[];
   enabled: boolean;
   settings: Record<string, any>;
-  formatType?: 'text' | 'textarea' | 'number' | 'money' | 'boolean' | 'select' | 'multiselect' | 'date';
+  formatType?: 'text' | 'textarea' | 'number' | 'money' | 'boolean' | 'select' | 'multiselect' | 'date' | 'toggle';
   formatOptions?: { options?: string[] } | null;
   conditionalDisplay?: {
     dependsOn: string;
@@ -29,6 +29,8 @@ type BackendConfig = {
   displayOrder: number;
   visibleInTable: boolean;
   visibleRoles: string[];
+  formatType?: 'text' | 'textarea' | 'number' | 'money' | 'boolean' | 'select' | 'multiselect' | 'date' | 'toggle';
+  formatOptions?: any;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -42,6 +44,8 @@ function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
     displayOrder: backend.displayOrder,
     visibleRoles: backend.visibleRoles,
     enabled: backend.visibleInTable,
+    formatType: backend.formatType || 'text',
+    formatOptions: backend.formatOptions || null,
     settings: {},
     createdAt: backend.createdAt,
     updatedAt: backend.updatedAt

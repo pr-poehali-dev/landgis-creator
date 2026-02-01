@@ -106,7 +106,9 @@ def get_attribute_configs(conn):
                 display_name as "displayName",
                 display_order as "displayOrder", 
                 visible_in_table as "visibleInTable",
-                visible_roles as "visibleRoles", 
+                visible_roles as "visibleRoles",
+                format_type as "formatType",
+                format_options as "formatOptions",
                 created_at as "createdAt", 
                 updated_at as "updatedAt"
             FROM t_p78972315_landgis_creator.attribute_config
