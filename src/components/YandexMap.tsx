@@ -336,7 +336,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Площадь</span>
-                      <span className="font-semibold text-sm sm:text-base">{square}</span>
+                      <span className="font-semibold text-sm sm:text-base">{square !== 'Не указано' ? `${square} га` : square}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Цена</span>
