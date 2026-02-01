@@ -183,6 +183,8 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       const toggleCheckedValue = isTrueValue ? 'true' : 'false';
       const radioName = `toggle-${config?.configKey || Math.random()}`;
       
+      console.log('Toggle render:', { key: config?.configKey, value, toggleCheckedValue, isTrueValue });
+      
       return (
         <div className="flex gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
@@ -191,7 +193,10 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
               name={radioName}
               value="true"
               checked={toggleCheckedValue === 'true'}
-              onChange={() => onValueChange('true')}
+              onChange={() => {
+                console.log('Toggle onChange TRUE:', config?.configKey);
+                onValueChange('true');
+              }}
               className="w-4 h-4 cursor-pointer"
             />
             <span className="text-sm">{trueLabel}</span>
@@ -202,7 +207,10 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
               name={radioName}
               value="false"
               checked={toggleCheckedValue === 'false'}
-              onChange={() => onValueChange('false')}
+              onChange={() => {
+                console.log('Toggle onChange FALSE:', config?.configKey);
+                onValueChange('false');
+              }}
               className="w-4 h-4 cursor-pointer"
             />
             <span className="text-sm">{falseLabel}</span>
