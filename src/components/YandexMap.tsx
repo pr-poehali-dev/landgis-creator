@@ -319,8 +319,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               const region = attrs.region || 'Не указан';
               const price = attrs.ekspos || attrs.price || '0';
               const priceNum = typeof price === 'string' ? parseFloat(price) : price;
-              const area = calculatePolygonArea(selectedProperty.boundary);
-              const areaText = area > 0 ? `${area.toFixed(2)} га` : 'Не рассчитано';
+              const square = attrs.square || 'Не указано';
 
               return (
                 <>
@@ -337,7 +336,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Площадь</span>
-                      <span className="font-semibold text-sm sm:text-base">{areaText}</span>
+                      <span className="font-semibold text-sm sm:text-base">{square}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Цена</span>
