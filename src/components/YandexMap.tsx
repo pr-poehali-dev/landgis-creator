@@ -241,18 +241,32 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             
             console.log('Центр:', centerPoint, 'Целевой зум:', targetZoom);
             
-            // Простая плавная анимация БЕЗ flying
-            map.panTo(centerPoint, { 
-              duration: 600,
-              timingFunction: 'ease-in-out'
-            });
+            const currentCenter = map.getCenter();
+            const currentZoom = map.getZoom();
             
-            // Зум меняем отдельно
-            setTimeout(() => {
-              map.setZoom(targetZoom, { 
-                duration: 400
+            // Вычисляем расстояние между текущим центром и целевым
+            const distance = Math.sqrt(
+              Math.pow(currentCenter[0] - centerPoint[0], 2) + 
+              Math.pow(currentCenter[1] - centerPoint[1], 2)
+            );
+            
+            console.log('Расстояние:', distance, 'Текущий зум:', currentZoom);
+            
+            // Если расстояние большое или зум сильно отличается - используем setCenter + setZoom одновременно
+            if (distance > 0.1 || Math.abs(currentZoom - targetZoom) > 3) {
+              console.log('Большое расстояние - синхронный переход');
+              map.setCenter(centerPoint, targetZoom, { 
+                duration: 800,
+                timingFunction: 'ease-in-out'
               });
-            }, 300);
+            } else {
+              // Если близко - используем panTo + setZoom
+              console.log('Близкое расстояние - последовательный переход');
+              map.panTo(centerPoint, { duration: 500 });
+              setTimeout(() => {
+                map.setZoom(targetZoom, { duration: 400 });
+              }, 250);
+            }
             
             console.log('Зум к границам выполнен');
           } catch (error) {
