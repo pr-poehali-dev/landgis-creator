@@ -171,48 +171,19 @@ const Index = () => {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {filteredProperties.map(property => (
-            <Card
+            <div
               key={property.id}
-              className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${
-                selectedProperty?.id === property.id ? 'ring-2 ring-primary shadow-xl' : ''
+              className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg ${
+                selectedProperty?.id === property.id ? 'bg-accent' : ''
               }`}
               onClick={() => setSelectedProperty(property)}
             >
-              <CardHeader className="pb-2 p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-sm">{property.title}</CardTitle>
-                  <Badge className={`text-[10px] px-2 py-0 ${getStatusColor(property.status)}`} variant="outline">
-                    {property.status === 'available' ? 'Доступен' : 
-                     property.status === 'reserved' ? 'Резерв' : 'Продан'}
-                  </Badge>
-                </div>
-                <CardDescription className="flex items-center gap-1 text-[11px]">
-                  <Icon name="MapPin" size={11} />
-                  {property.location}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Площадь</span>
-                    <span className="text-sm font-medium">{property.area} м²</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Цена</span>
-                    <span className="text-sm font-bold text-primary">{formatPrice(property.price)}</span>
-                  </div>
-                  <div className="flex gap-1.5 pt-1">
-                    <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                      {getTypeLabel(property.type)}
-                    </Badge>
-                    <Badge className={`text-[10px] px-2 py-0 ${getSegmentColor(property.segment)}`} variant="outline">
-                      {property.segment === 'premium' ? 'Премиум' :
-                       property.segment === 'standard' ? 'Стандарт' : 'Эконом'}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <div className="text-sm font-medium mb-1">{property.title}</div>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Icon name="MapPin" size={12} />
+                {property.location || 'Не указан'}
+              </div>
+            </div>
           ))}
         </div>
 
@@ -297,53 +268,24 @@ const Index = () => {
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-2">
                     {filteredProperties.map(property => (
-                      <Card
+                      <div
                         key={property.id}
-                        className={`cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${
-                          selectedProperty?.id === property.id ? 'ring-2 ring-primary shadow-xl' : ''
+                        className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg ${
+                          selectedProperty?.id === property.id ? 'bg-accent' : ''
                         }`}
                         onClick={() => {
                           setSelectedProperty(property);
                           setIsMobileSidebarOpen(false);
                         }}
                       >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <CardTitle className="text-base">{property.title}</CardTitle>
-                            <Badge className={getStatusColor(property.status)} variant="outline">
-                              {property.status === 'available' ? 'Доступен' : 
-                               property.status === 'reserved' ? 'Резерв' : 'Продан'}
-                            </Badge>
-                          </div>
-                          <CardDescription className="flex items-center gap-1 text-xs">
-                            <Icon name="MapPin" size={12} />
-                            {property.location}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Площадь</span>
-                              <span className="font-medium">{property.area} м²</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Цена</span>
-                              <span className="font-bold text-primary">{formatPrice(property.price)}</span>
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {getTypeLabel(property.type)}
-                              </Badge>
-                              <Badge className={`text-xs ${getSegmentColor(property.segment)}`} variant="outline">
-                                {property.segment === 'premium' ? 'Премиум' :
-                                 property.segment === 'standard' ? 'Стандарт' : 'Эконом'}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                        <div className="text-sm font-medium mb-1">{property.title}</div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Icon name="MapPin" size={12} />
+                          {property.location || 'Не указан'}
+                        </div>
+                      </div>
                     ))}
                   </div>
 
