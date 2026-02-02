@@ -241,15 +241,31 @@ const YandexMap = ({
 
     // ⚠️ КРИТИЧНО: используем setCenter с анимацией - ГАРАНТИРУЕТ плавность
     if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
-      const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
-      const bounds = tempPolygon.geometry?.getBounds();
+      // Находим существующий полигон на карте
+      const existingPolygon = polygonsRef.current.find((polygon: any) => {
+        try {
+          const coords = polygon.geometry?.getCoordinates()?.[0];
+          if (!coords || coords.length !== selectedProperty.boundary?.length) return false;
+          return coords.every((coord: [number, number], idx: number) => 
+            coord[0] === selectedProperty.boundary?.[idx]?.[0] && 
+            coord[1] === selectedProperty.boundary?.[idx]?.[1]
+          );
+        } catch {
+          return false;
+        }
+      });
       
-      if (bounds) {
-        map.setBounds(bounds, {
-          checkZoomRange: true,
-          zoomMargin: 60,
-          duration: 800
-        });
+      if (existingPolygon) {
+        const bounds = existingPolygon.geometry?.getBounds();
+        if (bounds) {
+          map.setBounds(bounds, {
+            checkZoomRange: true,
+            zoomMargin: 60,
+            duration: 800
+          });
+        } else {
+          map.setCenter([lat, lng], 16, { checkZoomRange: true, duration: 800 });
+        }
       } else {
         map.setCenter([lat, lng], 16, { checkZoomRange: true, duration: 800 });
       }
