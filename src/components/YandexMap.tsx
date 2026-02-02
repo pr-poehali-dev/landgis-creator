@@ -187,46 +187,42 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   useEffect(() => {
     console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel, 'mapInstanceRef:', !!mapInstanceRef.current);
     
+    const map = mapInstanceRef.current;
+    if (!map) {
+      console.log('Карта ещё не инициализирована');
+      return;
+    }
+
     if (!selectedProperty || !mapRef.current) {
       console.log('Выход: нет selectedProperty - возвращаем исходный вид');
       setCardPosition({});
       
       // ⚠️ КРИТИЧНО: восстанавливаем исходный обзор карты
-      const map = mapInstanceRef.current;
-      if (map && previousSelectedRef.current) {
+      if (previousSelectedRef.current) {
         console.log('Возвращаем карту к исходному виду');
-        requestAnimationFrame(() => {
-          map.setCenter([55.751244, 37.618423], 10, {
-            duration: 600,
-            timingFunction: 'ease-in-out'
-          });
+        map.setCenter([55.751244, 37.618423], 10, {
+          duration: 600,
+          timingFunction: 'ease-in-out'
         });
         previousSelectedRef.current = null;
       }
       return;
     }
 
-    const performZoom = () => {
-      const map = mapInstanceRef.current;
-      if (!map) {
-        console.log('performZoom: карта ещё не готова');
-        return false;
-      }
-
-      console.log('performZoom: Карта готова, выполняем зум!');
+    console.log('Начинаем зум к участку');
+    
+    // ⚠️ КРИТИЧНО: останавливаем все текущие анимации перед новой
+    map.balloon.close();
+    if (map.action && map.action.stop) {
+      map.action.stop();
+    }
       
-      // ⚠️ КРИТИЧНО: останавливаем все текущие анимации перед новой
-      map.balloon.close();
-      if (map.action && map.action.stop) {
-        map.action.stop();
-      }
-      
-      const margin = 24;
-      const [lat, lng] = selectedProperty.coordinates;
-      
-      console.log('Проверка showAttributesPanel:', showAttributesPanel);
-      
-      if (showAttributesPanel) {
+    const margin = 24;
+    const [lat, lng] = selectedProperty.coordinates;
+    
+    console.log('Проверка showAttributesPanel:', showAttributesPanel);
+    
+    if (showAttributesPanel) {
         console.log('Зумируем к участку:', selectedProperty.title);
         console.log('Координаты:', lat, lng);
         console.log('Есть границы:', !!selectedProperty.boundary);
@@ -274,34 +270,28 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             // ⚠️ КРИТИЧНО: ждём завершения рендера карты перед анимацией
             console.log('Выполняю setCenter с зумом');
             
-            // Используем requestAnimationFrame для гарантии готовности карты
-            requestAnimationFrame(() => {
-              map.setCenter(centerPoint, targetZoom, { 
-                duration: 800,
-                timingFunction: 'ease-in-out',
-                checkZoomRange: true
-              });
+            // Плавный зум к участку
+            map.setCenter(centerPoint, targetZoom, { 
+              duration: 800,
+              timingFunction: 'ease-in-out',
+              checkZoomRange: true
             });
             
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
-            requestAnimationFrame(() => {
-              map.setCenter([lat, lng], 16, { 
-                duration: 800,
-                timingFunction: 'ease-in-out',
-                checkZoomRange: true
-              });
-            });
-          }
-        } else {
-          console.log('Зумируем к центру участка');
-          requestAnimationFrame(() => {
             map.setCenter([lat, lng], 16, { 
               duration: 800,
               timingFunction: 'ease-in-out',
               checkZoomRange: true
             });
+          }
+        } else {
+          console.log('Зумируем к центру участка');
+          map.setCenter([lat, lng], 16, { 
+            duration: 800,
+            timingFunction: 'ease-in-out',
+            checkZoomRange: true
           });
         }
       }
@@ -325,15 +315,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         }
 
         setCardPosition(position);
-      }, showAttributesPanel ? 100 : 0);
-      
-      return true;
-    };
-
-    if (!performZoom()) {
-      console.log('Карта не готова, повторная попытка через 100мс');
-      setTimeout(performZoom, 100);
-    }
+      }, showAttributesPanel ? 800 : 0);
   }, [selectedProperty, showAttributesPanel, isMapReady]);
 
   return (
