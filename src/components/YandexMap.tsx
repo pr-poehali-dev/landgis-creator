@@ -151,8 +151,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       clusterer.removeAll();
       
       // Удаляем все полигоны (boundaries) перед добавлением новых
-      const geoObjects = map.geoObjects.toArray();
-      geoObjects.forEach((obj: any) => {
+      map.geoObjects.each((obj: any) => {
         if (obj !== clusterer) {
           map.geoObjects.remove(obj);
         }
