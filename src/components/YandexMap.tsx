@@ -224,20 +224,31 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             ]];
             console.log('Рассчитанные границы:', bounds);
             
-            // Анимируем к границам через panTo с flying режимом
-            map.panTo([
-              (bounds[0][0] + bounds[1][0]) / 2,
-              (bounds[0][1] + bounds[1][1]) / 2
-            ], { 
+            // Вычисляем целевой зум заранее (мгновенно на фоне)
+            const currentZoom = map.getZoom();
+            const currentCenter = map.getCenter();
+            
+            map.setBounds(bounds, { 
+              checkZoomRange: true,
+              zoomMargin: [100, 100, 100, 100],
+              duration: 0
+            });
+            
+            const targetZoom = map.getZoom();
+            const targetCenter = map.getCenter();
+            
+            // Возвращаем карту обратно
+            map.setCenter(currentCenter, currentZoom, { duration: 0 });
+            
+            // Теперь анимируем к целевым координатам
+            map.panTo(targetCenter, { 
               flying: 1,
               duration: 800
             }).then(() => {
-              // После анимации подгоняем зум под границы
-              map.setBounds(bounds, { 
-                checkZoomRange: true,
-                zoomMargin: [100, 100, 100, 100],
-                duration: 400
-              });
+              // Плавно меняем зум
+              if (map.getZoom() !== targetZoom) {
+                map.setZoom(targetZoom, { duration: 500 });
+              }
             });
             console.log('Зум к границам выполнен');
           } catch (error) {
