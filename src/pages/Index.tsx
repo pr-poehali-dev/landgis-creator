@@ -26,6 +26,7 @@ const Index = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
+  const [showAttributesPanel, setShowAttributesPanel] = useState(false);
 
   useEffect(() => {
     loadProperties();
@@ -176,7 +177,10 @@ const Index = () => {
               className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg ${
                 selectedProperty?.id === property.id ? 'bg-accent' : ''
               }`}
-              onClick={() => setSelectedProperty(property)}
+              onClick={() => {
+                setSelectedProperty(property);
+                setShowAttributesPanel(true);
+              }}
             >
               <div className="text-sm font-medium mb-1">{property.title}</div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -277,6 +281,7 @@ const Index = () => {
                         }`}
                         onClick={() => {
                           setSelectedProperty(property);
+                          setShowAttributesPanel(true);
                           setIsMobileSidebarOpen(false);
                         }}
                       >
@@ -362,6 +367,8 @@ const Index = () => {
             onSelectProperty={setSelectedProperty}
             mapType={mapType}
             userRole={currentUserRole}
+            showAttributesPanel={showAttributesPanel}
+            onAttributesPanelChange={setShowAttributesPanel}
           />
         </div>
 

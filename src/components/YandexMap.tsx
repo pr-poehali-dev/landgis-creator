@@ -25,6 +25,8 @@ interface YandexMapProps {
   onSelectProperty: (property: Property | null) => void;
   mapType: 'scheme' | 'hybrid';
   userRole?: string;
+  showAttributesPanel?: boolean;
+  onAttributesPanelChange?: (show: boolean) => void;
 }
 
 declare global {
@@ -33,13 +35,13 @@ declare global {
   }
 }
 
-const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, userRole = 'user1' }: YandexMapProps) => {
+const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, userRole = 'user1', showAttributesPanel = false, onAttributesPanelChange }: YandexMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
   const polygonsRef = useRef<any[]>([]);
   const [isMapReady, setIsMapReady] = useState(false);
-  const [showAttributesPanel, setShowAttributesPanel] = useState(false);
+  const [showMiniCard, setShowMiniCard] = useState(false);
   const [cardPosition, setCardPosition] = useState<{ top?: string; left?: string; right?: string; bottom?: string }>({});
 
   const formatPrice = (price: number) => {
@@ -175,6 +177,8 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
 
           polygon.events.add('click', () => {
             onSelectProperty(property);
+            setShowMiniCard(true);
+            if (onAttributesPanelChange) onAttributesPanelChange(false);
           });
 
           map.geoObjects.add(polygon);
@@ -223,6 +227,8 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
 
         placemark.events.add('click', () => {
           onSelectProperty(property);
+          setShowMiniCard(true);
+          if (onAttributesPanelChange) onAttributesPanelChange(false);
         });
 
         clusterer.add(placemark);
@@ -251,60 +257,51 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return;
     }
 
-    const container = mapRef.current;
-    const margin = 24;
-
-    // Получаем центр карты
     const map = mapInstanceRef.current;
     if (!map) {
       setCardPosition({ bottom: '24px', left: '24px' });
       return;
     }
 
-    // Зумируем к участку
+    const margin = 24;
     const [lat, lng] = selectedProperty.coordinates;
     
-    // Если есть границы участка, зумируем к ним
-    if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
-      const bounds = window.ymaps.util.bounds.fromPoints(selectedProperty.boundary);
-      map.setBounds(bounds, { 
-        checkZoomRange: true,
-        zoomMargin: 100,
-        duration: 500
-      });
-    } else {
-      // Иначе просто центрируем на координатах с зумом 16
-      map.setCenter([lat, lng], 16, { duration: 500 });
+    // Зумируем ТОЛЬКО если открыта панель атрибутов (клик из списка или "Подробнее")
+    if (showAttributesPanel) {
+      if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
+        const bounds = window.ymaps.util.bounds.fromPoints(selectedProperty.boundary);
+        map.setBounds(bounds, { 
+          checkZoomRange: true,
+          zoomMargin: 100,
+          duration: 500
+        });
+      } else {
+        map.setCenter([lat, lng], 16, { duration: 500 });
+      }
     }
 
-    // Небольшая задержка для расчёта позиции после анимации
+    // Расчёт позиции мини-карточки
     setTimeout(() => {
       const mapCenter = map.getCenter();
       const [centerLat, centerLng] = mapCenter;
 
       const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
 
-      // По горизонтали (долгота): если объект левее центра - карточка СПРАВА, иначе - СЛЕВА
       if (lng < centerLng) {
-        // Объект слева от центра - карточка справа
         position.right = `${margin}px`;
       } else {
-        // Объект справа от центра - карточка слева
         position.left = `${margin}px`;
       }
 
-      // По вертикали (широта): если объект выше центра (больше широта) - карточка ВНИЗУ, иначе - ВВЕРХУ
       if (lat > centerLat) {
-        // Объект выше центра - карточка внизу
         position.bottom = `${margin}px`;
       } else {
-        // Объект ниже центра - карточка вверху
         position.top = `${margin}px`;
       }
 
       setCardPosition(position);
-    }, 100);
-  }, [selectedProperty]);
+    }, showAttributesPanel ? 100 : 0);
+  }, [selectedProperty, showAttributesPanel]);
 
   return (
     <div className="relative w-full h-full">
@@ -324,7 +321,10 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 -mt-1"
-                onClick={() => setShowAttributesPanel(false)}
+                onClick={() => {
+                  if (onAttributesPanelChange) onAttributesPanelChange(false);
+                  onSelectProperty(null);
+                }}
               >
                 <Icon name="X" size={20} />
               </Button>
@@ -349,7 +349,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         </Card>
       )}
 
-      {selectedProperty && !showAttributesPanel && (
+      {selectedProperty && !showAttributesPanel && showMiniCard && (
         <Card 
           className="absolute w-96 max-w-md shadow-2xl animate-fade-in transition-all duration-300"
           style={Object.keys(cardPosition).length > 0 ? cardPosition : { bottom: '24px', left: '24px' }}
@@ -366,7 +366,10 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onSelectProperty(null)}
+                onClick={() => {
+                  setShowMiniCard(false);
+                  onSelectProperty(null);
+                }}
               >
                 <Icon name="X" size={18} />
               </Button>
@@ -427,7 +430,10 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
                 <Icon name="Phone" size={16} className="sm:mr-2" />
                 <span className="hidden sm:inline">Связаться</span>
               </Button>
-              <Button variant="outline" className="flex-1" size="sm" onClick={() => setShowAttributesPanel(true)}>
+              <Button variant="outline" className="flex-1" size="sm" onClick={() => {
+                setShowMiniCard(false);
+                if (onAttributesPanelChange) onAttributesPanelChange(true);
+              }}>
                 <Icon name="Eye" size={16} className="sm:mr-2" />
                 <span className="hidden sm:inline">Подробнее</span>
               </Button>
