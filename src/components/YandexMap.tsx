@@ -37,6 +37,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
+  const polygonsRef = useRef<any[]>([]);
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
   const [cardPosition, setCardPosition] = useState<{ top?: string; left?: string; right?: string; bottom?: string }>({});
@@ -147,16 +148,11 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       const map = mapInstanceRef.current;
       const clusterer = clustererRef.current;
 
-      // Сохраняем старые полигоны для удаления
-      const oldPolygons: any[] = [];
-      map.geoObjects.each((obj: any) => {
-        if (obj !== clusterer) {
-          oldPolygons.push(obj);
-        }
+      // Удаляем старые полигоны из предыдущего рендера
+      polygonsRef.current.forEach(polygon => {
+        map.geoObjects.remove(polygon);
       });
-      
-      // Удаляем старые полигоны
-      oldPolygons.forEach(polygon => map.geoObjects.remove(polygon));
+      polygonsRef.current = [];
       
       // Очищаем кластер
       clusterer.removeAll();
@@ -182,6 +178,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
           });
 
           map.geoObjects.add(polygon);
+          polygonsRef.current.push(polygon);
         }
 
         const placemark = new window.ymaps.Placemark(
@@ -255,16 +252,8 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
     }
 
     const container = mapRef.current;
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    
-    const cardWidth = 384;
-    const cardHeight = 400;
     const margin = 24;
 
-    // Простая логика: определяем квадрант экрана
-    const [lng, lat] = selectedProperty.coordinates;
-    
     // Получаем центр карты
     const map = mapInstanceRef.current;
     if (!map) {
@@ -272,26 +261,32 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return;
     }
 
+    // В Яндекс.Картах координаты: [широта, долгота]
+    const [lat, lng] = selectedProperty.coordinates;
     const mapCenter = map.getCenter();
-    const [centerLng, centerLat] = mapCenter;
+    const [centerLat, centerLng] = mapCenter;
 
     const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
 
-    // По горизонтали: если объект левее центра - карточка справа, иначе - слева
+    // По горизонтали (долгота): если объект левее центра - карточка СПРАВА, иначе - СЛЕВА
     if (lng < centerLng) {
-      position.left = `${margin}px`;
-    } else {
+      // Объект слева от центра - карточка справа
       position.right = `${margin}px`;
+    } else {
+      // Объект справа от центра - карточка слева
+      position.left = `${margin}px`;
     }
 
-    // По вертикали: если объект выше центра - карточка внизу, иначе - вверху
+    // По вертикали (широта): если объект выше центра (больше широта) - карточка ВНИЗУ, иначе - ВВЕРХУ
     if (lat > centerLat) {
+      // Объект выше центра - карточка внизу
       position.bottom = `${margin}px`;
     } else {
+      // Объект ниже центра - карточка вверху
       position.top = `${margin}px`;
     }
 
-    console.log('Card position:', { lng, lat, centerLng, centerLat, position });
+    console.log('Card position:', { lat, lng, centerLat, centerLng, position });
     setCardPosition(position);
   }, [selectedProperty]);
 
