@@ -86,7 +86,7 @@ const PropertyMiniCard = ({ property, cardPosition, onClose, onShowDetails }: Pr
             <span className="text-sm text-muted-foreground">Цена</span>
             <span className="text-xl font-bold text-primary">{formatPrice(property.price)}</span>
           </div>
-          {property.attributes && Object.keys(property.attributes).length > 1 && (
+          {property.attributes && typeof property.attributes === 'object' && Object.keys(property.attributes).length > 1 && (
             <Button 
               className="w-full"
               onClick={onShowDetails}
