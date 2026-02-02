@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import Icon from '@/components/ui/icon';
-import AttributesDisplay from '@/components/AttributesDisplay';
+import PropertyMiniCard from '@/components/map/PropertyMiniCard';
+import PropertyAttributesPanel from '@/components/map/PropertyAttributesPanel';
+import { formatPrice, getTypeLabel, getMarkerColor } from '@/components/map/MapHelpers';
 
 interface Property {
   id: number;
@@ -46,71 +44,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   const [showMiniCard, setShowMiniCard] = useState(false);
   const [cardPosition, setCardPosition] = useState<{ top?: string; left?: string; right?: string; bottom?: string }>({});
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      maximumFractionDigits: 0
-    }).format(price);
-  };
-
-  const getTypeLabel = (type: string) => {
-    const labels = {
-      land: 'Земля',
-      commercial: 'Коммерция',
-      residential: 'Жильё'
-    };
-    return labels[type as keyof typeof labels];
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors = {
-      available: 'bg-green-500/20 text-green-400 border-green-500/30',
-      reserved: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-      sold: 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-    };
-    return colors[status as keyof typeof colors];
-  };
-
-  const getSegmentColor = (segment: string) => {
-    const colors = {
-      premium: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-      standard: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      economy: 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-    };
-    return colors[segment as keyof typeof colors];
-  };
-
-  const getMarkerColor = (segment: string) => {
-    const colors = {
-      premium: '#8B5CF6',
-      standard: '#0EA5E9',
-      economy: '#F97316'
-    };
-    return colors[segment as keyof typeof colors];
-  };
-
-  const calculatePolygonArea = (boundary?: Array<[number, number]>) => {
-    if (!boundary || boundary.length < 3) return 0;
-    
-    // Формула площади полигона по координатам (Shoelace formula)
-    // Результат в квадратных градусах, конвертируем в га
-    let area = 0;
-    for (let i = 0; i < boundary.length; i++) {
-      const j = (i + 1) % boundary.length;
-      area += boundary[i][0] * boundary[j][1];
-      area -= boundary[j][0] * boundary[i][1];
-    }
-    area = Math.abs(area) / 2;
-    
-    // Конвертация квадратных градусов в гектары (приблизительно)
-    // На широте Москвы: 1 градус ≈ 111 км
-    const areaInSquareMeters = area * 111000 * 111000;
-    const areaInHectares = areaInSquareMeters / 10000;
-    
-    return areaInHectares;
-  };
-
   useEffect(() => {
     if (!window.ymaps) {
       console.warn('Яндекс.Карты не загружены');
@@ -152,13 +85,11 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       const map = mapInstanceRef.current;
       const clusterer = clustererRef.current;
 
-      // Удаляем старые полигоны из предыдущего рендера
       polygonsRef.current.forEach(polygon => {
         map.geoObjects.remove(polygon);
       });
       polygonsRef.current = [];
       
-      // Очищаем кластер
       clusterer.removeAll();
 
       properties.forEach((property) => {
@@ -262,7 +193,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return;
     }
 
-    // Функция для выполнения зума
     const performZoom = () => {
       const map = mapInstanceRef.current;
       if (!map) {
@@ -277,7 +207,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       
       console.log('Проверка showAttributesPanel:', showAttributesPanel);
       
-      // Зумируем ТОЛЬКО если открыта панель атрибутов (клик из списка или "Подробнее")
       if (showAttributesPanel) {
         console.log('Зумируем к участку:', selectedProperty.title);
         console.log('Координаты:', lat, lng);
@@ -286,7 +215,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
           try {
             console.log('Граница участка:', selectedProperty.boundary);
-            // Используем getBounds для расчёта границ
             const bounds = [[
               Math.min(...selectedProperty.boundary.map(p => p[0])),
               Math.min(...selectedProperty.boundary.map(p => p[1]))
@@ -296,13 +224,11 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             ]];
             console.log('Рассчитанные границы:', bounds);
             
-            // Сначала получаем нужные координаты и зум
             const center = [
               (bounds[0][0] + bounds[1][0]) / 2,
               (bounds[0][1] + bounds[1][1]) / 2
             ];
             
-            // Вычисляем подходящий зум для границ
             map.setBounds(bounds, { 
               checkZoomRange: true,
               zoomMargin: [100, 100, 100, 100]
@@ -310,7 +236,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               const targetZoom = map.getZoom();
               const targetCenter = map.getCenter();
               
-              // Теперь делаем плавную анимацию к этим координатам
               // @ts-ignore
               const action = new ymaps.map.action.Single({
                 center: targetCenter,
@@ -345,7 +270,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         }
       }
 
-      // Расчёт позиции мини-карточки
       setTimeout(() => {
         const mapCenter = map.getCenter();
         const [centerLat, centerLng] = mapCenter;
@@ -370,9 +294,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return true;
     };
 
-    // Пробуем выполнить зум сразу
     if (!performZoom()) {
-      // Если не получилось (карта не готова), пробуем через 100мс
       console.log('Карта не готова, повторная попытка через 100мс');
       setTimeout(performZoom, 100);
     }
@@ -383,138 +305,35 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       <div ref={mapRef} className="w-full h-full" />
 
       {showAttributesPanel && selectedProperty && selectedProperty.attributes && (
-        <Card className="absolute top-0 right-0 h-full w-full sm:w-[450px] shadow-2xl animate-fade-in overflow-hidden flex flex-col">
-          <CardHeader className="pb-3 border-b border-border flex-shrink-0">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-base mb-2">Атрибуты объекта</CardTitle>
-                <CardDescription className="text-xs">
-                  {selectedProperty.title}
-                </CardDescription>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 -mt-1"
-                onClick={() => {
-                  if (onAttributesPanelChange) onAttributesPanelChange(false);
-                  onSelectProperty(null);
-                }}
-              >
-                <Icon name="X" size={20} />
-              </Button>
-            </div>
-            <Badge variant="secondary" className="mt-2 w-fit">
-              Всего: {Object.keys(selectedProperty.attributes).filter(k => k !== 'geometry_name').length} атрибутов
-            </Badge>
-          </CardHeader>
-          <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
-            <AttributesDisplay 
-              attributes={selectedProperty.attributes}
-              userRole={userRole}
-              featureId={selectedProperty.id}
-              onAttributesUpdate={(updatedAttrs) => {
-                onSelectProperty({
-                  ...selectedProperty,
-                  attributes: updatedAttrs
-                });
-              }}
-            />
-          </CardContent>
-        </Card>
+        <PropertyAttributesPanel
+          property={selectedProperty}
+          userRole={userRole}
+          onClose={() => {
+            if (onAttributesPanelChange) onAttributesPanelChange(false);
+            onSelectProperty(null);
+          }}
+          onAttributesUpdate={(updatedAttrs) => {
+            onSelectProperty({
+              ...selectedProperty,
+              attributes: updatedAttrs
+            });
+          }}
+        />
       )}
 
       {selectedProperty && !showAttributesPanel && showMiniCard && (
-        <Card 
-          className="absolute w-96 max-w-md shadow-2xl animate-fade-in transition-all duration-300"
-          style={Object.keys(cardPosition).length > 0 ? cardPosition : { bottom: '24px', left: '24px' }}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <CardTitle className="text-base sm:text-lg mb-2">{selectedProperty.title}</CardTitle>
-                <CardDescription className="flex items-center gap-1 text-xs">
-                  <Icon name="MapPin" size={14} />
-                  {selectedProperty.attributes?.region || 'Не указан'}
-                </CardDescription>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  setShowMiniCard(false);
-                  onSelectProperty(null);
-                }}
-              >
-                <Icon name="X" size={18} />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-4">
-            {(() => {
-              const attrs = selectedProperty.attributes || {};
-              const statusPub = attrs.status_publ || 'Не указан';
-              const segment = attrs.segment ? 
-                (Array.isArray(attrs.segment) ? attrs.segment.join(', ') : 
-                 typeof attrs.segment === 'string' && attrs.segment.startsWith('[') ? 
-                 JSON.parse(attrs.segment).join(', ') : attrs.segment) : 'Не указан';
-              const region = attrs.region || 'Не указан';
-              const price = attrs.ekspos || attrs.price || '0';
-              const priceNum = typeof price === 'string' ? parseFloat(price) : price;
-              const square = attrs.square || 'Не указано';
-
-              return (
-                <>
-                  <div className="flex items-center justify-between">
-                    <Badge className={getStatusColor(selectedProperty.status)} variant="outline">
-                      {statusPub}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Регион</span>
-                      <span className="text-sm font-medium">{region}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Площадь</span>
-                      <span className="font-semibold text-sm sm:text-base">{square !== 'Не указано' ? `${square} га` : square}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Цена</span>
-                      <span className="font-bold text-lg sm:text-xl text-primary">
-                        {formatPrice(priceNum)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="text-xs">{getTypeLabel(selectedProperty.type)}</Badge>
-                    {segment !== 'Не указан' && (
-                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs" variant="outline">
-                        {segment}
-                      </Badge>
-                    )}
-                  </div>
-                </>
-              );
-            })()}
-
-            <div className="flex gap-2 pt-2">
-              <Button className="flex-1" size="sm">
-                <Icon name="Phone" size={16} className="sm:mr-2" />
-                <span className="hidden sm:inline">Связаться</span>
-              </Button>
-              <Button variant="outline" className="flex-1" size="sm" onClick={() => {
-                setShowMiniCard(false);
-                if (onAttributesPanelChange) onAttributesPanelChange(true);
-              }}>
-                <Icon name="Eye" size={16} className="sm:mr-2" />
-                <span className="hidden sm:inline">Подробнее</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <PropertyMiniCard
+          property={selectedProperty}
+          cardPosition={cardPosition}
+          onClose={() => {
+            setShowMiniCard(false);
+            onSelectProperty(null);
+          }}
+          onShowDetails={() => {
+            setShowMiniCard(false);
+            if (onAttributesPanelChange) onAttributesPanelChange(true);
+          }}
+        />
       )}
     </div>
   );
