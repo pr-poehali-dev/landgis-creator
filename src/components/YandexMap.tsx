@@ -268,14 +268,34 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
     
     // Зумируем ТОЛЬКО если открыта панель атрибутов (клик из списка или "Подробнее")
     if (showAttributesPanel) {
+      console.log('Зумируем к участку:', selectedProperty.title);
+      console.log('Координаты:', lat, lng);
+      console.log('Есть границы:', !!selectedProperty.boundary);
+      
       if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
-        const bounds = window.ymaps.util.bounds.fromPoints(selectedProperty.boundary);
-        map.setBounds(bounds, { 
-          checkZoomRange: true,
-          zoomMargin: 100,
-          duration: 500
-        });
+        try {
+          console.log('Граница участка:', selectedProperty.boundary);
+          // Используем getBounds для расчёта границ
+          const bounds = [[
+            Math.min(...selectedProperty.boundary.map(p => p[0])),
+            Math.min(...selectedProperty.boundary.map(p => p[1]))
+          ], [
+            Math.max(...selectedProperty.boundary.map(p => p[0])),
+            Math.max(...selectedProperty.boundary.map(p => p[1]))
+          ]];
+          console.log('Рассчитанные границы:', bounds);
+          map.setBounds(bounds, { 
+            checkZoomRange: true,
+            zoomMargin: [100, 100, 100, 100],
+            duration: 500
+          });
+          console.log('Зум к границам выполнен');
+        } catch (error) {
+          console.error('Ошибка при зуме к границам:', error);
+          map.setCenter([lat, lng], 16, { duration: 500 });
+        }
       } else {
+        console.log('Зумируем к центру участка');
         map.setCenter([lat, lng], 16, { duration: 500 });
       }
     }
