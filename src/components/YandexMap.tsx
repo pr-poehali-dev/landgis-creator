@@ -244,51 +244,63 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
     const map = mapInstanceRef.current;
     const container = mapRef.current;
 
-    // Вычисляем позицию БЕЗ центрирования карты
-    try {
-      const projection = map.options.get('projection');
-      const globalPixels = projection.toGlobalPixels(selectedProperty.coordinates, map.getZoom());
-      const mapOffset = map.converter.globalToPage([0, 0]);
-      
-      const containerRect = container.getBoundingClientRect();
-      
-      const pixelX = globalPixels[0] - mapOffset[0];
-      const pixelY = globalPixels[1] - mapOffset[1];
+    const calculatePosition = () => {
+      try {
+        const containerRect = container.getBoundingClientRect();
+        const projection = map.options.get('projection');
+        
+        // Получаем глобальные пиксельные координаты точки
+        const globalPixels = projection.toGlobalPixels(selectedProperty.coordinates, map.getZoom());
+        
+        // Получаем текущее смещение карты
+        const mapCenter = map.getCenter();
+        const mapCenterGlobalPixels = projection.toGlobalPixels(mapCenter, map.getZoom());
+        
+        // Вычисляем позицию точки относительно центра контейнера
+        const offsetX = globalPixels[0] - mapCenterGlobalPixels[0];
+        const offsetY = globalPixels[1] - mapCenterGlobalPixels[1];
+        
+        const centerX = containerRect.width / 2;
+        const centerY = containerRect.height / 2;
+        
+        const pixelX = centerX + offsetX;
+        const pixelY = centerY + offsetY;
 
-      const cardWidth = 384;
-      const cardHeight = 400;
-      const margin = 24;
+        const cardWidth = 384;
+        const cardHeight = 400;
+        const margin = 24;
 
-      const containerWidth = containerRect.width;
-      const containerHeight = containerRect.height;
-      const centerX = containerWidth / 2;
-      const centerY = containerHeight / 2;
-      
-      const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
+        const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
 
-      // Горизонтальное положение
-      if (pixelX < centerX) {
-        const leftPos = pixelX + margin;
-        position.left = `${Math.max(margin, Math.min(leftPos, containerWidth - cardWidth - margin))}px`;
-      } else {
-        const rightPos = containerWidth - pixelX + margin;
-        position.right = `${Math.max(margin, Math.min(rightPos, containerWidth - cardWidth - margin))}px`;
+        // Определяем положение карточки
+        if (pixelX < centerX) {
+          // Слева от центра - карточка справа
+          position.left = `${Math.min(pixelX + margin, containerRect.width - cardWidth - margin)}px`;
+        } else {
+          // Справа от центра - карточка слева
+          position.right = `${Math.min(containerRect.width - pixelX + margin, containerRect.width - cardWidth - margin)}px`;
+        }
+
+        if (pixelY < centerY) {
+          // Вверху от центра - карточка ниже
+          position.top = `${Math.min(pixelY + margin, containerRect.height - cardHeight - margin)}px`;
+        } else {
+          // Внизу от центра - карточка выше
+          position.bottom = `${Math.min(containerRect.height - pixelY + margin, containerRect.height - cardHeight - margin)}px`;
+        }
+
+        console.log('Position calculated:', { pixelX, pixelY, centerX, centerY, position });
+        setCardPosition(position);
+      } catch (error) {
+        console.error('Error calculating card position:', error);
+        setCardPosition({ bottom: '24px', left: '24px' });
       }
+    };
 
-      // Вертикальное положение
-      if (pixelY < centerY) {
-        const topPos = pixelY + margin;
-        position.top = `${Math.max(margin, Math.min(topPos, containerHeight - cardHeight - margin))}px`;
-      } else {
-        const bottomPos = containerHeight - pixelY + margin;
-        position.bottom = `${Math.max(margin, Math.min(bottomPos, containerHeight - cardHeight - margin))}px`;
-      }
-
-      setCardPosition(position);
-    } catch (error) {
-      console.error('Error calculating card position:', error);
-      setCardPosition({ bottom: '24px', left: '24px' });
-    }
+    // Ждём, пока карта готова
+    const timer = setTimeout(calculatePosition, 100);
+    
+    return () => clearTimeout(timer);
   }, [selectedProperty]);
 
   return (
