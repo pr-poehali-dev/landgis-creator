@@ -53,7 +53,6 @@ const YandexMap = ({
   const previousSelectedRef = useRef<Property | null>(null);
   const isAnimatingRef = useRef(false);
   const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
-  const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
 
   const zoomToProperty = (property: Property) => {
     const map = mapInstanceRef.current;
