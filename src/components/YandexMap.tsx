@@ -36,6 +36,8 @@ declare global {
 }
 
 const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, userRole = 'user1', showAttributesPanel = false, onAttributesPanelChange }: YandexMapProps) => {
+  console.log('YandexMap рендер! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel);
+  
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
