@@ -298,16 +298,17 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             map.setBounds(bounds, { 
               checkZoomRange: true,
               zoomMargin: [100, 100, 100, 100],
-              duration: 500
+              duration: 800,
+              timingFunction: 'ease-in-out'
             });
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
-            map.setCenter([lat, lng], 16, { duration: 500 });
+            map.setCenter([lat, lng], 16, { duration: 800, timingFunction: 'ease-in-out' });
           }
         } else {
           console.log('Зумируем к центру участка');
-          map.setCenter([lat, lng], 16, { duration: 500 });
+          map.setCenter([lat, lng], 16, { duration: 800, timingFunction: 'ease-in-out' });
         }
       }
 
