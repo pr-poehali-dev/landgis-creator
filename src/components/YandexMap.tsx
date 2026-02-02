@@ -254,7 +254,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   }, [mapType]);
 
   useEffect(() => {
-    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel);
+    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel, 'isMapReady:', isMapReady);
     
     if (!selectedProperty || !mapRef.current) {
       console.log('Выход: нет selectedProperty или mapRef');
@@ -262,12 +262,14 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return;
     }
 
-    const map = mapInstanceRef.current;
-    if (!map) {
-      console.log('Выход: нет mapInstanceRef');
-      setCardPosition({ bottom: '24px', left: '24px' });
+    // Ждём пока карта инициализируется
+    if (!isMapReady || !mapInstanceRef.current) {
+      console.log('Выход: карта ещё не готова. isMapReady:', isMapReady, 'mapInstanceRef:', !!mapInstanceRef.current);
       return;
     }
+
+    const map = mapInstanceRef.current;
+    console.log('Карта готова, продолжаем!');
 
     const margin = 24;
     const [lat, lng] = selectedProperty.coordinates;
@@ -329,7 +331,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
 
       setCardPosition(position);
     }, showAttributesPanel ? 100 : 0);
-  }, [selectedProperty, showAttributesPanel]);
+  }, [selectedProperty, showAttributesPanel, isMapReady]);
 
   return (
     <div className="relative w-full h-full">
