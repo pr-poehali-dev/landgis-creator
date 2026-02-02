@@ -202,6 +202,12 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
 
       console.log('performZoom: Карта готова, выполняем зум!');
       
+      // ⚠️ КРИТИЧНО: останавливаем все текущие анимации перед новой
+      map.balloon.close();
+      if (map.action && map.action.stop) {
+        map.action.stop();
+      }
+      
       const margin = 24;
       const [lat, lng] = selectedProperty.coordinates;
       
