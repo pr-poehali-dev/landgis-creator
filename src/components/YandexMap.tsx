@@ -40,6 +40,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
   const polygonsRef = useRef<any[]>([]);
+  const previousSelectedRef = useRef<Property | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [showMiniCard, setShowMiniCard] = useState(false);
   const [cardPosition, setCardPosition] = useState<{ top?: string; left?: string; right?: string; bottom?: string }>({});
