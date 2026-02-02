@@ -77,8 +77,20 @@ const YandexMap = ({
         isAnimatingRef.current = true;
         
         const currentZoom = map.getZoom();
-        const targetZoom = map.getBoundsZoom(bounds, { checkZoomRange: true, zoomMargin: 60 });
         const center = property.coordinates;
+        
+        // Рассчитываем целевой зум на основе размера границ
+        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+        const latDiff = maxLat - minLat;
+        const lngDiff = maxLng - minLng;
+        const maxDiff = Math.max(latDiff, lngDiff);
+        
+        // Простая формула для расчёта зума
+        let targetZoom = 16;
+        if (maxDiff > 0.1) targetZoom = 12;
+        else if (maxDiff > 0.05) targetZoom = 13;
+        else if (maxDiff > 0.02) targetZoom = 14;
+        else if (maxDiff > 0.01) targetZoom = 15;
         
         const zoomSteps = Math.abs(targetZoom - currentZoom);
         const stepDuration = 150;
