@@ -147,15 +147,19 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       const map = mapInstanceRef.current;
       const clusterer = clustererRef.current;
 
-      // Очищаем только кластер, не всю карту
-      clusterer.removeAll();
-      
-      // Удаляем все полигоны (boundaries) перед добавлением новых
+      // Сохраняем старые полигоны для удаления
+      const oldPolygons: any[] = [];
       map.geoObjects.each((obj: any) => {
         if (obj !== clusterer) {
-          map.geoObjects.remove(obj);
+          oldPolygons.push(obj);
         }
       });
+      
+      // Удаляем старые полигоны
+      oldPolygons.forEach(polygon => map.geoObjects.remove(polygon));
+      
+      // Очищаем кластер
+      clusterer.removeAll();
 
       properties.forEach((property) => {
         if (property.boundary && property.boundary.length >= 3) {
@@ -245,14 +249,50 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   }, [mapType]);
 
   useEffect(() => {
-    if (!selectedProperty) {
+    if (!selectedProperty || !mapRef.current) {
       setCardPosition({});
       return;
     }
 
-    // Простой подход: всегда показываем карточку в правом нижнем углу
-    // После клика карта центрируется на объекте, поэтому он всегда рядом с центром
-    setCardPosition({ bottom: '24px', right: '24px' });
+    const container = mapRef.current;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    const cardWidth = 384;
+    const cardHeight = 400;
+    const margin = 24;
+
+    // Простая логика: определяем квадрант экрана
+    const [lng, lat] = selectedProperty.coordinates;
+    
+    // Получаем центр карты
+    const map = mapInstanceRef.current;
+    if (!map) {
+      setCardPosition({ bottom: '24px', left: '24px' });
+      return;
+    }
+
+    const mapCenter = map.getCenter();
+    const [centerLng, centerLat] = mapCenter;
+
+    const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
+
+    // По горизонтали: если объект левее центра - карточка справа, иначе - слева
+    if (lng < centerLng) {
+      position.left = `${margin}px`;
+    } else {
+      position.right = `${margin}px`;
+    }
+
+    // По вертикали: если объект выше центра - карточка внизу, иначе - вверху
+    if (lat > centerLat) {
+      position.bottom = `${margin}px`;
+    } else {
+      position.top = `${margin}px`;
+    }
+
+    console.log('Card position:', { lng, lat, centerLng, centerLat, position });
+    setCardPosition(position);
   }, [selectedProperty]);
 
   return (
