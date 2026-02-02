@@ -252,21 +252,12 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             
             console.log('Расстояние:', distance, 'Текущий зум:', currentZoom);
             
-            // Если расстояние большое или зум сильно отличается - используем setCenter + setZoom одновременно
-            if (distance > 0.1 || Math.abs(currentZoom - targetZoom) > 3) {
-              console.log('Большое расстояние - синхронный переход');
-              map.setCenter(centerPoint, targetZoom, { 
-                duration: 800,
-                timingFunction: 'ease-in-out'
-              });
-            } else {
-              // Если близко - используем panTo + setZoom
-              console.log('Близкое расстояние - последовательный переход');
-              map.panTo(centerPoint, { duration: 500 });
-              setTimeout(() => {
-                map.setZoom(targetZoom, { duration: 400 });
-              }, 250);
-            }
+            // Простая одношаговая анимация - setCenter меняет и позицию, и зум одновременно
+            console.log('Выполняю setCenter с зумом');
+            map.setCenter(centerPoint, targetZoom, { 
+              duration: 1000,
+              timingFunction: 'ease-in-out'
+            });
             
             console.log('Зум к границам выполнен');
           } catch (error) {
