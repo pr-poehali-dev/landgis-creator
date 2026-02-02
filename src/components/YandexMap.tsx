@@ -234,12 +234,14 @@ const YandexMap = ({
 
     centroidsRef.current.forEach(({ centroid, propertyId }) => {
       if (propertyId === hoveredPropertyId) {
-        centroid.options.set('iconColor', '#FFD700');
-        centroid.options.set('iconImageSize', [40, 40]);
-        centroid.options.set('iconImageOffset', [-20, -20]);
+        centroid.options.set('preset', 'islands#yellowCircleDotIcon');
+        centroid.options.set('iconColor', '#FF0000');
+        centroid.options.set('iconImageSize', [60, 60]);
+        centroid.options.set('iconImageOffset', [-30, -30]);
       } else {
         const property = properties.find(p => p.id === propertyId);
         if (property) {
+          centroid.options.set('preset', 'islands#circleIcon');
           centroid.options.set('iconColor', getMarkerColor(property.segment));
           centroid.options.set('iconImageSize', [30, 30]);
           centroid.options.set('iconImageOffset', [-15, -15]);
