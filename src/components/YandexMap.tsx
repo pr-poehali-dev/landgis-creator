@@ -147,9 +147,16 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       const map = mapInstanceRef.current;
       const clusterer = clustererRef.current;
 
-      map.geoObjects.removeAll();
-      map.geoObjects.add(clusterer);
+      // Очищаем только кластер, не всю карту
       clusterer.removeAll();
+      
+      // Удаляем все полигоны (boundaries) перед добавлением новых
+      const geoObjects = map.geoObjects.toArray();
+      geoObjects.forEach((obj: any) => {
+        if (obj !== clusterer) {
+          map.geoObjects.remove(obj);
+        }
+      });
 
       properties.forEach((property) => {
         if (property.boundary && property.boundary.length >= 3) {
@@ -239,68 +246,14 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   }, [mapType]);
 
   useEffect(() => {
-    if (!mapInstanceRef.current || !selectedProperty || !mapRef.current) return;
+    if (!selectedProperty) {
+      setCardPosition({});
+      return;
+    }
 
-    const map = mapInstanceRef.current;
-    const container = mapRef.current;
-
-    const calculatePosition = () => {
-      try {
-        const containerRect = container.getBoundingClientRect();
-        const projection = map.options.get('projection');
-        
-        // Получаем глобальные пиксельные координаты точки
-        const globalPixels = projection.toGlobalPixels(selectedProperty.coordinates, map.getZoom());
-        
-        // Получаем текущее смещение карты
-        const mapCenter = map.getCenter();
-        const mapCenterGlobalPixels = projection.toGlobalPixels(mapCenter, map.getZoom());
-        
-        // Вычисляем позицию точки относительно центра контейнера
-        const offsetX = globalPixels[0] - mapCenterGlobalPixels[0];
-        const offsetY = globalPixels[1] - mapCenterGlobalPixels[1];
-        
-        const centerX = containerRect.width / 2;
-        const centerY = containerRect.height / 2;
-        
-        const pixelX = centerX + offsetX;
-        const pixelY = centerY + offsetY;
-
-        const cardWidth = 384;
-        const cardHeight = 400;
-        const margin = 24;
-
-        const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
-
-        // Определяем положение карточки
-        if (pixelX < centerX) {
-          // Слева от центра - карточка справа
-          position.left = `${Math.min(pixelX + margin, containerRect.width - cardWidth - margin)}px`;
-        } else {
-          // Справа от центра - карточка слева
-          position.right = `${Math.min(containerRect.width - pixelX + margin, containerRect.width - cardWidth - margin)}px`;
-        }
-
-        if (pixelY < centerY) {
-          // Вверху от центра - карточка ниже
-          position.top = `${Math.min(pixelY + margin, containerRect.height - cardHeight - margin)}px`;
-        } else {
-          // Внизу от центра - карточка выше
-          position.bottom = `${Math.min(containerRect.height - pixelY + margin, containerRect.height - cardHeight - margin)}px`;
-        }
-
-        console.log('Position calculated:', { pixelX, pixelY, centerX, centerY, position });
-        setCardPosition(position);
-      } catch (error) {
-        console.error('Error calculating card position:', error);
-        setCardPosition({ bottom: '24px', left: '24px' });
-      }
-    };
-
-    // Ждём, пока карта готова
-    const timer = setTimeout(calculatePosition, 100);
-    
-    return () => clearTimeout(timer);
+    // Простой подход: всегда показываем карточку в правом нижнем углу
+    // После клика карта центрируется на объекте, поэтому он всегда рядом с центром
+    setCardPosition({ bottom: '24px', right: '24px' });
   }, [selectedProperty]);
 
   return (
