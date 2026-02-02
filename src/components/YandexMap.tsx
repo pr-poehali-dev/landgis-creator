@@ -237,36 +237,51 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               const targetCenter = map.getCenter();
               
               // @ts-ignore
-              const action = new ymaps.map.action.Single({
-                center: targetCenter,
-                zoom: targetZoom,
-                duration: 800,
-                timingFunction: 'ease-in-out'
-              });
-              map.action.execute(action);
+              if (window.ymaps && window.ymaps.map && window.ymaps.map.action && window.ymaps.map.action.Single) {
+                // @ts-ignore
+                const action = new window.ymaps.map.action.Single({
+                  center: targetCenter,
+                  zoom: targetZoom,
+                  duration: 800,
+                  timingFunction: 'ease-in-out'
+                });
+                map.action.execute(action);
+              } else {
+                map.panTo(targetCenter, { flying: true, duration: 800 });
+              }
             });
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
             // @ts-ignore
-            const action = new ymaps.map.action.Single({
+            if (window.ymaps && window.ymaps.map && window.ymaps.map.action && window.ymaps.map.action.Single) {
+              // @ts-ignore
+              const action = new window.ymaps.map.action.Single({
+                center: [lat, lng],
+                zoom: 16,
+                duration: 800,
+                timingFunction: 'ease-in-out'
+              });
+              map.action.execute(action);
+            } else {
+              map.panTo([lat, lng], { flying: true, duration: 800 });
+            }
+          }
+        } else {
+          console.log('Зумируем к центру участка');
+          // @ts-ignore
+          if (window.ymaps && window.ymaps.map && window.ymaps.map.action && window.ymaps.map.action.Single) {
+            // @ts-ignore
+            const action = new window.ymaps.map.action.Single({
               center: [lat, lng],
               zoom: 16,
               duration: 800,
               timingFunction: 'ease-in-out'
             });
             map.action.execute(action);
+          } else {
+            map.panTo([lat, lng], { flying: true, duration: 800 });
           }
-        } else {
-          console.log('Зумируем к центру участка');
-          // @ts-ignore
-          const action = new ymaps.map.action.Single({
-            center: [lat, lng],
-            zoom: 16,
-            duration: 800,
-            timingFunction: 'ease-in-out'
-          });
-          map.action.execute(action);
         }
       }
 
