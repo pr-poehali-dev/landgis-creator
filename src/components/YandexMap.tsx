@@ -224,32 +224,33 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             ]];
             console.log('Рассчитанные границы:', bounds);
             
-            // Вычисляем целевой зум заранее (мгновенно на фоне)
-            const currentZoom = map.getZoom();
-            const currentCenter = map.getCenter();
+            // Используем комбинированную анимацию: сначала летим, потом зумируем
+            const centerPoint = [
+              (bounds[0][0] + bounds[1][0]) / 2,
+              (bounds[0][1] + bounds[1][1]) / 2
+            ];
             
-            map.setBounds(bounds, { 
-              checkZoomRange: true,
-              zoomMargin: [100, 100, 100, 100],
-              duration: 0
-            });
+            // Вычисляем оптимальный зум для границ
+            const latDiff = bounds[1][0] - bounds[0][0];
+            const lngDiff = bounds[1][1] - bounds[0][1];
+            const maxDiff = Math.max(latDiff, lngDiff);
             
-            const targetZoom = map.getZoom();
-            const targetCenter = map.getCenter();
+            // Примерный расчет зума (чем больше разница, тем меньше зум)
+            let targetZoom = 17;
+            if (maxDiff > 0.01) targetZoom = 15;
+            if (maxDiff > 0.02) targetZoom = 14;
+            if (maxDiff > 0.05) targetZoom = 13;
+            if (maxDiff > 0.1) targetZoom = 12;
             
-            // Возвращаем карту обратно
-            map.setCenter(currentCenter, currentZoom, { duration: 0 });
-            
-            // Теперь анимируем к целевым координатам
-            map.panTo(targetCenter, { 
+            // Анимируем перемещение и зум одновременно
+            map.panTo(centerPoint, { 
               flying: 1,
               duration: 800
-            }).then(() => {
-              // Плавно меняем зум
-              if (map.getZoom() !== targetZoom) {
-                map.setZoom(targetZoom, { duration: 500 });
-              }
             });
+            
+            setTimeout(() => {
+              map.setZoom(targetZoom, { duration: 600 });
+            }, 400);
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
