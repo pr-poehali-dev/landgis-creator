@@ -215,17 +215,19 @@ const YandexMap = ({
       setCardPosition({});
       
       if (previousSelectedRef.current) {
-        // ⚠️ КРИТИЧНО: плавный возврат к обзору
         isAnimatingRef.current = true;
-        map.panTo([55.751244, 37.618423], { 
-          flying: false,
-          duration: 500
-        }).then(() => {
-          return map.setZoom(12, { duration: 300 });
-        }).then(() => {
+        
+        map.setCenter([55.751244, 37.618423], 12, {
+          checkZoomRange: true,
+          duration: 700
+        });
+
+        const resetHandler = () => {
           isAnimatingRef.current = false;
           previousSelectedRef.current = null;
-        });
+          map.events.remove('actionend', resetHandler);
+        };
+        map.events.add('actionend', resetHandler);
       }
       return;
     }
@@ -233,76 +235,66 @@ const YandexMap = ({
     // Запоминаем выбранный объект
     previousSelectedRef.current = selectedProperty;
     map.balloon.close();
+    isAnimatingRef.current = true;
 
-    // ⚠️ КРИТИЧНО: плавный зум к объекту
-    const zoomToProperty = async () => {
-      isAnimatingRef.current = true;
+    const [lat, lng] = selectedProperty.coordinates;
 
+    // ⚠️ КРИТИЧНО: используем setCenter с анимацией - ГАРАНТИРУЕТ плавность
+    if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
+      const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
+      const bounds = tempPolygon.geometry?.getBounds();
+      
+      if (bounds) {
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: 60,
+          duration: 800
+        });
+      } else {
+        map.setCenter([lat, lng], 16, { checkZoomRange: true, duration: 800 });
+      }
+    } else {
+      map.setCenter([lat, lng], 16, { checkZoomRange: true, duration: 800 });
+    }
+
+    // ⚠️ КРИТИЧНО: слушаем завершение анимации через события
+    const actionEndHandler = () => {
+      isAnimatingRef.current = false;
+      
       try {
-        const [lat, lng] = selectedProperty.coordinates;
+        const projection = map.options.get('projection');
+        const globalPixels = projection.toGlobalPixels([lat, lng], map.getZoom());
+        const mapSize = map.container.getSize();
+        const mapOffset = map.converter.globalToPage(globalPixels);
 
-        if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
-          // Для объектов с границами используем setBounds
-          const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
-          const bounds = tempPolygon.geometry?.getBounds();
-          
-          if (bounds) {
-            await map.setBounds(bounds, {
-              checkZoomRange: true,
-              zoomMargin: 50,
-              duration: 600
-            });
-          }
+        const x = mapOffset[0];
+        const y = mapOffset[1];
+        const margin = 16;
+
+        const position: any = {};
+
+        if (x > mapSize[0] / 2) {
+          position.right = `${mapSize[0] - x + margin}px`;
         } else {
-          // Для точечных объектов - сначала перемещение, потом зум
-          await map.panTo([lat, lng], { 
-            flying: false,
-            duration: 500
-          });
-          
-          await map.setZoom(16, { duration: 300 });
+          position.left = `${x + margin}px`;
         }
 
-        // Позиционируем карточку
-        setTimeout(() => {
-          const projection = map.options.get('projection');
-          const globalPixels = projection.toGlobalPixels([selectedProperty.coordinates[0], selectedProperty.coordinates[1]], map.getZoom());
-          const mapSize = map.container.getSize();
-          const mapOffset = map.converter.globalToPage(globalPixels);
+        if (y < mapSize[1] / 2) {
+          position.top = `${y + margin}px`;
+        } else {
+          position.bottom = `${mapSize[1] - y + margin}px`;
+        }
 
-          const x = mapOffset[0];
-          const y = mapOffset[1];
-          
-          const cardWidth = 320;
-          const cardHeight = 200;
-          const margin = 16;
-
-          const position: any = {};
-
-          if (x > mapSize[0] / 2) {
-            position.right = `${mapSize[0] - x + margin}px`;
-          } else {
-            position.left = `${x + margin}px`;
-          }
-
-          if (y < mapSize[1] / 2) {
-            position.top = `${y + margin}px`;
-          } else {
-            position.bottom = `${mapSize[1] - y + margin}px`;
-          }
-
-          setCardPosition(position);
-          setShowMiniCard(true);
-        }, 100);
-
+        setCardPosition(position);
+        setShowMiniCard(true);
       } catch (error) {
-        console.error('Ошибка зумирования:', error);
-      } finally {
-        isAnimatingRef.current = false;
+        console.error('Ошибка позиционирования:', error);
       }
+
+      map.events.remove('actionend', actionEndHandler);
     };
 
-    zoomToProperty();
+    map.events.add('actionend', actionEndHandler);
   }, [selectedProperty]);
 
   return (
