@@ -212,11 +212,8 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
 
     console.log('Начинаем зум к участку');
     
-    // ⚠️ КРИТИЧНО: останавливаем все текущие анимации перед новой
+    // ⚠️ КРИТИЧНО: останавливаем все текущие анимации
     map.balloon.close();
-    if (map.action && map.action.stop) {
-      map.action.stop();
-    }
       
     const margin = 24;
     const [lat, lng] = selectedProperty.coordinates;
@@ -233,8 +230,6 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         // Создаём временный полигон для расчёта границ
         const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
         const polygonBounds = tempPolygon.geometry.getBounds();
-        
-        console.log('Границы полигона:', polygonBounds);
         
         // Центр участка
         const centerPoint = [
@@ -255,28 +250,29 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         
         console.log('Центр:', centerPoint, 'Целевой зум:', targetZoom);
         
-        // Плавный зум к участку
-        map.setCenter(centerPoint, targetZoom, { 
-          duration: 800,
-          timingFunction: 'ease-in-out',
-          checkZoomRange: true
+        // ⚠️ Используем setBounds для гарантированно плавного зума без чёрного экрана
+        map.setBounds(polygonBounds, {
+          checkZoomRange: true,
+          duration: 600
+        }).then(() => {
+          console.log('Зум к границам выполнен');
         });
-        
-        console.log('Зум к границам выполнен');
       } catch (error) {
         console.error('Ошибка при зуме к границам:', error);
-        map.setCenter([lat, lng], 16, { 
-          duration: 800,
-          timingFunction: 'ease-in-out',
-          checkZoomRange: true
+        map.panTo([lat, lng], { 
+          flying: true, 
+          duration: 600 
+        }).then(() => {
+          map.setZoom(16, { duration: 400 });
         });
       }
     } else {
       console.log('Зумируем к центру участка');
-      map.setCenter([lat, lng], 16, { 
-        duration: 800,
-        timingFunction: 'ease-in-out',
-        checkZoomRange: true
+      map.panTo([lat, lng], { 
+        flying: true, 
+        duration: 600 
+      }).then(() => {
+        map.setZoom(16, { duration: 400 });
       });
     }
 
