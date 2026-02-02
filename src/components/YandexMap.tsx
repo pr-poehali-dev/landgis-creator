@@ -75,17 +75,39 @@ const YandexMap = ({
       const bounds = existingPolygon.geometry?.getBounds();
       if (bounds) {
         isAnimatingRef.current = true;
-        map.setBounds(bounds, {
-          checkZoomRange: true,
-          zoomMargin: 60,
-          duration: 2000
-        });
         
-        const zoomEndHandler = () => {
-          isAnimatingRef.current = false;
-          map.events.remove('actionend', zoomEndHandler);
+        const currentZoom = map.getZoom();
+        const targetZoom = map.getBoundsZoom(bounds, { checkZoomRange: true, zoomMargin: 60 });
+        const center = property.coordinates;
+        
+        const zoomSteps = Math.abs(targetZoom - currentZoom);
+        const stepDuration = 150;
+        
+        let step = 0;
+        const animate = () => {
+          if (step >= zoomSteps) {
+            map.setBounds(bounds, {
+              checkZoomRange: true,
+              zoomMargin: 60,
+              duration: 500
+            });
+            
+            const finalHandler = () => {
+              isAnimatingRef.current = false;
+              map.events.remove('actionend', finalHandler);
+            };
+            map.events.add('actionend', finalHandler);
+            return;
+          }
+          
+          const newZoom = currentZoom + ((targetZoom - currentZoom) * (step / zoomSteps));
+          map.setCenter(center, Math.round(newZoom), { duration: stepDuration });
+          
+          step++;
+          setTimeout(animate, stepDuration);
         };
-        map.events.add('actionend', zoomEndHandler);
+        
+        animate();
       }
     }
   };
