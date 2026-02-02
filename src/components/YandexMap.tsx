@@ -273,7 +273,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               });
               map.action.execute(action);
             } else {
-              map.panTo([lat, lng], { flying: true, duration: 800 });
+              map.setCenter([lat, lng], 16, { duration: 800 });
             }
           }
         } else {
@@ -289,7 +289,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             });
             map.action.execute(action);
           } else {
-            map.panTo([lat, lng], { flying: true, duration: 800 });
+            map.setCenter([lat, lng], 16, { duration: 800 });
           }
         }
       }
