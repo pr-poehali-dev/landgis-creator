@@ -78,7 +78,7 @@ const YandexMap = ({
         map.setBounds(bounds, {
           checkZoomRange: true,
           zoomMargin: 60,
-          duration: 800
+          duration: 2000
         });
         
         const zoomEndHandler = () => {
