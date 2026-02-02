@@ -295,20 +295,21 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               Math.max(...selectedProperty.boundary.map(p => p[1]))
             ]];
             console.log('Рассчитанные границы:', bounds);
-            map.setBounds(bounds, { 
+            map.panTo(bounds, { 
               checkZoomRange: true,
               zoomMargin: [100, 100, 100, 100],
               duration: 800,
-              timingFunction: 'ease-in-out'
+              timingFunction: 'ease-in-out',
+              flying: true
             });
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
-            map.setCenter([lat, lng], 16, { duration: 800, timingFunction: 'ease-in-out' });
+            map.panTo([lat, lng], { zoom: 16, duration: 800, timingFunction: 'ease-in-out', flying: true });
           }
         } else {
           console.log('Зумируем к центру участка');
-          map.setCenter([lat, lng], 16, { duration: 800, timingFunction: 'ease-in-out' });
+          map.panTo([lat, lng], { zoom: 16, duration: 800, timingFunction: 'ease-in-out', flying: true });
         }
       }
 
