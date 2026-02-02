@@ -258,45 +258,38 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             
             console.log('Расстояние:', distance, 'Текущий зум:', currentZoom);
             
-            // Простая одношаговая анимация - setCenter меняет и позицию, и зум одновременно
+            // ⚠️ КРИТИЧНО: ждём завершения рендера карты перед анимацией
             console.log('Выполняю setCenter с зумом');
-            map.setCenter(centerPoint, targetZoom, { 
-              duration: 1000,
-              timingFunction: 'ease-in-out'
+            
+            // Используем requestAnimationFrame для гарантии готовности карты
+            requestAnimationFrame(() => {
+              map.setCenter(centerPoint, targetZoom, { 
+                duration: 800,
+                timingFunction: 'ease-in-out',
+                checkZoomRange: true
+              });
             });
             
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
-            // @ts-ignore
-            if (window.ymaps && window.ymaps.map && window.ymaps.map.action && window.ymaps.map.action.Single) {
-              // @ts-ignore
-              const action = new window.ymaps.map.action.Single({
-                center: [lat, lng],
-                zoom: 16,
+            requestAnimationFrame(() => {
+              map.setCenter([lat, lng], 16, { 
                 duration: 800,
-                timingFunction: 'ease-in-out'
+                timingFunction: 'ease-in-out',
+                checkZoomRange: true
               });
-              map.action.execute(action);
-            } else {
-              map.setCenter([lat, lng], 16, { duration: 800 });
-            }
+            });
           }
         } else {
           console.log('Зумируем к центру участка');
-          // @ts-ignore
-          if (window.ymaps && window.ymaps.map && window.ymaps.map.action && window.ymaps.map.action.Single) {
-            // @ts-ignore
-            const action = new window.ymaps.map.action.Single({
-              center: [lat, lng],
-              zoom: 16,
+          requestAnimationFrame(() => {
+            map.setCenter([lat, lng], 16, { 
               duration: 800,
-              timingFunction: 'ease-in-out'
+              timingFunction: 'ease-in-out',
+              checkZoomRange: true
             });
-            map.action.execute(action);
-          } else {
-            map.setCenter([lat, lng], 16, { duration: 800 });
-          }
+          });
         }
       }
 
