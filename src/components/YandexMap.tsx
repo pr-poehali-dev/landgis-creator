@@ -215,42 +215,45 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
         if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
           try {
             console.log('Граница участка:', selectedProperty.boundary);
-            const bounds = [[
-              Math.min(...selectedProperty.boundary.map(p => p[0])),
-              Math.min(...selectedProperty.boundary.map(p => p[1]))
-            ], [
-              Math.max(...selectedProperty.boundary.map(p => p[0])),
-              Math.max(...selectedProperty.boundary.map(p => p[1]))
-            ]];
-            console.log('Рассчитанные границы:', bounds);
             
-            // Используем комбинированную анимацию: сначала летим, потом зумируем
+            // Создаём временный полигон для расчёта границ
+            const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
+            const polygonBounds = tempPolygon.geometry.getBounds();
+            
+            console.log('Границы полигона:', polygonBounds);
+            
+            // Центр границ
             const centerPoint = [
-              (bounds[0][0] + bounds[1][0]) / 2,
-              (bounds[0][1] + bounds[1][1]) / 2
+              (polygonBounds[0][0] + polygonBounds[1][0]) / 2,
+              (polygonBounds[0][1] + polygonBounds[1][1]) / 2
             ];
             
-            // Вычисляем оптимальный зум для границ
-            const latDiff = bounds[1][0] - bounds[0][0];
-            const lngDiff = bounds[1][1] - bounds[0][1];
+            console.log('Центр участка:', centerPoint);
+            
+            // Вычисляем оптимальный зум
+            const latDiff = polygonBounds[1][0] - polygonBounds[0][0];
+            const lngDiff = polygonBounds[1][1] - polygonBounds[0][1];
             const maxDiff = Math.max(latDiff, lngDiff);
             
-            // Примерный расчет зума (чем больше разница, тем меньше зум)
             let targetZoom = 17;
             if (maxDiff > 0.01) targetZoom = 15;
             if (maxDiff > 0.02) targetZoom = 14;
             if (maxDiff > 0.05) targetZoom = 13;
             if (maxDiff > 0.1) targetZoom = 12;
             
-            // Анимируем перемещение и зум одновременно
+            console.log('Целевой зум:', targetZoom);
+            
+            // Анимируем перемещение
             map.panTo(centerPoint, { 
               flying: 1,
               duration: 800
             });
             
+            // Через 400мс начинаем плавный зум
             setTimeout(() => {
               map.setZoom(targetZoom, { duration: 600 });
             }, 400);
+            
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
