@@ -222,12 +222,37 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             
             console.log('Границы полигона:', polygonBounds);
             
-            // Используем setBounds для плавного зума к области
-            map.setBounds(polygonBounds, {
-              checkZoomRange: true,
-              duration: 1000,
+            // Центр участка
+            const centerPoint = [
+              (polygonBounds[0][0] + polygonBounds[1][0]) / 2,
+              (polygonBounds[0][1] + polygonBounds[1][1]) / 2
+            ];
+            
+            // Вычисляем оптимальный зум
+            const latDiff = polygonBounds[1][0] - polygonBounds[0][0];
+            const lngDiff = polygonBounds[1][1] - polygonBounds[0][1];
+            const maxDiff = Math.max(latDiff, lngDiff);
+            
+            let targetZoom = 17;
+            if (maxDiff > 0.01) targetZoom = 15;
+            if (maxDiff > 0.02) targetZoom = 14;
+            if (maxDiff > 0.05) targetZoom = 13;
+            if (maxDiff > 0.1) targetZoom = 12;
+            
+            console.log('Центр:', centerPoint, 'Целевой зум:', targetZoom);
+            
+            // Простая плавная анимация БЕЗ flying
+            map.panTo(centerPoint, { 
+              duration: 600,
               timingFunction: 'ease-in-out'
             });
+            
+            // Зум меняем отдельно
+            setTimeout(() => {
+              map.setZoom(targetZoom, { 
+                duration: 400
+              });
+            }, 300);
             
             console.log('Зум к границам выполнен');
           } catch (error) {
