@@ -304,17 +304,38 @@ const YandexMap = ({
       if (previousSelectedRef.current && initialViewRef.current) {
         isAnimatingRef.current = true;
         
-        map.setCenter(initialViewRef.current.center, initialViewRef.current.zoom, {
-          checkZoomRange: true,
-          duration: 700
-        });
-
-        const resetHandler = () => {
-          isAnimatingRef.current = false;
-          previousSelectedRef.current = null;
-          map.events.remove('actionend', resetHandler);
+        const currentZoom = map.getZoom();
+        const targetZoom = initialViewRef.current.zoom;
+        const targetCenter = initialViewRef.current.center;
+        
+        const zoomSteps = Math.abs(targetZoom - currentZoom);
+        const stepDuration = 150;
+        
+        let step = 0;
+        const animate = () => {
+          if (step >= zoomSteps) {
+            map.setCenter(targetCenter, targetZoom, {
+              checkZoomRange: true,
+              duration: 500
+            });
+            
+            const finalHandler = () => {
+              isAnimatingRef.current = false;
+              previousSelectedRef.current = null;
+              map.events.remove('actionend', finalHandler);
+            };
+            map.events.add('actionend', finalHandler);
+            return;
+          }
+          
+          const newZoom = currentZoom + ((targetZoom - currentZoom) * (step / zoomSteps));
+          map.setCenter(targetCenter, Math.round(newZoom), { duration: stepDuration });
+          
+          step++;
+          setTimeout(animate, stepDuration);
         };
-        map.events.add('actionend', resetHandler);
+        
+        animate();
       }
       return;
     }
