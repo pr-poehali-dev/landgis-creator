@@ -295,19 +295,53 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
               Math.max(...selectedProperty.boundary.map(p => p[1]))
             ]];
             console.log('Рассчитанные границы:', bounds);
+            
+            // Сначала получаем нужные координаты и зум
+            const center = [
+              (bounds[0][0] + bounds[1][0]) / 2,
+              (bounds[0][1] + bounds[1][1]) / 2
+            ];
+            
+            // Вычисляем подходящий зум для границ
             map.setBounds(bounds, { 
               checkZoomRange: true,
-              zoomMargin: [100, 100, 100, 100],
-              duration: 800
+              zoomMargin: [100, 100, 100, 100]
+            }).then(() => {
+              const targetZoom = map.getZoom();
+              const targetCenter = map.getCenter();
+              
+              // Теперь делаем плавную анимацию к этим координатам
+              // @ts-ignore
+              const action = new ymaps.map.action.Single({
+                center: targetCenter,
+                zoom: targetZoom,
+                duration: 800,
+                timingFunction: 'ease-in-out'
+              });
+              map.action.execute(action);
             });
             console.log('Зум к границам выполнен');
           } catch (error) {
             console.error('Ошибка при зуме к границам:', error);
-            map.setCenter([lat, lng], 16, { duration: 800 });
+            // @ts-ignore
+            const action = new ymaps.map.action.Single({
+              center: [lat, lng],
+              zoom: 16,
+              duration: 800,
+              timingFunction: 'ease-in-out'
+            });
+            map.action.execute(action);
           }
         } else {
           console.log('Зумируем к центру участка');
-          map.setCenter([lat, lng], 16, { duration: 800 });
+          // @ts-ignore
+          const action = new ymaps.map.action.Single({
+            center: [lat, lng],
+            zoom: 16,
+            duration: 800,
+            timingFunction: 'ease-in-out'
+          });
+          map.action.execute(action);
         }
       }
 
