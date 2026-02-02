@@ -252,19 +252,25 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   }, [mapType]);
 
   useEffect(() => {
+    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel);
+    
     if (!selectedProperty || !mapRef.current) {
+      console.log('Выход: нет selectedProperty или mapRef');
       setCardPosition({});
       return;
     }
 
     const map = mapInstanceRef.current;
     if (!map) {
+      console.log('Выход: нет mapInstanceRef');
       setCardPosition({ bottom: '24px', left: '24px' });
       return;
     }
 
     const margin = 24;
     const [lat, lng] = selectedProperty.coordinates;
+    
+    console.log('Проверка showAttributesPanel:', showAttributesPanel);
     
     // Зумируем ТОЛЬКО если открыта панель атрибутов (клик из списка или "Подробнее")
     if (showAttributesPanel) {
