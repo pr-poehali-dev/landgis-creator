@@ -188,8 +188,21 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
     console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel, 'mapInstanceRef:', !!mapInstanceRef.current);
     
     if (!selectedProperty || !mapRef.current) {
-      console.log('Выход: нет selectedProperty или mapRef');
+      console.log('Выход: нет selectedProperty - возвращаем исходный вид');
       setCardPosition({});
+      
+      // ⚠️ КРИТИЧНО: восстанавливаем исходный обзор карты
+      const map = mapInstanceRef.current;
+      if (map && previousSelectedRef.current) {
+        console.log('Возвращаем карту к исходному виду');
+        requestAnimationFrame(() => {
+          map.setCenter([55.751244, 37.618423], 10, {
+            duration: 600,
+            timingFunction: 'ease-in-out'
+          });
+        });
+        previousSelectedRef.current = null;
+      }
       return;
     }
 
