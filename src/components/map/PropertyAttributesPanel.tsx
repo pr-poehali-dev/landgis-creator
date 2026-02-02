@@ -48,20 +48,31 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             <Icon name="X" size={20} />
           </Button>
         </div>
-        <div className="flex gap-2 mt-2">
+        <div className="flex flex-col gap-2 mt-2">
           <Badge variant="secondary" className="w-fit">
             Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
           </Badge>
-          {property.boundary && property.boundary.length >= 3 && onZoomToProperty && (
+          <div className="flex gap-2">
+            {property.boundary && property.boundary.length >= 3 && onZoomToProperty && (
+              <Button
+                onClick={onZoomToProperty}
+                size="sm"
+                className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
+              >
+                <Icon name="ZoomIn" size={14} />
+                Приблизить участок
+              </Button>
+            )}
             <Button
-              onClick={onZoomToProperty}
+              onClick={onClose}
+              variant="outline"
               size="sm"
-              className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
+              className="h-7 px-3 gap-1.5"
             >
-              <Icon name="ZoomIn" size={14} />
-              Приблизить
+              <Icon name="MapPin" size={14} />
+              Вернуться к обзору
             </Button>
-          )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">

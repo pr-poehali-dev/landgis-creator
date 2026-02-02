@@ -179,11 +179,11 @@ const Index = () => {
                 selectedProperty?.id === property.id ? 'bg-accent' : ''
               }`}
               onClick={() => {
-                console.log('Клик по участку в списке:', property.title);
                 setSelectedProperty(property);
                 setShowAttributesPanel(true);
-                console.log('Состояние обновлено');
               }}
+              onMouseEnter={() => setHoveredPropertyId(property.id)}
+              onMouseLeave={() => setHoveredPropertyId(null)}
             >
               <div className="text-sm font-medium mb-1">{property.title}</div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">

@@ -359,6 +359,7 @@ const YandexMap = ({
           }}
           userRole={userRole}
           onZoomToProperty={() => zoomToProperty(selectedProperty)}
+          onAttributesUpdate={() => {}}
         />
       )}
     </div>
