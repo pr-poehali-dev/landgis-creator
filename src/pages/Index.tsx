@@ -178,8 +178,10 @@ const Index = () => {
                 selectedProperty?.id === property.id ? 'bg-accent' : ''
               }`}
               onClick={() => {
+                console.log('Клик по участку в списке:', property.title);
                 setSelectedProperty(property);
                 setShowAttributesPanel(true);
+                console.log('Состояние обновлено');
               }}
             >
               <div className="text-sm font-medium mb-1">{property.title}</div>
