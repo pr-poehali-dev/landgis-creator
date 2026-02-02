@@ -246,28 +246,19 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             const currentZoom = map.getZoom();
             console.log('Текущий зум:', currentZoom);
             
-            // Если зум слишком большой (очень близко), сначала плавно отдаляемся
-            if (currentZoom > targetZoom + 2) {
-              console.log('Отдаляемся для плавного перехода');
-              map.setZoom(targetZoom + 1, { duration: 400 }).then(() => {
-                // Затем летим к новому участку
-                map.panTo(centerPoint, { 
-                  flying: 1,
-                  duration: 600
-                }).then(() => {
-                  // И доводим зум до целевого
-                  map.setZoom(targetZoom, { duration: 400 });
-                });
-              });
-            } else {
-              // Если зум нормальный, просто летим напрямую
+            // Плавная трёхэтапная анимация без резких скачков
+            // 1. Плавно отдаляемся
+            const intermediateZoom = Math.min(currentZoom - 2, targetZoom + 1);
+            map.setZoom(intermediateZoom, { duration: 500 }).then(() => {
+              // 2. Плавно перемещаемся (БЕЗ flying - это ключевой момент!)
               map.panTo(centerPoint, { 
-                flying: 1,
-                duration: 800
+                duration: 800,
+                timingFunction: 'ease-in-out'
               }).then(() => {
-                map.setZoom(targetZoom, { duration: 600 });
+                // 3. Плавно приближаемся к целевому зуму
+                map.setZoom(targetZoom, { duration: 500 });
               });
-            }
+            });
             
             console.log('Зум к границам выполнен');
           } catch (error) {
