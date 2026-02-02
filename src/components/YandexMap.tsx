@@ -261,33 +261,49 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return;
     }
 
-    // В Яндекс.Картах координаты: [широта, долгота]
+    // Зумируем к участку
     const [lat, lng] = selectedProperty.coordinates;
-    const mapCenter = map.getCenter();
-    const [centerLat, centerLng] = mapCenter;
-
-    const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
-
-    // По горизонтали (долгота): если объект левее центра - карточка СПРАВА, иначе - СЛЕВА
-    if (lng < centerLng) {
-      // Объект слева от центра - карточка справа
-      position.right = `${margin}px`;
+    
+    // Если есть границы участка, зумируем к ним
+    if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
+      const bounds = window.ymaps.util.bounds.fromPoints(selectedProperty.boundary);
+      map.setBounds(bounds, { 
+        checkZoomRange: true,
+        zoomMargin: 100,
+        duration: 500
+      });
     } else {
-      // Объект справа от центра - карточка слева
-      position.left = `${margin}px`;
+      // Иначе просто центрируем на координатах с зумом 16
+      map.setCenter([lat, lng], 16, { duration: 500 });
     }
 
-    // По вертикали (широта): если объект выше центра (больше широта) - карточка ВНИЗУ, иначе - ВВЕРХУ
-    if (lat > centerLat) {
-      // Объект выше центра - карточка внизу
-      position.bottom = `${margin}px`;
-    } else {
-      // Объект ниже центра - карточка вверху
-      position.top = `${margin}px`;
-    }
+    // Небольшая задержка для расчёта позиции после анимации
+    setTimeout(() => {
+      const mapCenter = map.getCenter();
+      const [centerLat, centerLng] = mapCenter;
 
-    console.log('Card position:', { lat, lng, centerLat, centerLng, position });
-    setCardPosition(position);
+      const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
+
+      // По горизонтали (долгота): если объект левее центра - карточка СПРАВА, иначе - СЛЕВА
+      if (lng < centerLng) {
+        // Объект слева от центра - карточка справа
+        position.right = `${margin}px`;
+      } else {
+        // Объект справа от центра - карточка слева
+        position.left = `${margin}px`;
+      }
+
+      // По вертикали (широта): если объект выше центра (больше широта) - карточка ВНИЗУ, иначе - ВВЕРХУ
+      if (lat > centerLat) {
+        // Объект выше центра - карточка внизу
+        position.bottom = `${margin}px`;
+      } else {
+        // Объект ниже центра - карточка вверху
+        position.top = `${margin}px`;
+      }
+
+      setCardPosition(position);
+    }, 100);
   }, [selectedProperty]);
 
   return (
