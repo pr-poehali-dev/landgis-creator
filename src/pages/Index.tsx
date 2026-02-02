@@ -181,7 +181,7 @@ const Index = () => {
               <div className="text-sm font-medium mb-1">{property.title}</div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Icon name="MapPin" size={12} />
-                {property.location || 'Не указан'}
+                {property.attributes?.region || 'Не указан'}
               </div>
             </div>
           ))}
@@ -283,7 +283,7 @@ const Index = () => {
                         <div className="text-sm font-medium mb-1">{property.title}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Icon name="MapPin" size={12} />
-                          {property.location || 'Не указан'}
+                          {property.attributes?.region || 'Не указан'}
                         </div>
                       </div>
                     ))}

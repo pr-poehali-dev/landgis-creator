@@ -344,7 +344,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
                 <CardTitle className="text-base sm:text-lg mb-2">{selectedProperty.title}</CardTitle>
                 <CardDescription className="flex items-center gap-1 text-xs">
                   <Icon name="MapPin" size={14} />
-                  {selectedProperty.location}
+                  {selectedProperty.attributes?.region || 'Не указан'}
                 </CardDescription>
               </div>
               <Button
