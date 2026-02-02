@@ -20,18 +20,19 @@ interface Property {
 
 interface PropertyMiniCardProps {
   property: Property;
-  cardPosition: { top?: string; left?: string; right?: string; bottom?: string };
+  position: { top?: string; left?: string; right?: string; bottom?: string };
   onClose: () => void;
-  onShowDetails: () => void;
+  onOpenAttributes: () => void;
+  userRole?: string;
 }
 
-const PropertyMiniCard = ({ property, cardPosition, onClose, onShowDetails }: PropertyMiniCardProps) => {
+const PropertyMiniCard = ({ property, position, onClose, onOpenAttributes }: PropertyMiniCardProps) => {
   const calculatedArea = calculatePolygonArea(property.boundary);
 
   return (
     <Card 
       className="absolute w-96 max-w-md shadow-2xl animate-fade-in transition-all duration-300"
-      style={Object.keys(cardPosition).length > 0 ? cardPosition : { bottom: '24px', left: '24px' }}
+      style={Object.keys(position).length > 0 ? position : { bottom: '24px', left: '24px' }}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -89,7 +90,7 @@ const PropertyMiniCard = ({ property, cardPosition, onClose, onShowDetails }: Pr
           {property.attributes && typeof property.attributes === 'object' && Object.keys(property.attributes).length > 1 && (
             <Button 
               className="w-full"
-              onClick={onShowDetails}
+              onClick={onOpenAttributes}
             >
               Подробнее
               <Icon name="ChevronRight" size={16} className="ml-1" />
