@@ -25,6 +25,7 @@ interface YandexMapProps {
   userRole?: string;
   showAttributesPanel?: boolean;
   onAttributesPanelChange?: (show: boolean) => void;
+  hoveredPropertyId?: number | null;
 }
 
 declare global {
@@ -40,15 +41,55 @@ const YandexMap = ({
   mapType, 
   userRole = 'user1', 
   showAttributesPanel = false, 
-  onAttributesPanelChange 
+  onAttributesPanelChange,
+  hoveredPropertyId 
 }: YandexMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
   const polygonsRef = useRef<any[]>([]);
   const placeMarksRef = useRef<any[]>([]);
+  const centroidsRef = useRef<any[]>([]);
   const previousSelectedRef = useRef<Property | null>(null);
   const isAnimatingRef = useRef(false);
+  const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
+
+  const zoomToProperty = (property: Property) => {
+    const map = mapInstanceRef.current;
+    if (!map || !property.boundary || property.boundary.length < 3) return;
+
+    const existingPolygon = polygonsRef.current.find((polygon: any) => {
+      try {
+        const coords = polygon.geometry?.getCoordinates()?.[0];
+        if (!coords || coords.length !== property.boundary?.length) return false;
+        return coords.every((coord: [number, number], idx: number) => 
+          coord[0] === property.boundary?.[idx]?.[0] && 
+          coord[1] === property.boundary?.[idx]?.[1]
+        );
+      } catch {
+        return false;
+      }
+    });
+    
+    if (existingPolygon) {
+      const bounds = existingPolygon.geometry?.getBounds();
+      if (bounds) {
+        isAnimatingRef.current = true;
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: 60,
+          duration: 800
+        });
+        
+        const zoomEndHandler = () => {
+          isAnimatingRef.current = false;
+          map.events.remove('actionend', zoomEndHandler);
+        };
+        map.events.add('actionend', zoomEndHandler);
+      }
+    }
+  };
   
   const [isMapReady, setIsMapReady] = useState(false);
   const [showMiniCard, setShowMiniCard] = useState(false);
@@ -99,6 +140,7 @@ const YandexMap = ({
       clustererRef.current = clusterer;
       map.geoObjects.add(clusterer);
       mapInstanceRef.current = map;
+      initialViewRef.current = { center: [55.751244, 37.618423], zoom: 12 };
       setIsMapReady(true);
 
       console.log('✅ Карта инициализирована');
@@ -125,6 +167,8 @@ const YandexMap = ({
     // Очищаем старые объекты
     polygonsRef.current.forEach(polygon => map.geoObjects.remove(polygon));
     polygonsRef.current = [];
+    centroidsRef.current.forEach(centroid => map.geoObjects.remove(centroid));
+    centroidsRef.current = [];
     clusterer.removeAll();
     placeMarksRef.current = [];
 
@@ -157,45 +201,53 @@ const YandexMap = ({
         polygonsRef.current.push(polygon);
       }
 
-      // Добавляем метку
-      const placemark = new window.ymaps.Placemark(
-        property.coordinates,
-        {
-          title: property.title,
-          location: property.location,
-          priceFormatted: formatPrice(property.price),
-          balloonContent: `
-            <div style="font-family: Inter, sans-serif; max-width: 320px;">
-              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${property.title}</h3>
-              <p style="margin: 0 0 8px 0; font-size: 13px; color: #666;">📍 ${property.location}</p>
-              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${getTypeLabel(property.type)}</span>
-                <span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${property.area} м²</span>
-              </div>
-              <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #0EA5E9;">${formatPrice(property.price)}</p>
-              ${property.boundary ? '<p style="margin: 0 0 8px 0; font-size: 12px; color: #0EA5E9;">✓ Границы загружены</p>' : ''}
-            </div>
-          `
-        },
-        {
-          preset: 'islands#icon',
-          iconColor: getMarkerColor(property.segment)
-        }
-      );
+      // Добавляем центроид
+      if (property.boundary && property.boundary.length >= 3) {
+        const centroid = new window.ymaps.Placemark(
+          property.coordinates,
+          { hintContent: property.title },
+          {
+            preset: 'islands#circleIcon',
+            iconColor: getMarkerColor(property.segment),
+            iconImageSize: [30, 30],
+            iconImageOffset: [-15, -15]
+          }
+        );
 
-      placemark.events.add('click', () => {
-        if (isAnimatingRef.current) return;
-        onSelectProperty(property);
-        setShowMiniCard(true);
-        if (onAttributesPanelChange) onAttributesPanelChange(false);
-      });
+        centroid.events.add('click', () => {
+          if (isAnimatingRef.current) return;
+          onSelectProperty(property);
+          setShowMiniCard(true);
+          if (onAttributesPanelChange) onAttributesPanelChange(false);
+        });
 
-      clusterer.add(placemark);
-      placeMarksRef.current.push(placemark);
+        map.geoObjects.add(centroid);
+        centroidsRef.current.push({ centroid, propertyId: property.id });
+      }
     });
 
     console.log(`✅ Отрисовано ${properties.length} объектов`);
   }, [properties, isMapReady]);
+
+  // ========== ВЫДЕЛЕНИЕ ЦЕНТРОИДА ПРИ НАВЕДЕНИИ ==========
+  useEffect(() => {
+    if (!isMapReady) return;
+
+    centroidsRef.current.forEach(({ centroid, propertyId }) => {
+      if (propertyId === hoveredPropertyId) {
+        centroid.options.set('iconColor', '#FFD700');
+        centroid.options.set('iconImageSize', [40, 40]);
+        centroid.options.set('iconImageOffset', [-20, -20]);
+      } else {
+        const property = properties.find(p => p.id === propertyId);
+        if (property) {
+          centroid.options.set('iconColor', getMarkerColor(property.segment));
+          centroid.options.set('iconImageSize', [30, 30]);
+          centroid.options.set('iconImageOffset', [-15, -15]);
+        }
+      }
+    });
+  }, [hoveredPropertyId, isMapReady, properties]);
 
   // ========== ПЕРЕКЛЮЧЕНИЕ ТИПА КАРТЫ ==========
   useEffect(() => {
@@ -214,10 +266,10 @@ const YandexMap = ({
     if (!selectedProperty) {
       setCardPosition({});
       
-      if (previousSelectedRef.current) {
+      if (previousSelectedRef.current && initialViewRef.current) {
         isAnimatingRef.current = true;
         
-        map.setCenter([55.751244, 37.618423], 12, {
+        map.setCenter(initialViewRef.current.center, initialViewRef.current.zoom, {
           checkZoomRange: true,
           duration: 700
         });
@@ -307,6 +359,7 @@ const YandexMap = ({
             onSelectProperty(null);
           }}
           userRole={userRole}
+          onZoomToProperty={() => zoomToProperty(selectedProperty)}
         />
       )}
     </div>

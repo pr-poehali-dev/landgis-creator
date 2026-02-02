@@ -23,9 +23,10 @@ interface PropertyAttributesPanelProps {
   userRole: string;
   onClose: () => void;
   onAttributesUpdate: (updatedAttrs: Record<string, any>) => void;
+  onZoomToProperty?: () => void;
 }
 
-const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate }: PropertyAttributesPanelProps) => {
+const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty }: PropertyAttributesPanelProps) => {
   if (!property.attributes) return null;
 
   return (
@@ -47,9 +48,21 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             <Icon name="X" size={20} />
           </Button>
         </div>
-        <Badge variant="secondary" className="mt-2 w-fit">
-          Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
-        </Badge>
+        <div className="flex gap-2 mt-2">
+          <Badge variant="secondary" className="w-fit">
+            Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
+          </Badge>
+          {property.boundary && property.boundary.length >= 3 && onZoomToProperty && (
+            <Button
+              onClick={onZoomToProperty}
+              size="sm"
+              className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
+            >
+              <Icon name="ZoomIn" size={14} />
+              Приблизить
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
         <AttributesDisplay 

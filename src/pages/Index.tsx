@@ -27,6 +27,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
 
   useEffect(() => {
     loadProperties();
@@ -286,6 +287,8 @@ const Index = () => {
                           setShowAttributesPanel(true);
                           setIsMobileSidebarOpen(false);
                         }}
+                        onMouseEnter={() => setHoveredPropertyId(property.id)}
+                        onMouseLeave={() => setHoveredPropertyId(null)}
                       >
                         <div className="text-sm font-medium mb-1">{property.title}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -371,6 +374,7 @@ const Index = () => {
             userRole={currentUserRole}
             showAttributesPanel={showAttributesPanel}
             onAttributesPanelChange={setShowAttributesPanel}
+            hoveredPropertyId={hoveredPropertyId}
           />
         </div>
 
