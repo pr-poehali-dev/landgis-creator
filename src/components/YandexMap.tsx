@@ -305,10 +305,11 @@ const YandexMap = ({
         isAnimatingRef.current = true;
         
         const currentZoom = map.getZoom();
+        const currentCenter = map.getCenter();
         const targetZoom = initialViewRef.current.zoom;
         const targetCenter = initialViewRef.current.center;
         
-        const zoomSteps = Math.abs(targetZoom - currentZoom);
+        const zoomSteps = Math.max(Math.abs(targetZoom - currentZoom), 8);
         const stepDuration = 150;
         
         let step = 0;
@@ -328,8 +329,14 @@ const YandexMap = ({
             return;
           }
           
-          const newZoom = currentZoom + ((targetZoom - currentZoom) * (step / zoomSteps));
-          map.setCenter(targetCenter, Math.round(newZoom), { duration: stepDuration });
+          const progress = step / zoomSteps;
+          const newZoom = currentZoom + ((targetZoom - currentZoom) * progress);
+          const newCenter: [number, number] = [
+            currentCenter[0] + ((targetCenter[0] - currentCenter[0]) * progress),
+            currentCenter[1] + ((targetCenter[1] - currentCenter[1]) * progress)
+          ];
+          
+          map.setCenter(newCenter, Math.round(newZoom), { duration: stepDuration });
           
           step++;
           setTimeout(animate, stepDuration);
