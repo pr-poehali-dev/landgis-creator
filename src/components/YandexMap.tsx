@@ -222,42 +222,11 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
             
             console.log('Границы полигона:', polygonBounds);
             
-            // Центр границ
-            const centerPoint = [
-              (polygonBounds[0][0] + polygonBounds[1][0]) / 2,
-              (polygonBounds[0][1] + polygonBounds[1][1]) / 2
-            ];
-            
-            console.log('Центр участка:', centerPoint);
-            
-            // Вычисляем оптимальный зум
-            const latDiff = polygonBounds[1][0] - polygonBounds[0][0];
-            const lngDiff = polygonBounds[1][1] - polygonBounds[0][1];
-            const maxDiff = Math.max(latDiff, lngDiff);
-            
-            let targetZoom = 17;
-            if (maxDiff > 0.01) targetZoom = 15;
-            if (maxDiff > 0.02) targetZoom = 14;
-            if (maxDiff > 0.05) targetZoom = 13;
-            if (maxDiff > 0.1) targetZoom = 12;
-            
-            console.log('Целевой зум:', targetZoom);
-            
-            const currentZoom = map.getZoom();
-            console.log('Текущий зум:', currentZoom);
-            
-            // Плавная трёхэтапная анимация без резких скачков
-            // 1. Плавно отдаляемся
-            const intermediateZoom = Math.min(currentZoom - 2, targetZoom + 1);
-            map.setZoom(intermediateZoom, { duration: 500 }).then(() => {
-              // 2. Плавно перемещаемся (БЕЗ flying - это ключевой момент!)
-              map.panTo(centerPoint, { 
-                duration: 800,
-                timingFunction: 'ease-in-out'
-              }).then(() => {
-                // 3. Плавно приближаемся к целевому зуму
-                map.setZoom(targetZoom, { duration: 500 });
-              });
+            // Используем setBounds для плавного зума к области
+            map.setBounds(polygonBounds, {
+              checkZoomRange: true,
+              duration: 1000,
+              timingFunction: 'ease-in-out'
             });
             
             console.log('Зум к границам выполнен');
