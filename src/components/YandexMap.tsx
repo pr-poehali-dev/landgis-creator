@@ -186,7 +186,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   }, [mapType]);
 
   useEffect(() => {
-    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel, 'mapInstanceRef:', !!mapInstanceRef.current);
+    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'mapInstanceRef:', !!mapInstanceRef.current);
     
     const map = mapInstanceRef.current;
     if (!map) {
@@ -220,68 +220,64 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       
     const margin = 24;
     const [lat, lng] = selectedProperty.coordinates;
-    
-    console.log('Проверка showAttributesPanel:', showAttributesPanel);
     previousSelectedRef.current = selectedProperty;
     
-    if (showAttributesPanel) {
-      console.log('Зумируем к участку:', selectedProperty.title);
-      console.log('Координаты:', lat, lng);
-      console.log('Есть границы:', !!selectedProperty.boundary);
+    console.log('Зумируем к участку:', selectedProperty.title);
+    console.log('Координаты:', lat, lng);
+    console.log('Есть границы:', !!selectedProperty.boundary);
         
-      if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
-        try {
-          console.log('Граница участка:', selectedProperty.boundary);
-          
-          // Создаём временный полигон для расчёта границ
-          const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
-          const polygonBounds = tempPolygon.geometry.getBounds();
-          
-          console.log('Границы полигона:', polygonBounds);
-          
-          // Центр участка
-          const centerPoint = [
-            (polygonBounds[0][0] + polygonBounds[1][0]) / 2,
-            (polygonBounds[0][1] + polygonBounds[1][1]) / 2
-          ];
-          
-          // Вычисляем оптимальный зум
-          const latDiff = polygonBounds[1][0] - polygonBounds[0][0];
-          const lngDiff = polygonBounds[1][1] - polygonBounds[0][1];
-          const maxDiff = Math.max(latDiff, lngDiff);
-          
-          let targetZoom = 17;
-          if (maxDiff > 0.01) targetZoom = 15;
-          if (maxDiff > 0.02) targetZoom = 14;
-          if (maxDiff > 0.05) targetZoom = 13;
-          if (maxDiff > 0.1) targetZoom = 12;
-          
-          console.log('Центр:', centerPoint, 'Целевой зум:', targetZoom);
-          
-          // Плавный зум к участку
-          map.setCenter(centerPoint, targetZoom, { 
-            duration: 800,
-            timingFunction: 'ease-in-out',
-            checkZoomRange: true
-          });
-          
-          console.log('Зум к границам выполнен');
-        } catch (error) {
-          console.error('Ошибка при зуме к границам:', error);
-          map.setCenter([lat, lng], 16, { 
-            duration: 800,
-            timingFunction: 'ease-in-out',
-            checkZoomRange: true
-          });
-        }
-      } else {
-        console.log('Зумируем к центру участка');
+    if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
+      try {
+        console.log('Граница участка:', selectedProperty.boundary);
+        
+        // Создаём временный полигон для расчёта границ
+        const tempPolygon = new window.ymaps.Polygon([selectedProperty.boundary]);
+        const polygonBounds = tempPolygon.geometry.getBounds();
+        
+        console.log('Границы полигона:', polygonBounds);
+        
+        // Центр участка
+        const centerPoint = [
+          (polygonBounds[0][0] + polygonBounds[1][0]) / 2,
+          (polygonBounds[0][1] + polygonBounds[1][1]) / 2
+        ];
+        
+        // Вычисляем оптимальный зум
+        const latDiff = polygonBounds[1][0] - polygonBounds[0][0];
+        const lngDiff = polygonBounds[1][1] - polygonBounds[0][1];
+        const maxDiff = Math.max(latDiff, lngDiff);
+        
+        let targetZoom = 17;
+        if (maxDiff > 0.01) targetZoom = 15;
+        if (maxDiff > 0.02) targetZoom = 14;
+        if (maxDiff > 0.05) targetZoom = 13;
+        if (maxDiff > 0.1) targetZoom = 12;
+        
+        console.log('Центр:', centerPoint, 'Целевой зум:', targetZoom);
+        
+        // Плавный зум к участку
+        map.setCenter(centerPoint, targetZoom, { 
+          duration: 800,
+          timingFunction: 'ease-in-out',
+          checkZoomRange: true
+        });
+        
+        console.log('Зум к границам выполнен');
+      } catch (error) {
+        console.error('Ошибка при зуме к границам:', error);
         map.setCenter([lat, lng], 16, { 
           duration: 800,
           timingFunction: 'ease-in-out',
           checkZoomRange: true
         });
       }
+    } else {
+      console.log('Зумируем к центру участка');
+      map.setCenter([lat, lng], 16, { 
+        duration: 800,
+        timingFunction: 'ease-in-out',
+        checkZoomRange: true
+      });
     }
 
     setTimeout(() => {
@@ -303,8 +299,8 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       }
 
       setCardPosition(position);
-    }, showAttributesPanel ? 800 : 0);
-  }, [selectedProperty, showAttributesPanel, isMapReady]);
+    }, 800);
+  }, [selectedProperty, isMapReady]);
 
   return (
     <div className="relative w-full h-full">
