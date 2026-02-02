@@ -254,7 +254,7 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
   }, [mapType]);
 
   useEffect(() => {
-    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel, 'isMapReady:', isMapReady);
+    console.log('UseEffect сработал! selectedProperty:', selectedProperty?.title, 'showAttributesPanel:', showAttributesPanel, 'mapInstanceRef:', !!mapInstanceRef.current);
     
     if (!selectedProperty || !mapRef.current) {
       console.log('Выход: нет selectedProperty или mapRef');
@@ -262,75 +262,86 @@ const YandexMap = ({ properties, selectedProperty, onSelectProperty, mapType, us
       return;
     }
 
-    // Ждём пока карта инициализируется
-    if (!isMapReady || !mapInstanceRef.current) {
-      console.log('Выход: карта ещё не готова. isMapReady:', isMapReady, 'mapInstanceRef:', !!mapInstanceRef.current);
-      return;
-    }
+    // Функция для выполнения зума
+    const performZoom = () => {
+      const map = mapInstanceRef.current;
+      if (!map) {
+        console.log('performZoom: карта ещё не готова');
+        return false;
+      }
 
-    const map = mapInstanceRef.current;
-    console.log('Карта готова, продолжаем!');
-
-    const margin = 24;
-    const [lat, lng] = selectedProperty.coordinates;
-    
-    console.log('Проверка showAttributesPanel:', showAttributesPanel);
-    
-    // Зумируем ТОЛЬКО если открыта панель атрибутов (клик из списка или "Подробнее")
-    if (showAttributesPanel) {
-      console.log('Зумируем к участку:', selectedProperty.title);
-      console.log('Координаты:', lat, lng);
-      console.log('Есть границы:', !!selectedProperty.boundary);
+      console.log('performZoom: Карта готова, выполняем зум!');
       
-      if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
-        try {
-          console.log('Граница участка:', selectedProperty.boundary);
-          // Используем getBounds для расчёта границ
-          const bounds = [[
-            Math.min(...selectedProperty.boundary.map(p => p[0])),
-            Math.min(...selectedProperty.boundary.map(p => p[1]))
-          ], [
-            Math.max(...selectedProperty.boundary.map(p => p[0])),
-            Math.max(...selectedProperty.boundary.map(p => p[1]))
-          ]];
-          console.log('Рассчитанные границы:', bounds);
-          map.setBounds(bounds, { 
-            checkZoomRange: true,
-            zoomMargin: [100, 100, 100, 100],
-            duration: 500
-          });
-          console.log('Зум к границам выполнен');
-        } catch (error) {
-          console.error('Ошибка при зуме к границам:', error);
+      const margin = 24;
+      const [lat, lng] = selectedProperty.coordinates;
+      
+      console.log('Проверка showAttributesPanel:', showAttributesPanel);
+      
+      // Зумируем ТОЛЬКО если открыта панель атрибутов (клик из списка или "Подробнее")
+      if (showAttributesPanel) {
+        console.log('Зумируем к участку:', selectedProperty.title);
+        console.log('Координаты:', lat, lng);
+        console.log('Есть границы:', !!selectedProperty.boundary);
+        
+        if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
+          try {
+            console.log('Граница участка:', selectedProperty.boundary);
+            // Используем getBounds для расчёта границ
+            const bounds = [[
+              Math.min(...selectedProperty.boundary.map(p => p[0])),
+              Math.min(...selectedProperty.boundary.map(p => p[1]))
+            ], [
+              Math.max(...selectedProperty.boundary.map(p => p[0])),
+              Math.max(...selectedProperty.boundary.map(p => p[1]))
+            ]];
+            console.log('Рассчитанные границы:', bounds);
+            map.setBounds(bounds, { 
+              checkZoomRange: true,
+              zoomMargin: [100, 100, 100, 100],
+              duration: 500
+            });
+            console.log('Зум к границам выполнен');
+          } catch (error) {
+            console.error('Ошибка при зуме к границам:', error);
+            map.setCenter([lat, lng], 16, { duration: 500 });
+          }
+        } else {
+          console.log('Зумируем к центру участка');
           map.setCenter([lat, lng], 16, { duration: 500 });
         }
-      } else {
-        console.log('Зумируем к центру участка');
-        map.setCenter([lat, lng], 16, { duration: 500 });
       }
+
+      // Расчёт позиции мини-карточки
+      setTimeout(() => {
+        const mapCenter = map.getCenter();
+        const [centerLat, centerLng] = mapCenter;
+
+        const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
+
+        if (lng < centerLng) {
+          position.right = `${margin}px`;
+        } else {
+          position.left = `${margin}px`;
+        }
+
+        if (lat > centerLat) {
+          position.bottom = `${margin}px`;
+        } else {
+          position.top = `${margin}px`;
+        }
+
+        setCardPosition(position);
+      }, showAttributesPanel ? 100 : 0);
+      
+      return true;
+    };
+
+    // Пробуем выполнить зум сразу
+    if (!performZoom()) {
+      // Если не получилось (карта не готова), пробуем через 100мс
+      console.log('Карта не готова, повторная попытка через 100мс');
+      setTimeout(performZoom, 100);
     }
-
-    // Расчёт позиции мини-карточки
-    setTimeout(() => {
-      const mapCenter = map.getCenter();
-      const [centerLat, centerLng] = mapCenter;
-
-      const position: { top?: string; left?: string; right?: string; bottom?: string } = {};
-
-      if (lng < centerLng) {
-        position.right = `${margin}px`;
-      } else {
-        position.left = `${margin}px`;
-      }
-
-      if (lat > centerLat) {
-        position.bottom = `${margin}px`;
-      } else {
-        position.top = `${margin}px`;
-      }
-
-      setCardPosition(position);
-    }, showAttributesPanel ? 100 : 0);
   }, [selectedProperty, showAttributesPanel, isMapReady]);
 
   return (
