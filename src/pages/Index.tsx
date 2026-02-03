@@ -208,7 +208,7 @@ const Index = () => {
               onMapTypeChange={setMapType}
               currentUserRole={currentUserRole}
               onRoleChange={setCurrentUserRole}
-              onNavigateAdmin={() => navigate('/admin')}
+              onNavigateAdmin={() => navigate('/login')}
               isFilterPanelOpen={isFilterPanelOpen}
               onFilterPanelToggle={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
               filterCount={filterCount}
