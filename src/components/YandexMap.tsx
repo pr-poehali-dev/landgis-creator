@@ -50,6 +50,7 @@ const YandexMap = ({
   const polygonsRef = useRef<any[]>([]);
   const placeMarksRef = useRef<any[]>([]);
   const centroidsRef = useRef<any[]>([]);
+  const cityMarkersRef = useRef<any[]>([]);
   const previousSelectedRef = useRef<Property | null>(null);
   const isAnimatingRef = useRef(false);
   const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
@@ -200,8 +201,10 @@ const YandexMap = ({
     // Очищаем старые объекты
     polygonsRef.current.forEach(polygon => map.geoObjects.remove(polygon));
     polygonsRef.current = [];
-    centroidsRef.current.forEach(centroid => map.geoObjects.remove(centroid));
+    centroidsRef.current.forEach(({ centroid }) => map.geoObjects.remove(centroid));
     centroidsRef.current = [];
+    cityMarkersRef.current.forEach(marker => map.geoObjects.remove(marker));
+    cityMarkersRef.current = [];
     clusterer.removeAll();
     placeMarksRef.current = [];
 
@@ -259,6 +262,83 @@ const YandexMap = ({
       }
     });
 
+    // Группируем участки по городам
+    const citiesMap = new Map<string, { city: string; properties: Property[]; center: [number, number] }>();
+    
+    properties.forEach(property => {
+      const city = property.attributes?.city || property.attributes?.region || 'Неизвестный город';
+      if (!citiesMap.has(city)) {
+        citiesMap.set(city, {
+          city,
+          properties: [],
+          center: property.coordinates
+        });
+      }
+      citiesMap.get(city)!.properties.push(property);
+    });
+
+    // Создаём метки городов
+    citiesMap.forEach(({ city, properties: cityProperties, center }) => {
+      const cityMarker = new window.ymaps.Placemark(
+        center,
+        { 
+          hintContent: `${city} (${cityProperties.length} объектов)`,
+          balloonContent: `<strong>${city}</strong><br/>${cityProperties.length} объектов`
+        },
+        {
+          preset: 'islands#blueDotIconWithCaption',
+          iconCaptionMaxWidth: '200',
+          iconCaption: city,
+          hideIconOnBalloonOpen: false,
+          visible: true
+        }
+      );
+
+      cityMarker.events.add('click', () => {
+        if (isAnimatingRef.current) return;
+        
+        // Находим границы всех участков города
+        const cityBounds: Array<[number, number]> = [];
+        cityProperties.forEach(prop => {
+          if (prop.boundary && prop.boundary.length >= 3) {
+            cityBounds.push(...prop.boundary);
+          }
+        });
+
+        if (cityBounds.length > 0) {
+          let minLat = cityBounds[0][0];
+          let maxLat = cityBounds[0][0];
+          let minLng = cityBounds[0][1];
+          let maxLng = cityBounds[0][1];
+
+          cityBounds.forEach(([lat, lng]) => {
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lng < minLng) minLng = lng;
+            if (lng > maxLng) maxLng = lng;
+          });
+
+          const bounds = [[minLat, minLng], [maxLat, maxLng]];
+          
+          isAnimatingRef.current = true;
+          map.setBounds(bounds as [[number, number], [number, number]], {
+            checkZoomRange: true,
+            zoomMargin: 80,
+            duration: 1000
+          });
+
+          const handler = () => {
+            isAnimatingRef.current = false;
+            map.events.remove('actionend', handler);
+          };
+          map.events.add('actionend', handler);
+        }
+      });
+
+      map.geoObjects.add(cityMarker);
+      cityMarkersRef.current.push(cityMarker);
+    });
+
     // Рассчитываем границы всех участков и устанавливаем зум
     if (properties.length > 0 && !selectedProperty) {
       const allBounds: Array<[number, number]> = [];
@@ -301,6 +381,38 @@ const YandexMap = ({
 
     console.log(`✅ Отрисовано ${properties.length} объектов`);
   }, [properties, isMapReady, selectedProperty]);
+
+  // ========== УПРАВЛЕНИЕ ВИДИМОСТЬЮ МЕТОК В ЗАВИСИМОСТИ ОТ ЗУМА ==========
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
+    
+    const updateMarkersVisibility = () => {
+      const currentZoom = map.getZoom();
+      const threshold = 12; // Порог зума для переключения меток
+
+      // На малом зуме показываем города, скрываем центроиды
+      if (currentZoom < threshold) {
+        cityMarkersRef.current.forEach(marker => marker.options.set('visible', true));
+        centroidsRef.current.forEach(({ centroid }) => centroid.options.set('visible', false));
+      } else {
+        // На большом зуме скрываем города, показываем центроиды
+        cityMarkersRef.current.forEach(marker => marker.options.set('visible', false));
+        centroidsRef.current.forEach(({ centroid }) => centroid.options.set('visible', true));
+      }
+    };
+
+    // Обновляем при изменении зума
+    map.events.add('boundschange', updateMarkersVisibility);
+    
+    // Первоначальное обновление
+    updateMarkersVisibility();
+
+    return () => {
+      map.events.remove('boundschange', updateMarkersVisibility);
+    };
+  }, [isMapReady, properties]);
 
   // ========== ВЫДЕЛЕНИЕ ЦЕНТРОИДА ПРИ НАВЕДЕНИИ ==========
   useEffect(() => {
