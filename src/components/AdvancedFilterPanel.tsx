@@ -313,9 +313,10 @@ const AdvancedFilterPanel = ({
       <Button
         onClick={onToggle}
         size="lg"
+        variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
         className={cn(
-          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-3 px-12 py-6 text-lg font-semibold min-w-[280px] hover:opacity-90 bg-accent text-accent-foreground",
-          activeCount > 0 && "ring-2 ring-primary ring-offset-2"
+          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-3 px-12 py-6 text-lg font-semibold min-w-[280px] hover:opacity-90",
+          (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
         )}
       >
         <Icon name="Filter" size={22} />
