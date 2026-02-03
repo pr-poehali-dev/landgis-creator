@@ -89,6 +89,10 @@ const AdvancedFilterPanel = ({
     return value;
   };
 
+  const getValueFromPath = (obj: any, path: string): any => {
+    return path.split('.').reduce((current, key) => current?.[key], obj);
+  };
+
   const columns = useMemo(() => {
     const extractedValues = new Map<string, Set<string>>();
 
@@ -115,6 +119,16 @@ const AdvancedFilterPanel = ({
       if (prop.type) {
         if (!extractedValues.has('type')) extractedValues.set('type', new Set());
         extractedValues.get('type')!.add(prop.type);
+      }
+
+      if (prop.attributes) {
+        Object.entries(prop.attributes).forEach(([key, value]) => {
+          if (!key.startsWith('lyr_') && value && typeof value === 'string') {
+            const attrKey = `attributes.${key}`;
+            if (!extractedValues.has(attrKey)) extractedValues.set(attrKey, new Set());
+            extractedValues.get(attrKey)!.add(value);
+          }
+        });
       }
     });
 
@@ -170,17 +184,38 @@ const AdvancedFilterPanel = ({
       .filter(setting => setting.enabled)
       .sort((a, b) => a.order - b.order)
       .map(setting => {
-        const defaultCol = defaultColumns.find(c => c.id === setting.id);
+        let defaultCol = defaultColumns.find(c => c.id === setting.id);
+        
+        if (!defaultCol && setting.attributePath) {
+          const values = extractedValues.get(setting.attributePath);
+          if (values) {
+            defaultCol = {
+              id: setting.id,
+              label: setting.label,
+              options: Array.from(values).sort().map(v => ({
+                value: v,
+                label: v,
+                count: properties.filter(p => {
+                  const value = getValueFromPath(p, setting.attributePath);
+                  return value === v;
+                }).length
+              }))
+            };
+          }
+        }
+
         if (!defaultCol) return null;
 
-        const orderedOptions = setting.options
-          .map(optionValue => {
-            const found = defaultCol.options.find(o => o.value === optionValue);
-            return found || { value: optionValue, label: getOptionLabel(setting.id, optionValue), count: 0 };
-          })
-          .filter(opt => {
-            return defaultCol.options.some(o => o.value === opt.value);
-          });
+        const orderedOptions = setting.options.length > 0
+          ? setting.options
+              .map(optionValue => {
+                const found = defaultCol!.options.find(o => o.value === optionValue);
+                return found || { value: optionValue, label: getOptionLabel(setting.id, optionValue), count: 0 };
+              })
+              .filter(opt => {
+                return defaultCol!.options.some(o => o.value === opt.value);
+              })
+          : defaultCol.options;
 
         return {
           id: setting.id,

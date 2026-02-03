@@ -71,7 +71,16 @@ const AdminFilterSettings = () => {
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [editingColumn, setEditingColumn] = useState<FilterColumn | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [availableAttributes, setAvailableAttributes] = useState<Array<{path: string; values: Set<string>}>>([]);
+  const [newColumn, setNewColumn] = useState<Partial<FilterColumn>>({
+    label: '',
+    attributePath: '',
+    enabled: true,
+    options: [],
+    defaultValues: []
+  });
 
   useEffect(() => {
     loadFilterSettings();
@@ -83,6 +92,7 @@ const AdminFilterSettings = () => {
       
       const regions = new Set<string>();
       const segments = new Set<string>();
+      const attributeValues = new Map<string, Set<string>>();
 
       properties.forEach(prop => {
         if (prop.attributes?.region && !prop.attributes.region.startsWith('lyr_')) {
@@ -95,7 +105,32 @@ const AdminFilterSettings = () => {
         } else if (typeof segment === 'string') {
           segment.split(',').forEach(s => segments.add(s.trim()));
         }
+
+        if (prop.attributes) {
+          Object.entries(prop.attributes).forEach(([key, value]) => {
+            if (!key.startsWith('lyr_') && value && typeof value === 'string') {
+              const path = `attributes.${key}`;
+              if (!attributeValues.has(path)) {
+                attributeValues.set(path, new Set());
+              }
+              attributeValues.get(path)!.add(value);
+            }
+          });
+        }
+
+        ['status', 'type', 'segment'].forEach(key => {
+          if (prop[key as keyof typeof prop]) {
+            if (!attributeValues.has(key)) {
+              attributeValues.set(key, new Set());
+            }
+            attributeValues.get(key)!.add(String(prop[key as keyof typeof prop]));
+          }
+        });
       });
+
+      setAvailableAttributes(
+        Array.from(attributeValues.entries()).map(([path, values]) => ({ path, values }))
+      );
 
       setFilterColumns(prev => prev.map(col => {
         if (col.id === 'region') {
@@ -215,6 +250,61 @@ const AdminFilterSettings = () => {
     toast.success('Настройки сброшены');
   };
 
+  const handleDeleteColumn = (columnId: string) => {
+    if (!confirm('Удалить этот столбец фильтра?')) return;
+    
+    setFilterColumns(prev => {
+      const filtered = prev.filter(c => c.id !== columnId);
+      filtered.forEach((col, idx) => {
+        col.order = idx + 1;
+      });
+      return filtered;
+    });
+    toast.success('Столбец удален');
+  };
+
+  const openCreateDialog = () => {
+    setNewColumn({
+      label: '',
+      attributePath: '',
+      enabled: true,
+      options: [],
+      defaultValues: []
+    });
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreateColumn = () => {
+    if (!newColumn.label || !newColumn.attributePath) {
+      toast.error('Заполните название и путь к атрибуту');
+      return;
+    }
+
+    const id = newColumn.attributePath.replace(/\./g, '_').toLowerCase();
+    
+    if (filterColumns.some(c => c.id === id)) {
+      toast.error('Столбец с таким путем уже существует');
+      return;
+    }
+
+    const attribute = availableAttributes.find(a => a.path === newColumn.attributePath);
+    const options = attribute ? Array.from(attribute.values).sort() : [];
+
+    const column: FilterColumn = {
+      id,
+      label: newColumn.label,
+      enabled: newColumn.enabled ?? true,
+      order: filterColumns.length + 1,
+      options,
+      defaultValues: newColumn.defaultValues || [],
+      attributePath: newColumn.attributePath
+    };
+
+    setFilterColumns(prev => [...prev, column]);
+    setIsCreateDialogOpen(false);
+    toast.success('Столбец создан');
+  };
+
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       available: 'Доступно',
@@ -257,6 +347,10 @@ const AdminFilterSettings = () => {
             <Button variant="outline" size="sm" onClick={handleResetSettings}>
               <Icon name="RotateCcw" size={16} className="mr-2" />
               Сбросить
+            </Button>
+            <Button variant="outline" size="sm" onClick={openCreateDialog}>
+              <Icon name="Plus" size={16} className="mr-2" />
+              Создать столбец
             </Button>
             <Button size="sm" onClick={handleSaveSettings} disabled={isSaving}>
               {isSaving ? (
@@ -323,6 +417,16 @@ const AdminFilterSettings = () => {
                       <Icon name="Settings" size={14} className="mr-1" />
                       Настроить
                     </Button>
+                    {!['region', 'segment', 'status', 'type'].includes(column.id) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteColumn(column.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Icon name="Trash2" size={14} />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -500,6 +604,91 @@ const AdminFilterSettings = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Создание нового столбца фильтра</DialogTitle>
+            <DialogDescription>
+              Выберите атрибут из объектов и настройте фильтр
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label>Название столбца</Label>
+              <Input
+                value={newColumn.label || ''}
+                onChange={(e) => setNewColumn({ ...newColumn, label: e.target.value })}
+                placeholder="Например: Регион, Категория, Этаж"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Атрибут из объектов</Label>
+              <div className="grid gap-2 max-h-[300px] overflow-y-auto border border-border rounded-lg p-2">
+                {availableAttributes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Загрузка атрибутов...
+                  </p>
+                ) : (
+                  availableAttributes.map((attr) => (
+                    <button
+                      key={attr.path}
+                      onClick={() => setNewColumn({ ...newColumn, attributePath: attr.path })}
+                      className={cn(
+                        "text-left p-3 rounded-lg border transition-all hover:border-primary",
+                        newColumn.attributePath === attr.path 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border"
+                      )}
+                    >
+                      <div className="font-medium text-sm mb-1">{attr.path}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {Array.from(attr.values).slice(0, 5).map(val => (
+                          <Badge key={val} variant="outline" className="text-xs">
+                            {val}
+                          </Badge>
+                        ))}
+                        {attr.values.size > 5 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{attr.values.size - 5}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {attr.values.size} {attr.values.size === 1 ? 'значение' : 'значений'}
+                      </p>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {newColumn.attributePath && (
+              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                <Icon name="Info" size={16} className="text-primary shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  После создания вы сможете настроить порядок опций и значения по умолчанию
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Отмена
+              </Button>
+              <Button 
+                onClick={handleCreateColumn}
+                disabled={!newColumn.label || !newColumn.attributePath}
+              >
+                <Icon name="Plus" size={16} className="mr-2" />
+                Создать
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

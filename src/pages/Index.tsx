@@ -86,24 +86,49 @@ const Index = () => {
     const matchesAdvanced = Object.entries(advancedFilters).every(([key, values]) => {
       if (!values || values.length === 0) return true;
       
-      if (key === 'region') {
+      const saved = localStorage.getItem('filterSettings');
+      let attributePath = '';
+      
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          const setting = settings.find((s: any) => s.id === key);
+          if (setting) {
+            attributePath = setting.attributePath;
+          }
+        } catch (error) {
+          console.error('Error loading filter settings:', error);
+        }
+      }
+
+      if (key === 'region' || attributePath === 'attributes.region') {
         const region = property.attributes?.region;
-        // Исключаем объекты с техническими ID
         if (!region || region.startsWith('lyr_')) return false;
         return values.includes(region);
       }
-      if (key === 'segment') {
+      if (key === 'segment' || attributePath === 'attributes.segment') {
         const seg = property.attributes?.segment;
         if (Array.isArray(seg)) return seg.some(s => values.includes(s));
         if (typeof seg === 'string') return seg.split(',').some(s => values.includes(s.trim()));
         return values.includes(property.segment);
       }
-      if (key === 'status') {
+      if (key === 'status' || attributePath === 'status') {
         return values.includes(property.status);
       }
-      if (key === 'type') {
+      if (key === 'type' || attributePath === 'type') {
         return values.includes(property.type);
       }
+
+      if (attributePath) {
+        const getValue = (obj: any, path: string): any => {
+          return path.split('.').reduce((current, key) => current?.[key], obj);
+        };
+        const propValue = getValue(property, attributePath);
+        if (propValue && typeof propValue === 'string') {
+          return values.includes(propValue);
+        }
+      }
+
       return true;
     });
     
