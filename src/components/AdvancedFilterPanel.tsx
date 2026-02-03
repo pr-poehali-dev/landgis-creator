@@ -125,17 +125,18 @@ const AdvancedFilterPanel = ({
       const updated = current.includes(value)
         ? current.filter(v => v !== value)
         : [...current, value];
-      return { ...prev, [columnId]: updated };
+      const newFilters = { ...prev, [columnId]: updated };
+      
+      // Применяем фильтры сразу
+      onFiltersChange(newFilters);
+      return newFilters;
     });
   };
 
   const clearFilters = () => {
-    setLocalFilters({});
-    onFiltersChange({});
-  };
-
-  const applyFilters = () => {
-    onFiltersChange(localFilters);
+    const emptyFilters = {};
+    setLocalFilters(emptyFilters);
+    onFiltersChange(emptyFilters);
   };
 
   const getActiveFiltersCount = () => {
@@ -289,17 +290,14 @@ const AdvancedFilterPanel = ({
               className="h-8 text-xs"
               onClick={clearFilters}
             >
-              Сбросить
+              Сбросить всё
             </Button>
             <Button
               size="sm"
               className="h-8 text-xs"
-              onClick={() => {
-                applyFilters();
-                onToggle();
-              }}
+              onClick={onToggle}
             >
-              Применить фильтры
+              Закрыть
             </Button>
           </div>
         </div>

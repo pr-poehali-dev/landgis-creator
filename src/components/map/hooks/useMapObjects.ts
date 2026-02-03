@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { getMarkerColor } from '@/components/map/MapHelpers';
 
 interface Property {
@@ -46,11 +46,18 @@ export const useMapObjects = ({
   setShowMiniCard,
   onAttributesPanelChange
 }: UseMapObjectsProps) => {
+  const previousPropertiesHashRef = useRef<string>('');
+
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current || !clustererRef.current) return;
 
     const map = mapInstanceRef.current;
     const clusterer = clustererRef.current;
+
+    // Вычисляем хеш списка участков для определения изменений
+    const propertiesHash = properties.map(p => p.id).sort().join(',');
+    const shouldZoom = propertiesHash !== previousPropertiesHashRef.current;
+    previousPropertiesHashRef.current = propertiesHash;
 
     // Очищаем старые объекты
     polygonsRef.current.forEach(polygon => map.geoObjects.remove(polygon));
@@ -114,8 +121,9 @@ export const useMapObjects = ({
       }
     });
 
-    // Автоматический зум к отфильтрованным участкам
-    if (properties.length > 0 && !selectedProperty && !isAnimatingRef.current) {
+    // Автоматический зум к отфильтрованным участкам (только при изменении списка)
+    if (shouldZoom && properties.length > 0 && !selectedProperty && !isAnimatingRef.current) {
+      console.log('🔍 Зумируем к отфильтрованным участкам:', properties.length);
       const allBounds: Array<[number, number]> = [];
       
       properties.forEach(property => {
