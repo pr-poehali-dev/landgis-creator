@@ -275,84 +275,66 @@ const AdvancedFilterPanel = ({
 
   return (
     <>
-      {/* Floating Filter Button - показывается только когда панель закрыта */}
-      {!isOpen && (
-        <Button
-          onClick={onToggle}
-          size="lg"
-          style={{ backgroundColor: 'var(--custom-button)', color: 'white' }}
-          className={cn(
-            "absolute top-4 left-1/2 -translate-x-1/2 z-20 shadow-lg gap-3 px-12 py-6 text-lg font-semibold min-w-[280px] hover:opacity-90",
-            activeCount > 0 && "ring-2 ring-primary ring-offset-2"
-          )}
-        >
-          <Icon name="Filter" size={22} />
-          Фильтры
-          {activeCount > 0 && (
-            <Badge variant="secondary" className="ml-1 bg-white text-foreground">
-              {activeCount}
-            </Badge>
-          )}
-        </Button>
-      )}
+      {/* Floating Filter Button - всегда видна */}
+      <Button
+        onClick={onToggle}
+        size="lg"
+        style={{ backgroundColor: 'var(--custom-button)', color: 'white' }}
+        className={cn(
+          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-3 px-12 py-6 text-lg font-semibold min-w-[280px] hover:opacity-90",
+          activeCount > 0 && "ring-2 ring-primary ring-offset-2"
+        )}
+      >
+        <Icon name="Filter" size={22} />
+        Фильтры
+        {activeCount > 0 && (
+          <Badge variant="secondary" className="ml-1 bg-white text-foreground">
+            {activeCount}
+          </Badge>
+        )}
+      </Button>
 
       {/* Filter Panel */}
       <div className={cn(
-        "absolute top-12 left-0 right-0 z-30 bg-card/95 backdrop-blur-lg border-b border-border shadow-xl transition-all duration-300",
+        "absolute top-20 left-0 right-0 z-30 bg-card border-b border-border shadow-xl transition-all duration-300",
         isOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
       )}>
-        {/* Кнопка закрытия */}
-        <button
-          onClick={onToggle}
-          className="w-full h-10 flex items-center justify-between px-4 hover:bg-accent/50 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Icon name="SlidersHorizontal" size={16} className="text-muted-foreground" />
-            <span className="text-sm font-medium">Фильтры</span>
-            {activeCount > 0 && (
-              <Badge variant="secondary" className="h-5 px-2 text-xs">
-                {activeCount}
-              </Badge>
-            )}
-          </div>
-          <Icon 
-            name="ChevronUp" 
-            size={16} 
-            className="text-muted-foreground"
-          />
-        </button>
 
       {/* Выпадающая панель */}
       {isOpen && (
         <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
-          {/* Активные фильтры */}
-          {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2 pb-3 border-b border-border sticky top-0 bg-card/95 backdrop-blur-lg z-10 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
-              {activeFilters.map((filter, idx) => (
-                <Badge
-                  key={`${filter.column}-${filter.value}-${idx}`}
-                  variant="secondary"
-                  className="h-7 px-3 gap-2 cursor-pointer hover:bg-destructive/20"
-                  onClick={() => toggleFilter(
-                    columns.find(c => c.label === filter.column)?.id || '',
-                    filter.value
-                  )}
+          {/* Активные фильтры - всегда видно */}
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-3 border-b border-border sticky top-0 bg-card z-10">
+            {activeFilters.length > 0 ? (
+              <>
+                {activeFilters.map((filter, idx) => (
+                  <Badge
+                    key={`${filter.column}-${filter.value}-${idx}`}
+                    variant="secondary"
+                    className="h-7 px-3 gap-2 cursor-pointer hover:bg-destructive/20"
+                    onClick={() => toggleFilter(
+                      columns.find(c => c.label === filter.column)?.id || '',
+                      filter.value
+                    )}
+                  >
+                    <span className="text-xs text-muted-foreground">{filter.column}:</span>
+                    <span className="text-xs font-medium">{filter.label}</span>
+                    <Icon name="X" size={12} />
+                  </Badge>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={clearFilters}
                 >
-                  <span className="text-xs text-muted-foreground">{filter.column}:</span>
-                  <span className="text-xs font-medium">{filter.label}</span>
-                  <Icon name="X" size={12} />
-                </Badge>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={clearFilters}
-              >
-                Очистить всё
-              </Button>
-            </div>
-          )}
+                  Очистить всё
+                </Button>
+              </>
+            ) : (
+              <span className="text-xs text-muted-foreground flex items-center">Фильтры не выбраны</span>
+            )}
+          </div>
 
           {/* Таблица фильтров */}
           <div className="overflow-x-auto border border-border rounded-lg">
