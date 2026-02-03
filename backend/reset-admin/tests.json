@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "Сброс пароля администратора",
+      "method": "POST",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
