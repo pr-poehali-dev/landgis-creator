@@ -180,18 +180,21 @@ export async function generatePropertyPDF(
   }
 
   const lineHeight = 7;
+  const labelColumnWidth = 60;
+  
   attributes.forEach(attr => {
-    if (yPosition + lineHeight > pageHeight - margin) {
+    const valueLines = pdf.splitTextToSize(attr.value, contentWidth - labelColumnWidth);
+    const requiredHeight = lineHeight * valueLines.length;
+    
+    if (yPosition + requiredHeight > pageHeight - margin) {
       pdf.addPage();
       yPosition = margin;
     }
 
     pdf.text(`${attr.label}:`, margin, yPosition);
+    pdf.text(valueLines, margin + labelColumnWidth, yPosition);
     
-    const labelWidth = pdf.getTextWidth(`${attr.label}: `);
-    pdf.text(attr.value, margin + labelWidth, yPosition);
-    
-    yPosition += lineHeight;
+    yPosition += requiredHeight;
   });
 
   const fileName = `${property.title.replace(/[^a-zа-яё0-9]/gi, '_')}_teaser.pdf`;
@@ -217,7 +220,20 @@ function formatAttributeName(key: string): string {
     constructionStatus: 'Градостроительный статус',
     broker: 'Уполномоченный брокер',
     coInvestmentPossibility: 'Возможность соинвеста',
-    offerType: 'Тип предложения'
+    offerType: 'Тип предложения',
+    id: 'ID',
+    ird: 'ИРД',
+    oks: 'ОКС',
+    date: 'Дата сдачи',
+    prava: 'Права',
+    ekspos: 'Экспозиция',
+    region: 'Регион',
+    pravoobl: 'Правообладатель',
+    soinvest: 'Соинвестирование',
+    uchastok: 'Участок',
+    grad_param: 'Градостроительные параметры',
+    type_pred: 'Тип предложения',
+    status_publ: 'Статус публикации'
   };
   return names[key] || key;
 }
@@ -225,6 +241,15 @@ function formatAttributeName(key: string): string {
 function formatAttributeValue(value: any): string {
   if (value === null || value === undefined) return '-';
   if (typeof value === 'boolean') return value ? 'Да' : 'Нет';
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return Object.entries(value)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
+  }
   if (Array.isArray(value)) return value.join(', ');
-  return String(value);
+  const str = String(value);
+  if (str.length > 100) {
+    return str.substring(0, 100) + '...';
+  }
+  return str;
 }
