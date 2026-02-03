@@ -298,10 +298,10 @@ const AdvancedFilterPanel = ({
 
       {/* Выпадающая панель */}
       {isOpen && (
-        <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
           {/* Активные фильтры */}
           {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2 pb-3 border-b border-border sticky top-0 bg-card/95 backdrop-blur-lg z-10">
+            <div className="flex flex-wrap gap-2 pb-3 border-b border-border sticky top-0 bg-card/95 backdrop-blur-lg z-10 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)]">
               {activeFilters.map((filter, idx) => (
                 <Badge
                   key={`${filter.column}-${filter.value}-${idx}`}
@@ -385,7 +385,7 @@ const AdvancedFilterPanel = ({
           </div>
 
           {/* Кнопки действий */}
-          <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-card/95 backdrop-blur-lg border-t border-border -mx-4 px-4 py-3">
+          <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-card/95 backdrop-blur-lg border-t border-border -mx-4 px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
             <Button
               variant="outline"
               size="sm"
