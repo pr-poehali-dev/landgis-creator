@@ -114,6 +114,51 @@ export const useMapObjects = ({
       }
     });
 
+    // Автоматический зум к отфильтрованным участкам
+    if (properties.length > 0 && !selectedProperty && !isAnimatingRef.current) {
+      const allBounds: Array<[number, number]> = [];
+      
+      properties.forEach(property => {
+        if (property.boundary && property.boundary.length >= 3) {
+          property.boundary.forEach(coord => allBounds.push(coord));
+        } else if (property.coordinates) {
+          allBounds.push(property.coordinates);
+        }
+      });
+
+      if (allBounds.length > 0) {
+        const lats = allBounds.map(coord => coord[0]);
+        const lngs = allBounds.map(coord => coord[1]);
+        
+        const minLat = Math.min(...lats);
+        const maxLat = Math.max(...lats);
+        const minLng = Math.min(...lngs);
+        const maxLng = Math.max(...lngs);
+        
+        const bounds: [[number, number], [number, number]] = [
+          [minLat, minLng],
+          [maxLat, maxLng]
+        ];
+
+        // Плавно перемещаемся к границам
+        setTimeout(() => {
+          map.setBounds(bounds, {
+            checkZoomRange: true,
+            zoomMargin: 50,
+            duration: 800
+          });
+
+          const finalHandler = () => {
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            initialViewRef.current = { center: [center[0], center[1]], zoom };
+            map.events.remove('actionend', finalHandler);
+          };
+          map.events.add('actionend', finalHandler);
+        }, 100);
+      }
+    }
+
     console.log(`✅ Отрисовано ${properties.length} объектов`);
   }, [properties, isMapReady, selectedProperty]);
 };
