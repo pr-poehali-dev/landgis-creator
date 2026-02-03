@@ -14,6 +14,7 @@ import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDia
 import { propertyService, Property } from '@/services/propertyService';
 import RoleSwitcher from '@/components/admin/RoleSwitcher';
 import { UserRole } from '@/types/userRoles';
+import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ const Index = () => {
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
   const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     loadProperties();
@@ -78,8 +81,30 @@ const Index = () => {
         matchesSegment = property.segment === filterSegment;
       }
     }
+
+    // Применяем продвинутые фильтры
+    const matchesAdvanced = Object.entries(advancedFilters).every(([key, values]) => {
+      if (!values || values.length === 0) return true;
+      
+      if (key === 'region') {
+        return values.includes(property.attributes?.region);
+      }
+      if (key === 'segment') {
+        const seg = property.attributes?.segment;
+        if (Array.isArray(seg)) return seg.some(s => values.includes(s));
+        if (typeof seg === 'string') return seg.split(',').some(s => values.includes(s.trim()));
+        return values.includes(property.segment);
+      }
+      if (key === 'status') {
+        return values.includes(property.status);
+      }
+      if (key === 'type') {
+        return values.includes(property.type);
+      }
+      return true;
+    });
     
-    return matchesSearch && matchesType && matchesSegment;
+    return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
   });
 
   const formatPrice = (price: number) => {
@@ -350,9 +375,19 @@ const Index = () => {
               <Icon name="Database" size={14} />
               Админка
             </Button>
-            <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5">
+            <Button 
+              variant={isFilterPanelOpen ? "default" : "outline"} 
+              size="sm" 
+              className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5"
+              onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+            >
               <Icon name="Filter" size={14} />
               Фильтры
+              {Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0) > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-background text-[10px] font-semibold">
+                  {Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0)}
+                </span>
+              )}
             </Button>
             <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5">
               <Icon name="Layers" size={14} />
@@ -366,6 +401,13 @@ const Index = () => {
         </div>
 
         <div className="flex-1 relative bg-muted/20">
+          <AdvancedFilterPanel
+            isOpen={isFilterPanelOpen}
+            onToggle={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+            filters={advancedFilters}
+            onFiltersChange={setAdvancedFilters}
+            properties={properties}
+          />
           <YandexMap
             properties={filteredProperties}
             selectedProperty={selectedProperty}
