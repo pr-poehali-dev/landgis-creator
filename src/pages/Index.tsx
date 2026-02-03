@@ -87,7 +87,10 @@ const Index = () => {
       if (!values || values.length === 0) return true;
       
       if (key === 'region') {
-        return values.includes(property.attributes?.region);
+        const region = property.attributes?.region;
+        // Исключаем объекты с техническими ID
+        if (!region || region.startsWith('lyr_')) return false;
+        return values.includes(region);
       }
       if (key === 'segment') {
         const seg = property.attributes?.segment;
@@ -213,7 +216,9 @@ const Index = () => {
               <div className="text-sm font-medium mb-1">{property.title}</div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Icon name="MapPin" size={12} />
-                {property.attributes?.region || 'Не указан'}
+                {property.attributes?.region && !property.attributes.region.startsWith('lyr_') 
+                  ? property.attributes.region 
+                  : 'Регион не указан'}
               </div>
             </div>
           ))}
@@ -318,7 +323,9 @@ const Index = () => {
                         <div className="text-sm font-medium mb-1">{property.title}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Icon name="MapPin" size={12} />
-                          {property.attributes?.region || 'Не указан'}
+                          {property.attributes?.region && !property.attributes.region.startsWith('lyr_')
+                            ? property.attributes.region
+                            : 'Регион не указан'}
                         </div>
                       </div>
                     ))}

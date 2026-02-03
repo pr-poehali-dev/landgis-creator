@@ -45,7 +45,9 @@ const AdvancedFilterPanel = ({
     const types = new Set<string>();
 
     properties.forEach(prop => {
-      if (prop.attributes?.region) regions.add(prop.attributes.region);
+      if (prop.attributes?.region && !prop.attributes.region.startsWith('lyr_')) {
+        regions.add(prop.attributes.region);
+      }
       
       const segment = prop.attributes?.segment;
       if (Array.isArray(segment)) {
