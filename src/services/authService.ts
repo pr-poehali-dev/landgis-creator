@@ -47,7 +47,7 @@ export const authService = {
     if (!token) throw new Error('Не авторизован');
 
     const response = await fetch(`${AUTH_API_URL}?action=me`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'X-Authorization': `Bearer ${token}` }
     });
 
     if (!response.ok) {
@@ -86,7 +86,7 @@ export const companiesService = {
   async getAll(): Promise<Company[]> {
     const token = authService.getToken();
     const response = await fetch(COMPANIES_API_URL, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'X-Authorization': `Bearer ${token}` }
     });
 
     if (!response.ok) {
@@ -102,7 +102,7 @@ export const companiesService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'X-Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(data)
     });
@@ -121,7 +121,7 @@ export const companiesService = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'X-Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(data)
     });
@@ -138,12 +138,12 @@ export const companiesService = {
     const token = authService.getToken();
     const response = await fetch(`${COMPANIES_API_URL}?id=${id}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'X-Authorization': `Bearer ${token}` }
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Ошибка удаления компании');
+      throw new Error('Ошибка удаления компании');
     }
   }
 };
