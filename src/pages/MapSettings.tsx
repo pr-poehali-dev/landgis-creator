@@ -8,6 +8,7 @@ import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import AdminNavigation from '@/components/admin/AdminNavigation';
 import { useAppSettings, AppSettings } from '@/hooks/useAppSettings';
+import { ImageUploader } from '@/components/ImageUploader';
 
 const MapSettings = () => {
   const navigate = useNavigate();
@@ -80,13 +81,12 @@ const MapSettings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="app-logo">Логотип (URL)</Label>
-                <Input
-                  id="app-logo"
-                  type="url"
-                  value={localSettings.logo}
-                  onChange={(e) => updateDesignSetting('logo', e.target.value)}
-                  placeholder="https://example.com/logo.png"
+                <Label htmlFor="app-logo">Логотип</Label>
+                <ImageUploader
+                  currentImageUrl={localSettings.logo}
+                  onImageChange={(url) => updateDesignSetting('logo', url)}
+                  aspectRatio="auto"
+                  maxSizeMB={2}
                 />
               </div>
               <div className="space-y-2">
