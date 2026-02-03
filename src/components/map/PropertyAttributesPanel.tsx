@@ -30,7 +30,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
   if (!property.attributes) return null;
 
   return (
-    <Card className="absolute top-0 right-0 h-full w-full sm:w-[450px] shadow-2xl animate-fade-in overflow-hidden flex flex-col">
+    <Card className="absolute top-0 right-0 h-full w-full sm:w-[450px] shadow-2xl animate-fade-in overflow-hidden flex flex-col z-50">
       <CardHeader className="pb-3 border-b border-border flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
