@@ -126,6 +126,7 @@ export const useMapZoom = ({
         centroid.options.set('iconColor', '#FF0000');
         centroid.options.set('iconImageSize', [60, 60]);
         centroid.options.set('iconImageOffset', [-30, -30]);
+        centroid.options.set('zIndex', 1000);
       } else {
         const property = properties.find(p => p.id === propertyId);
         if (property) {
@@ -133,6 +134,7 @@ export const useMapZoom = ({
           centroid.options.set('iconColor', getMarkerColor(property.segment));
           centroid.options.set('iconImageSize', [30, 30]);
           centroid.options.set('iconImageOffset', [-15, -15]);
+          centroid.options.set('zIndex', hoveredPropertyId ? 1 : 100);
         }
       }
     });
