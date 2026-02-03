@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Логин с неверными данными",
+      "method": "POST",
+      "path": "/?action=login",
+      "body": {
+        "login": "wronguser",
+        "password": "wrongpass"
+      },
+      "expectedStatus": 401
+    },
+    {
+      "name": "Проверка токена без авторизации",
+      "method": "GET",
+      "path": "/?action=me",
+      "expectedStatus": 401
+    }
+  ]
+}

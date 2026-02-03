@@ -1,4 +1,5 @@
 {
+  "auth": "https://functions.poehali.dev/3db334e8-0963-44c2-a7d5-f56cc9fd64a6",
   "get-font": "https://functions.poehali.dev/cefc89ce-9c6a-4a3a-81a1-25e6d62ca32d",
   "update-attributes": "https://functions.poehali.dev/9a179d0c-0121-4237-bb21-59957e116343",
   "companies": "https://functions.poehali.dev/a1ecb3f4-eea9-4fdd-9f5a-e4525374d77e",

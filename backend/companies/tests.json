@@ -1,11 +1,22 @@
 {
   "tests": [
     {
-      "name": "Get all companies",
+      "name": "Получение списка компаний без авторизации",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "bodyMatcher": "partial"
+      "expectedStatus": 401
+    },
+    {
+      "name": "Создание компании без авторизации",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Тестовая компания",
+        "login": "testcompany",
+        "password": "testpass123",
+        "role": "user"
+      },
+      "expectedStatus": 401
     }
   ]
 }

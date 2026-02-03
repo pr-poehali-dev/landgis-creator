@@ -12,6 +12,9 @@ import Companies from "./pages/Companies";
 import Users from "./pages/Users";
 import AdminFilterSettings from "./pages/AdminFilterSettings";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage";
+import AdminPage from "./pages/AdminPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -24,11 +27,37 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/map-settings" element={<MapSettings />} />
-            <Route path="/admin/companies" element={<Companies />} />
-            <Route path="/admin/users" element={<Users />} />
-            <Route path="/admin/filter-settings" element={<AdminFilterSettings />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requireAdmin>
+                <AdminPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/old" element={
+              <ProtectedRoute requireAdmin>
+                <Admin />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/map-settings" element={
+              <ProtectedRoute requireAdmin>
+                <MapSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/companies" element={
+              <ProtectedRoute requireAdmin>
+                <Companies />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute requireAdmin>
+                <Users />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/filter-settings" element={
+              <ProtectedRoute requireAdmin>
+                <AdminFilterSettings />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
