@@ -86,6 +86,10 @@ class PropertyService {
       if (!response.ok) throw new Error('Failed to load properties');
       
       const properties: Property[] = await response.json();
+      // Очищаем пробелы в названиях на всякий случай
+      properties.forEach(p => {
+        if (p.title) p.title = p.title.trim();
+      });
       this.cache = properties;
       this.lastFetch = Date.now();
       this.saveToLocalStorage(properties);
