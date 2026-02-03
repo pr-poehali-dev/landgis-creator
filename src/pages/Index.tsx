@@ -108,7 +108,7 @@ const Index = () => {
     });
     
     return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
-  }).sort((a, b) => a.title.localeCompare(b.title, 'ru'));
+  }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
