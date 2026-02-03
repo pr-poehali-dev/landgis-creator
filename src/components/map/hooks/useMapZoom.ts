@@ -28,8 +28,6 @@ interface UseMapZoomProps {
   previousSelectedRef: React.MutableRefObject<Property | null>;
   isAnimatingRef: React.MutableRefObject<boolean>;
   initialViewRef: React.MutableRefObject<{ center: [number, number], zoom: number } | null>;
-  setCardPosition: (position: any) => void;
-  setShowMiniCard: (show: boolean) => void;
 }
 
 export const useMapZoom = ({
@@ -44,9 +42,7 @@ export const useMapZoom = ({
   centroidsRef,
   previousSelectedRef,
   isAnimatingRef,
-  initialViewRef,
-  setCardPosition,
-  setShowMiniCard
+  initialViewRef
 }: UseMapZoomProps) => {
   
   // Функция зума к участку
@@ -157,8 +153,6 @@ export const useMapZoom = ({
 
     // Сброс выбора
     if (!selectedProperty) {
-      setCardPosition({});
-      
       if (previousSelectedRef.current && initialViewRef.current) {
         isAnimatingRef.current = true;
         
@@ -205,51 +199,12 @@ export const useMapZoom = ({
       return;
     }
 
-    // Запоминаем выбранный объект
+    // Запоминаем выбранный объект и приближаем камеру
     previousSelectedRef.current = selectedProperty;
     map.balloon.close();
-    isAnimatingRef.current = true;
 
-    const [lat, lng] = selectedProperty.coordinates;
-
-    // ⚠️ КРИТИЧНО: слушаем завершение анимации через события
-    const actionEndHandler = () => {
-      isAnimatingRef.current = false;
-      
-      try {
-        const projection = map.options.get('projection');
-        const globalPixels = projection.toGlobalPixels([lat, lng], map.getZoom());
-        const mapSize = map.container.getSize();
-        const mapOffset = map.converter.globalToPage(globalPixels);
-
-        const x = mapOffset[0];
-        const y = mapOffset[1];
-        const margin = 16;
-
-        const position: any = {};
-
-        if (x > mapSize[0] / 2) {
-          position.right = `${mapSize[0] - x + margin}px`;
-        } else {
-          position.left = `${x + margin}px`;
-        }
-
-        if (y < mapSize[1] / 2) {
-          position.top = `${y + margin}px`;
-        } else {
-          position.bottom = `${mapSize[1] - y + margin}px`;
-        }
-
-        setCardPosition(position);
-        setShowMiniCard(true);
-      } catch (error) {
-        console.error('Ошибка позиционирования:', error);
-      }
-
-      map.events.remove('actionend', actionEndHandler);
-    };
-
-    map.events.add('actionend', actionEndHandler);
+    // Зумируем к участку
+    zoomToProperty(selectedProperty);
   }, [selectedProperty]);
 
   return { zoomToProperty };

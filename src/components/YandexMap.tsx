@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import PropertyMiniCard from '@/components/map/PropertyMiniCard';
 import PropertyAttributesPanel from '@/components/map/PropertyAttributesPanel';
 import { useMapInitialization } from '@/components/map/hooks/useMapInitialization';
 import { useMapObjects } from '@/components/map/hooks/useMapObjects';
@@ -57,8 +56,6 @@ const YandexMap = ({
   const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
 
   const [isMapReady, setIsMapReady] = useState(false);
-  const [showMiniCard, setShowMiniCard] = useState(false);
-  const [cardPosition, setCardPosition] = useState<{ top?: string; left?: string; right?: string; bottom?: string }>({});
 
   // Инициализация карты
   useMapInitialization({
@@ -84,7 +81,6 @@ const YandexMap = ({
     initialViewRef,
     isAnimatingRef,
     onSelectProperty,
-    setShowMiniCard,
     onAttributesPanelChange
   });
 
@@ -101,30 +97,12 @@ const YandexMap = ({
     centroidsRef,
     previousSelectedRef,
     isAnimatingRef,
-    initialViewRef,
-    setCardPosition,
-    setShowMiniCard
+    initialViewRef
   });
 
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
-      
-      {showMiniCard && selectedProperty && (
-        <PropertyMiniCard
-          property={selectedProperty}
-          position={cardPosition}
-          onClose={() => {
-            setShowMiniCard(false);
-            onSelectProperty(null);
-          }}
-          onOpenAttributes={() => {
-            setShowMiniCard(false);
-            if (onAttributesPanelChange) onAttributesPanelChange(true);
-          }}
-          userRole={userRole}
-        />
-      )}
 
       {showAttributesPanel && selectedProperty && (
         <PropertyAttributesPanel

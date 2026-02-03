@@ -27,7 +27,6 @@ interface UseMapObjectsProps {
   initialViewRef: React.MutableRefObject<{ center: [number, number], zoom: number } | null>;
   isAnimatingRef: React.MutableRefObject<boolean>;
   onSelectProperty: (property: Property | null) => void;
-  setShowMiniCard: (show: boolean) => void;
   onAttributesPanelChange?: (show: boolean) => void;
 }
 
@@ -43,7 +42,6 @@ export const useMapObjects = ({
   initialViewRef,
   isAnimatingRef,
   onSelectProperty,
-  setShowMiniCard,
   onAttributesPanelChange
 }: UseMapObjectsProps) => {
   const previousPropertiesHashRef = useRef<string>('');
@@ -88,8 +86,7 @@ export const useMapObjects = ({
         polygon.events.add('click', () => {
           if (isAnimatingRef.current) return;
           onSelectProperty(property);
-          setShowMiniCard(true);
-          if (onAttributesPanelChange) onAttributesPanelChange(false);
+          if (onAttributesPanelChange) onAttributesPanelChange(true);
         });
 
         map.geoObjects.add(polygon);
@@ -112,8 +109,7 @@ export const useMapObjects = ({
         centroid.events.add('click', () => {
           if (isAnimatingRef.current) return;
           onSelectProperty(property);
-          setShowMiniCard(true);
-          if (onAttributesPanelChange) onAttributesPanelChange(false);
+          if (onAttributesPanelChange) onAttributesPanelChange(true);
         });
 
         map.geoObjects.add(centroid);
