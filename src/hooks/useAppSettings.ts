@@ -10,10 +10,10 @@ export interface AppSettings {
 
 const defaultSettings: AppSettings = {
   logo: '',
-  title: 'LandGis',
+  title: '3емБук',
   subtitle: 'Картографическая CRM',
-  bgColor: '#ffffff',
-  buttonColor: '#3b82f6'
+  bgColor: '#1f1f1f',
+  buttonColor: '#ff7c53'
 };
 
 const STORAGE_KEY = 'app_design_settings';
