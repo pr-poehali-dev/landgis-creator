@@ -303,9 +303,9 @@ const AdvancedFilterPanel = ({
       {isOpen && (
         <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
           {/* Активные фильтры - всегда видно */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 -mt-6 px-6 pt-6 relative">
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 -mt-6 px-6 pt-6 pr-[280px] relative">
             {/* Кнопки в правом верхнем углу */}
-            <div className="absolute top-6 right-6 flex gap-2">
+            <div className="absolute top-6 right-6 flex gap-2 z-20">
               <Button
                 variant="outline"
                 size="sm"
