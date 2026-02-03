@@ -12,8 +12,8 @@ const defaultSettings: AppSettings = {
   logo: '',
   title: '3емБук',
   subtitle: 'Картографическая CRM',
-  bgColor: '#1f1f1f',
-  buttonColor: '#ff7c53'
+  bgColor: '#a41e1e',
+  buttonColor: '#ff1b30'
 };
 
 const STORAGE_KEY = 'app_design_settings';

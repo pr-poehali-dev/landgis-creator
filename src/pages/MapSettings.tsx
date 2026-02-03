@@ -34,7 +34,13 @@ const MapSettings = () => {
   };
 
   const updateDesignSetting = (key: keyof AppSettings, value: string) => {
-    setLocalSettings(prev => ({ ...prev, [key]: value }));
+    let cleanValue = value;
+    if (key === 'bgColor' || key === 'buttonColor') {
+      cleanValue = value.replace(/[^a-f0-9#]/gi, '');
+      if (!cleanValue.startsWith('#')) cleanValue = '#' + cleanValue;
+      if (cleanValue.length > 7) cleanValue = cleanValue.substring(0, 7);
+    }
+    setLocalSettings(prev => ({ ...prev, [key]: cleanValue }));
   };
 
   if (isLoading) {
