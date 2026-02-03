@@ -9,14 +9,16 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     
     if (settings.bgColor) {
       const cleanHex = normalizeHex(settings.bgColor);
-      const bgRgb = hexToRgb(cleanHex);
-      root.style.setProperty('--background', bgRgb);
+      const bgHsl = hexToHsl(cleanHex);
+      root.style.setProperty('--background', bgHsl);
+      root.style.setProperty('--card', bgHsl);
     }
     
     if (settings.buttonColor) {
       const cleanHex = normalizeHex(settings.buttonColor);
-      const btnRgb = hexToRgb(cleanHex);
-      root.style.setProperty('--primary', btnRgb);
+      const btnHsl = hexToHsl(cleanHex);
+      root.style.setProperty('--primary', btnHsl);
+      root.style.setProperty('--accent', btnHsl);
     }
   }, [settings]);
 
@@ -27,20 +29,36 @@ function normalizeHex(hex: string): string {
   let clean = hex.replace(/[^a-f0-9#]/gi, '');
   if (!clean.startsWith('#')) clean = '#' + clean;
   if (clean.length > 7) clean = clean.substring(0, 7);
-  if (clean.length === 7) clean = clean.substring(0, 7);
   return clean;
 }
 
-function hexToRgb(hex: string): string {
+function hexToHsl(hex: string): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) {
     console.warn('Invalid hex color:', hex);
-    return '0 0 0';
+    return '0 0% 0%';
   }
   
-  const r = parseInt(result[1], 16);
-  const g = parseInt(result[2], 16);
-  const b = parseInt(result[3], 16);
-  
-  return `${r} ${g} ${b}`;
+  const r = parseInt(result[1], 16) / 255;
+  const g = parseInt(result[2], 16) / 255;
+  const b = parseInt(result[3], 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
