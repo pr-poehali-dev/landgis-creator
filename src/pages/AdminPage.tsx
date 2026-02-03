@@ -26,12 +26,8 @@ export default function AdminPage() {
   });
 
   useEffect(() => {
-    if (!authService.isAuthenticated() || !authService.isAdmin()) {
-      navigate('/login');
-      return;
-    }
     loadCompanies();
-  }, [navigate]);
+  }, []);
 
   const loadCompanies = async () => {
     try {
