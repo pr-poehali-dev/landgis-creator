@@ -94,6 +94,83 @@ const MapSettings = () => {
         <div className="grid gap-6">
           <Card>
             <CardHeader>
+              <CardTitle>Дизайн приложения</CardTitle>
+              <CardDescription>Настройка внешнего вида и брендинга</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="app-logo">Логотип (URL)</Label>
+                <Input
+                  id="app-logo"
+                  type="url"
+                  value={getSetting('app_logo')}
+                  onChange={(e) => updateSetting('app_logo', e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-title">Заголовок приложения</Label>
+                <Input
+                  id="app-title"
+                  value={getSetting('app_title')}
+                  onChange={(e) => updateSetting('app_title', e.target.value)}
+                  placeholder="LandGis"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="app-subtitle">Подзаголовок</Label>
+                <Input
+                  id="app-subtitle"
+                  value={getSetting('app_subtitle')}
+                  onChange={(e) => updateSetting('app_subtitle', e.target.value)}
+                  placeholder="Картографическая CRM"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bg-color">Основной цвет фона</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="bg-color"
+                      type="color"
+                      value={getSetting('app_bg_color') || '#ffffff'}
+                      onChange={(e) => updateSetting('app_bg_color', e.target.value)}
+                      className="w-20"
+                    />
+                    <Input
+                      type="text"
+                      value={getSetting('app_bg_color') || '#ffffff'}
+                      onChange={(e) => updateSetting('app_bg_color', e.target.value)}
+                      className="flex-1"
+                      placeholder="#ffffff"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="button-color">Цвет кнопок</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="button-color"
+                      type="color"
+                      value={getSetting('app_button_color') || '#3b82f6'}
+                      onChange={(e) => updateSetting('app_button_color', e.target.value)}
+                      className="w-20"
+                    />
+                    <Input
+                      type="text"
+                      value={getSetting('app_button_color') || '#3b82f6'}
+                      onChange={(e) => updateSetting('app_button_color', e.target.value)}
+                      className="flex-1"
+                      placeholder="#3b82f6"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Положение по умолчанию</CardTitle>
               <CardDescription>Центр карты и масштаб при загрузке</CardDescription>
             </CardHeader>

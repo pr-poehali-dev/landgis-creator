@@ -15,9 +15,11 @@ import { propertyService, Property } from '@/services/propertyService';
 import RoleSwitcher from '@/components/admin/RoleSwitcher';
 import { UserRole } from '@/types/userRoles';
 import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { settings: appSettings, isLoading: isSettingsLoading } = useAppSettings();
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [mapType, setMapType] = useState<'scheme' | 'hybrid'>('scheme');
@@ -39,6 +41,15 @@ const Index = () => {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (!isSettingsLoading && appSettings.bgColor) {
+      document.documentElement.style.setProperty('--custom-bg', appSettings.bgColor);
+    }
+    if (!isSettingsLoading && appSettings.buttonColor) {
+      document.documentElement.style.setProperty('--custom-button', appSettings.buttonColor);
+    }
+  }, [appSettings, isSettingsLoading]);
 
   const loadProperties = async () => {
     setIsLoading(true);
@@ -177,12 +188,16 @@ const Index = () => {
       <div className="hidden lg:flex w-80 border-r border-border flex-col bg-card/50 backdrop-blur">
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon name="Map" className="text-primary" size={18} />
-            </div>
+            {appSettings.logo ? (
+              <img src={appSettings.logo} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Icon name="Map" className="text-primary" size={18} />
+              </div>
+            )}
             <div>
-              <h1 className="text-xl font-bold">LandGis</h1>
-              <p className="text-[10px] text-muted-foreground">Картографическая CRM</p>
+              <h1 className="text-xl font-bold">{appSettings.title}</h1>
+              <p className="text-[10px] text-muted-foreground">{appSettings.subtitle}</p>
             </div>
           </div>
 
@@ -284,12 +299,16 @@ const Index = () => {
                 <div className="flex flex-col h-full bg-card/50 backdrop-blur">
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Icon name="Map" className="text-primary" size={24} />
-                      </div>
+                      {appSettings.logo ? (
+                        <img src={appSettings.logo} alt="Logo" className="w-10 h-10 rounded-lg object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Icon name="Map" className="text-primary" size={24} />
+                        </div>
+                      )}
                       <div>
-                        <h1 className="text-2xl font-bold">LandGis</h1>
-                        <p className="text-xs text-muted-foreground">Картографическая CRM</p>
+                        <h1 className="text-2xl font-bold">{appSettings.title}</h1>
+                        <p className="text-xs text-muted-foreground">{appSettings.subtitle}</p>
                       </div>
                     </div>
 
