@@ -28,7 +28,7 @@ const AdminNavigation = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Icon name="Database" className="text-primary" size={28} />
+              <Icon name="Database" className="text-primary" size={42} />
               Администрирование
             </h1>
             <p className="text-sm text-muted-foreground">Управление базой данных объектов</p>
