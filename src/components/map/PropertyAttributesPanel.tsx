@@ -24,9 +24,10 @@ interface PropertyAttributesPanelProps {
   onClose: () => void;
   onAttributesUpdate: (updatedAttrs: Record<string, any>) => void;
   onZoomToProperty?: () => void;
+  onGeneratePDF?: () => void;
 }
 
-const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty }: PropertyAttributesPanelProps) => {
+const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF }: PropertyAttributesPanelProps) => {
   if (!property.attributes) return null;
 
   return (
@@ -52,7 +53,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
           <Badge variant="secondary" className="w-fit">
             Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
           </Badge>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {property.boundary && property.boundary.length >= 3 && onZoomToProperty && (
               <Button
                 onClick={onZoomToProperty}
@@ -61,6 +62,17 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
               >
                 <Icon name="ZoomIn" size={14} />
                 Приблизить участок
+              </Button>
+            )}
+            {onGeneratePDF && (
+              <Button
+                onClick={onGeneratePDF}
+                size="sm"
+                variant="outline"
+                className="h-7 px-3 gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+              >
+                <Icon name="FileText" size={14} />
+                Скачать PDF
               </Button>
             )}
             <Button

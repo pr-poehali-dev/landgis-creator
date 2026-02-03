@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import PropertyAttributesPanel from '@/components/map/PropertyAttributesPanel';
 import { useMapInitialization } from '@/components/map/hooks/useMapInitialization';
 import { useMapObjects } from '@/components/map/hooks/useMapObjects';
 import { useMapZoom } from '@/components/map/hooks/useMapZoom';
+import { captureMapScreenshots, generatePropertyPDF } from '@/utils/pdfGenerator';
 
 interface Property {
   id: number;
@@ -100,6 +102,25 @@ const YandexMap = ({
     initialViewRef
   });
 
+  const handleGeneratePDF = async () => {
+    if (!selectedProperty || !mapInstanceRef.current) {
+      toast.error('Не удалось сгенерировать PDF');
+      return;
+    }
+
+    try {
+      toast.info('Генерация PDF-тизера...', { duration: 2000 });
+      
+      const screenshots = await captureMapScreenshots(mapInstanceRef.current, selectedProperty);
+      await generatePropertyPDF(selectedProperty, screenshots);
+      
+      toast.success('PDF-тизер успешно скачан!');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Ошибка при генерации PDF');
+    }
+  };
+
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
@@ -114,6 +135,7 @@ const YandexMap = ({
           userRole={userRole}
           onZoomToProperty={() => zoomToProperty(selectedProperty)}
           onAttributesUpdate={() => {}}
+          onGeneratePDF={handleGeneratePDF}
         />
       )}
     </div>
