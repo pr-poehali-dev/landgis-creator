@@ -63,13 +63,16 @@ const Companies = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    console.log('🔵 Submit form', { editingCompany, formData });
 
     if (!editingCompany && formData.password !== formData.passwordConfirm) {
+      console.error('❌ Passwords do not match');
       setError('Пароли не совпадают');
       return;
     }
 
     if (!editingCompany && formData.password.length < 6) {
+      console.error('❌ Password too short');
       setError('Пароль должен содержать минимум 6 символов');
       return;
     }
@@ -78,17 +81,23 @@ const Companies = () => {
       const dataToSend = { ...formData };
       delete (dataToSend as any).passwordConfirm;
       
+      console.log('📤 Sending data:', dataToSend);
+      
       if (editingCompany) {
         if (!dataToSend.password) {
           delete (dataToSend as any).password;
         }
+        console.log('🔄 Updating company...');
         await companiesService.update({ id: editingCompany.id, ...dataToSend });
       } else {
+        console.log('➕ Creating company...');
         await companiesService.create(dataToSend);
       }
+      console.log('✅ Success!');
       await loadCompanies();
       resetForm();
     } catch (err: unknown) {
+      console.error('❌ Error:', err);
       setError(err instanceof Error ? err.message : 'Ошибка сохранения');
     }
   };
