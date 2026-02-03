@@ -51,7 +51,7 @@ def handler(event: dict, context) -> dict:
 
 def get_all_settings(conn):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute('SELECT * FROM map_settings ORDER BY setting_key')
+        cur.execute('SELECT * FROM t_p78972315_landgis_creator.map_settings ORDER BY setting_key')
         settings = cur.fetchall()
         return {
             'statusCode': 200,
@@ -66,7 +66,7 @@ def upsert_setting(conn, data):
     
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute('''
-            INSERT INTO map_settings (setting_key, setting_value, description)
+            INSERT INTO t_p78972315_landgis_creator.map_settings (setting_key, setting_value, description)
             VALUES (%s, %s, %s)
             ON CONFLICT (setting_key) 
             DO UPDATE SET
@@ -89,7 +89,7 @@ def get_display_configs(conn):
         cur.execute('''
             SELECT id, config_type, config_key, display_name, display_order,
                    visible_roles, enabled, settings, format_type, format_options
-            FROM display_configs
+            FROM t_p78972315_landgis_creator.display_configs
             ORDER BY display_order
         ''')
         configs = cur.fetchall()
@@ -122,11 +122,11 @@ def save_display_configs(conn, data):
         return error_response('configs array required', 400)
     
     with conn.cursor() as cur:
-        cur.execute('DELETE FROM display_configs')
+        cur.execute('DELETE FROM t_p78972315_landgis_creator.display_configs')
         
         for cfg in configs:
             cur.execute('''
-                INSERT INTO display_configs
+                INSERT INTO t_p78972315_landgis_creator.display_configs
                 (id, config_type, config_key, display_name, display_order,
                  visible_roles, enabled, settings, format_type, format_options)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)

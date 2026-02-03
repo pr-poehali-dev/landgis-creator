@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { mapSettingsService } from '@/services/mapSettingsService';
 
 export interface AppSettings {
   logo: string;
@@ -17,6 +16,8 @@ const defaultSettings: AppSettings = {
   buttonColor: '#3b82f6'
 };
 
+const STORAGE_KEY = 'app_design_settings';
+
 export const useAppSettings = () => {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,23 +26,13 @@ export const useAppSettings = () => {
     loadSettings();
   }, []);
 
-  const loadSettings = async () => {
+  const loadSettings = () => {
     try {
-      const allSettings = await mapSettingsService.getSettings();
-      
-      const logo = allSettings.find(s => s.setting_key === 'app_logo')?.setting_value || '';
-      const title = allSettings.find(s => s.setting_key === 'app_title')?.setting_value || 'LandGis';
-      const subtitle = allSettings.find(s => s.setting_key === 'app_subtitle')?.setting_value || 'Картографическая CRM';
-      const bgColor = allSettings.find(s => s.setting_key === 'app_bg_color')?.setting_value || '#ffffff';
-      const buttonColor = allSettings.find(s => s.setting_key === 'app_button_color')?.setting_value || '#3b82f6';
-
-      setSettings({
-        logo,
-        title,
-        subtitle,
-        bgColor,
-        buttonColor
-      });
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setSettings({ ...defaultSettings, ...parsed });
+      }
     } catch (error) {
       console.error('Error loading app settings:', error);
     } finally {
@@ -49,5 +40,11 @@ export const useAppSettings = () => {
     }
   };
 
-  return { settings, isLoading };
+  const saveSettings = (newSettings: Partial<AppSettings>) => {
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
+
+  return { settings, isLoading, saveSettings };
 };
