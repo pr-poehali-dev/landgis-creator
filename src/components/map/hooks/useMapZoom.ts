@@ -25,7 +25,6 @@ interface UseMapZoomProps {
   mapInstanceRef: React.MutableRefObject<any>;
   polygonsRef: React.MutableRefObject<any[]>;
   centroidsRef: React.MutableRefObject<any[]>;
-  cityMarkersRef: React.MutableRefObject<any[]>;
   previousSelectedRef: React.MutableRefObject<Property | null>;
   isAnimatingRef: React.MutableRefObject<boolean>;
   initialViewRef: React.MutableRefObject<{ center: [number, number], zoom: number } | null>;
@@ -43,7 +42,6 @@ export const useMapZoom = ({
   mapInstanceRef,
   polygonsRef,
   centroidsRef,
-  cityMarkersRef,
   previousSelectedRef,
   isAnimatingRef,
   initialViewRef,
@@ -121,38 +119,6 @@ export const useMapZoom = ({
       }
     }
   };
-
-  // Управление видимостью меток в зависимости от зума
-  useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current) return;
-
-    const map = mapInstanceRef.current;
-    
-    const updateMarkersVisibility = () => {
-      const currentZoom = map.getZoom();
-      const threshold = 12; // Порог зума для переключения меток
-
-      // На малом зуме показываем города, скрываем центроиды
-      if (currentZoom < threshold) {
-        cityMarkersRef.current.forEach(marker => marker.options.set('visible', true));
-        centroidsRef.current.forEach(({ centroid }) => centroid.options.set('visible', false));
-      } else {
-        // На большом зуме скрываем города, показываем центроиды
-        cityMarkersRef.current.forEach(marker => marker.options.set('visible', false));
-        centroidsRef.current.forEach(({ centroid }) => centroid.options.set('visible', true));
-      }
-    };
-
-    // Обновляем при изменении зума
-    map.events.add('boundschange', updateMarkersVisibility);
-    
-    // Первоначальное обновление
-    updateMarkersVisibility();
-
-    return () => {
-      map.events.remove('boundschange', updateMarkersVisibility);
-    };
-  }, [isMapReady, properties]);
 
   // Выделение центроида при наведении
   useEffect(() => {

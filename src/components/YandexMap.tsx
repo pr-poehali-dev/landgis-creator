@@ -52,7 +52,6 @@ const YandexMap = ({
   const polygonsRef = useRef<any[]>([]);
   const placeMarksRef = useRef<any[]>([]);
   const centroidsRef = useRef<any[]>([]);
-  const cityMarkersRef = useRef<any[]>([]);
   const previousSelectedRef = useRef<Property | null>(null);
   const isAnimatingRef = useRef(false);
   const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
@@ -82,7 +81,6 @@ const YandexMap = ({
     polygonsRef,
     placeMarksRef,
     centroidsRef,
-    cityMarkersRef,
     initialViewRef,
     isAnimatingRef,
     onSelectProperty,
@@ -101,7 +99,6 @@ const YandexMap = ({
     mapInstanceRef,
     polygonsRef,
     centroidsRef,
-    cityMarkersRef,
     previousSelectedRef,
     isAnimatingRef,
     initialViewRef,
