@@ -237,6 +237,8 @@ const Index = () => {
             showAttributesPanel={showAttributesPanel}
             onAttributesPanelChange={setShowAttributesPanel}
             hoveredPropertyId={hoveredPropertyId}
+            logoUrl={appSettings.logo}
+            companyName={appSettings.title}
           />
         </div>
 

@@ -57,7 +57,9 @@ export async function captureMapScreenshots(
 
 export async function generatePropertyPDF(
   property: Property,
-  mapScreenshots: MapScreenshot
+  mapScreenshots: MapScreenshot,
+  logoUrl?: string,
+  companyName?: string
 ): Promise<void> {
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -72,8 +74,37 @@ export async function generatePropertyPDF(
   
   let yPosition = margin;
 
+  if (logoUrl) {
+    try {
+      const logoSize = 20;
+      pdf.addImage(logoUrl, 'PNG', margin, yPosition, logoSize, logoSize);
+      
+      if (companyName) {
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(companyName, margin + logoSize + 5, yPosition + 7);
+        
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(100, 100, 100);
+        pdf.text('Картографическая CRM', margin + logoSize + 5, yPosition + 13);
+      }
+      
+      yPosition += logoSize + 10;
+      
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 8;
+    } catch (error) {
+      console.warn('Failed to add logo to PDF:', error);
+    }
+  }
+
   pdf.setFontSize(20);
   pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(0, 0, 0);
   pdf.text(property.title, margin, yPosition);
   yPosition += 10;
 

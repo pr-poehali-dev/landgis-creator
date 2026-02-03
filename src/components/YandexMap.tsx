@@ -29,6 +29,8 @@ interface YandexMapProps {
   showAttributesPanel?: boolean;
   onAttributesPanelChange?: (show: boolean) => void;
   hoveredPropertyId?: number | null;
+  logoUrl?: string;
+  companyName?: string;
 }
 
 declare global {
@@ -45,7 +47,9 @@ const YandexMap = ({
   userRole = 'user1', 
   showAttributesPanel = false, 
   onAttributesPanelChange,
-  hoveredPropertyId 
+  hoveredPropertyId,
+  logoUrl,
+  companyName
 }: YandexMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -112,7 +116,7 @@ const YandexMap = ({
       toast.info('Генерация PDF-тизера...', { duration: 2000 });
       
       const screenshots = await captureMapScreenshots(mapInstanceRef.current, selectedProperty);
-      await generatePropertyPDF(selectedProperty, screenshots);
+      await generatePropertyPDF(selectedProperty, screenshots, logoUrl, companyName);
       
       toast.success('PDF-тизер успешно скачан!');
     } catch (error) {
