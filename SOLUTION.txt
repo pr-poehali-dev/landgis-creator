@@ -1,0 +1,85 @@
+==============================================================================
+PT SANS REGULAR BASE64 STRING - SOLUTION
+==============================================================================
+
+I've set up everything you need to get the PT Sans Regular font base64 string
+with Cyrillic support for jsPDF.
+
+QUICKEST SOLUTION - Run this command:
+==============================================================================
+
+curl https://functions.poehali.dev/cefc89ce-9c6a-4a3a-81a1-25e6d62ca32d
+
+This will output the complete base64 string to your terminal.
+
+To save it to a file:
+
+curl https://functions.poehali.dev/cefc89ce-9c6a-4a3a-81a1-25e6d62ca32d > pt-sans-base64.txt
+
+
+ALTERNATIVE METHODS:
+==============================================================================
+
+1. Using Bun (since your project uses Bun):
+   bun run fetch-font.ts
+
+2. Using Python:
+   python3 get_pt_sans_base64.py
+
+3. In your browser JavaScript console:
+   fetch('https://functions.poehali.dev/cefc89ce-9c6a-4a3a-81a1-25e6d62ca32d')
+     .then(r => r.text())
+     .then(base64 => console.log(base64))
+
+
+WHAT I CREATED FOR YOU:
+==============================================================================
+
+1. Backend Function (Python):
+   Location: /backend/get-font/index.py
+   URL: https://functions.poehali.dev/cefc89ce-9c6a-4a3a-81a1-25e6d62ca32d
+   - Downloads PT Sans Regular from Google Fonts repository
+   - Converts TTF to base64
+   - Returns the base64 string
+
+2. TypeScript Fetch Script:
+   File: /fetch-font.ts
+   Run: bun run fetch-font.ts
+
+3. Python Script:
+   File: /get_pt_sans_base64.py
+   Run: python3 get_pt_sans_base64.py
+
+4. HTML Page:
+   File: /get-font-base64.html
+   - Open in browser
+   - Automatically fetches and displays base64
+   - Copies to clipboard
+
+5. Documentation:
+   File: /GET_FONT_BASE64.md
+   - Complete usage guide
+   - jsPDF integration example
+
+
+FONT DETAILS:
+==============================================================================
+
+Font Name: PT Sans Regular
+Source: Google Fonts (https://fonts.google.com/specimen/PT+Sans)
+File: PT_Sans-Web-Regular.ttf
+Cyrillic Support: Yes
+License: Open Font License (OFL)
+Format: TTF converted to Base64
+
+
+NEXT STEP:
+==============================================================================
+
+Run this command now:
+
+curl https://functions.poehali.dev/cefc89ce-9c6a-4a3a-81a1-25e6d62ca32d
+
+The output will be your base64 string ready to use with jsPDF.
+
+==============================================================================

@@ -1,9 +1,22 @@
 import jsPDF from 'jspdf';
 import { Property } from '@/services/propertyService';
+import { getPTSansFont } from './fonts/PTSans-Regular';
 
 interface MapScreenshot {
   hybrid: string;
   scheme: string;
+}
+
+let fontLoaded = false;
+
+async function loadRussianFont(pdf: jsPDF) {
+  if (!fontLoaded) {
+    const fontBase64 = await getPTSansFont();
+    pdf.addFileToVFS('PTSans-Regular.ttf', fontBase64);
+    pdf.addFont('PTSans-Regular.ttf', 'PTSans', 'normal');
+    fontLoaded = true;
+  }
+  pdf.setFont('PTSans');
 }
 
 async function getStaticMapImage(
@@ -70,6 +83,8 @@ export async function generatePropertyPDF(
     format: 'a4'
   });
 
+  await loadRussianFont(pdf);
+
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
@@ -84,12 +99,10 @@ export async function generatePropertyPDF(
       
       if (companyName) {
         pdf.setFontSize(16);
-        pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(0, 0, 0);
         pdf.text(companyName, margin + logoSize + 5, yPosition + 7);
         
         pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(100, 100, 100);
         pdf.text('Картографическая CRM', margin + logoSize + 5, yPosition + 13);
       }
@@ -106,20 +119,17 @@ export async function generatePropertyPDF(
   }
 
   pdf.setFontSize(20);
-  pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(0, 0, 0);
   pdf.text(property.title, margin, yPosition);
   yPosition += 10;
 
   pdf.setFontSize(12);
-  pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(100, 100, 100);
   pdf.text(property.location, margin, yPosition);
   yPosition += 12;
 
   pdf.setFontSize(16);
   pdf.setTextColor(0, 0, 0);
-  pdf.setFont('helvetica', 'bold');
   pdf.text('Детальный вид (Гибрид)', margin, yPosition);
   yPosition += 7;
 
@@ -135,7 +145,6 @@ export async function generatePropertyPDF(
   }
 
   pdf.setFontSize(16);
-  pdf.setFont('helvetica', 'bold');
   pdf.text('Обзорная карта (Схема)', margin, yPosition);
   yPosition += 7;
 
@@ -148,12 +157,10 @@ export async function generatePropertyPDF(
   }
 
   pdf.setFontSize(16);
-  pdf.setFont('helvetica', 'bold');
   pdf.text('Характеристики объекта', margin, yPosition);
   yPosition += 10;
 
   pdf.setFontSize(11);
-  pdf.setFont('helvetica', 'normal');
 
   const attributes = [
     { label: 'Тип', value: getTypeLabel(property.type) },
@@ -179,10 +186,8 @@ export async function generatePropertyPDF(
       yPosition = margin;
     }
 
-    pdf.setFont('helvetica', 'bold');
     pdf.text(`${attr.label}:`, margin, yPosition);
     
-    pdf.setFont('helvetica', 'normal');
     const labelWidth = pdf.getTextWidth(`${attr.label}: `);
     pdf.text(attr.value, margin + labelWidth, yPosition);
     

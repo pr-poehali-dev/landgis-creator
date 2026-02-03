@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Get PT Sans font base64",
+    "request": {
+      "method": "GET"
+    },
+    "expected": {
+      "statusCode": 200
+    }
+  }
+]
