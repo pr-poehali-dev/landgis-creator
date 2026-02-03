@@ -297,16 +297,11 @@ const AdvancedFilterPanel = ({
       </button>
 
       {/* Выпадающая панель */}
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300",
-          isOpen ? "max-h-[400px]" : "max-h-0"
-        )}
-      >
-        <div className="p-4 space-y-4">
+      {isOpen && (
+        <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
           {/* Активные фильтры */}
           {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2 pb-3 border-b border-border">
+            <div className="flex flex-wrap gap-2 pb-3 border-b border-border sticky top-0 bg-card/95 backdrop-blur-lg z-10">
               {activeFilters.map((filter, idx) => (
                 <Badge
                   key={`${filter.column}-${filter.value}-${idx}`}
@@ -334,7 +329,7 @@ const AdvancedFilterPanel = ({
           )}
 
           {/* Таблица фильтров */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto border border-border rounded-lg">
             <table className="w-full border-collapse">
               <thead>
                 <tr>
@@ -390,7 +385,7 @@ const AdvancedFilterPanel = ({
           </div>
 
           {/* Кнопки действий */}
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-card/95 backdrop-blur-lg border-t border-border -mx-4 px-4 py-3">
             <Button
               variant="outline"
               size="sm"
@@ -408,7 +403,7 @@ const AdvancedFilterPanel = ({
             </Button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
