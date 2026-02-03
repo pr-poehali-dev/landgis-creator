@@ -40,10 +40,10 @@ const SidebarPanel = ({
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2 mb-4">
           {appSettings.logo ? (
-            <img src={appSettings.logo} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+            <img src={appSettings.logo} alt="Logo" className="w-16 h-16 rounded-lg object-cover" />
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon name="Map" className="text-primary" size={18} />
+            <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Icon name="Map" className="text-primary" size={36} />
             </div>
           )}
           <div>

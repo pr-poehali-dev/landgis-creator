@@ -53,10 +53,10 @@ const MobileSidebar = ({
           <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3 mb-6">
               {appSettings.logo ? (
-                <img src={appSettings.logo} alt="Logo" className="w-10 h-10 rounded-lg object-cover" />
+                <img src={appSettings.logo} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Icon name="Map" className="text-primary" size={24} />
+                <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon name="Map" className="text-primary" size={48} />
                 </div>
               )}
               <div>
