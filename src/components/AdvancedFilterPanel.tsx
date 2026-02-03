@@ -274,27 +274,52 @@ const AdvancedFilterPanel = ({
   const activeCount = getActiveFiltersCount();
 
   return (
-    <div className="absolute top-12 left-0 right-0 z-10 bg-card/95 backdrop-blur-lg border-b border-border shadow-xl">
-      {/* Кнопка открытия/закрытия */}
-      <button
-        onClick={onToggle}
-        className="w-full h-10 flex items-center justify-between px-4 hover:bg-accent/50 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <Icon name="SlidersHorizontal" size={16} className="text-muted-foreground" />
-          <span className="text-sm font-medium">Фильтры</span>
+    <>
+      {/* Floating Filter Button - показывается только когда панель закрыта */}
+      {!isOpen && (
+        <Button
+          onClick={onToggle}
+          size="lg"
+          className={cn(
+            "absolute top-4 left-1/2 -translate-x-1/2 z-20 shadow-lg gap-2 px-6 py-6 text-base font-semibold",
+            activeCount > 0 && "ring-2 ring-primary ring-offset-2"
+          )}
+        >
+          <Icon name="Filter" size={20} />
+          Фильтры
           {activeCount > 0 && (
-            <Badge variant="secondary" className="h-5 px-2 text-xs">
+            <Badge variant="secondary" className="ml-1 bg-background">
               {activeCount}
             </Badge>
           )}
-        </div>
-        <Icon 
-          name={isOpen ? "ChevronUp" : "ChevronDown"} 
-          size={16} 
-          className="text-muted-foreground transition-transform"
-        />
-      </button>
+        </Button>
+      )}
+
+      {/* Filter Panel */}
+      <div className={cn(
+        "absolute top-12 left-0 right-0 z-30 bg-card/95 backdrop-blur-lg border-b border-border shadow-xl transition-all duration-300",
+        isOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+      )}>
+        {/* Кнопка закрытия */}
+        <button
+          onClick={onToggle}
+          className="w-full h-10 flex items-center justify-between px-4 hover:bg-accent/50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Icon name="SlidersHorizontal" size={16} className="text-muted-foreground" />
+            <span className="text-sm font-medium">Фильтры</span>
+            {activeCount > 0 && (
+              <Badge variant="secondary" className="h-5 px-2 text-xs">
+                {activeCount}
+              </Badge>
+            )}
+          </div>
+          <Icon 
+            name="ChevronUp" 
+            size={16} 
+            className="text-muted-foreground"
+          />
+        </button>
 
       {/* Выпадающая панель */}
       {isOpen && (
@@ -404,7 +429,8 @@ const AdvancedFilterPanel = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
