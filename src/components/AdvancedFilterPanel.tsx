@@ -304,7 +304,7 @@ const AdvancedFilterPanel = ({
       {isOpen && (
         <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
           {/* Активные фильтры - всегда видно */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 px-6">
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 -mt-6 px-6 pt-6">
             {activeFilters.length > 0 ? (
               <>
                 {activeFilters.map((filter, idx) => (
