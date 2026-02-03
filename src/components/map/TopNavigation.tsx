@@ -3,6 +3,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import RoleSwitcher from '@/components/admin/RoleSwitcher';
 import { UserRole } from '@/types/userRoles';
+import { authService } from '@/services/authService';
+import { useNavigate } from 'react-router-dom';
 
 interface TopNavigationProps {
   mapType: 'scheme' | 'hybrid';
@@ -27,6 +29,14 @@ const TopNavigation = ({
   filterCount,
   onAddProperty
 }: TopNavigationProps) => {
+  const navigate = useNavigate();
+  const user = authService.getUser();
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
+  };
+
   return (
     <div className="h-12 border-b border-border flex items-center justify-between px-3 lg:px-4 bg-card/30 backdrop-blur">
       <div className="flex items-center gap-2">
@@ -36,14 +46,23 @@ const TopNavigation = ({
           </div>
           <h1 className="text-lg font-bold">LandGis</h1>
         </div>
+        {user && (
+          <div className="hidden lg:flex items-center gap-2 ml-4">
+            <span className="text-xs text-muted-foreground">
+              {user.name} ({user.role === 'admin' ? 'Администратор' : 'Пользователь'})
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex gap-1.5">
         <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
-        <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
-          <Icon name="Database" size={14} />
-          Админка
-        </Button>
+        {user?.role === 'admin' && (
+          <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
+            <Icon name="Database" size={14} />
+            Админка
+          </Button>
+        )}
         <Button 
           variant={isFilterPanelOpen ? "default" : "outline"} 
           size="sm" 
@@ -65,6 +84,10 @@ const TopNavigation = ({
         <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
           <Icon name="Plus" size={14} />
           <span className="hidden md:inline">Добавить объект</span>
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5" onClick={handleLogout}>
+          <Icon name="LogOut" size={14} />
+          <span className="hidden lg:inline">Выйти</span>
         </Button>
       </div>
     </div>
