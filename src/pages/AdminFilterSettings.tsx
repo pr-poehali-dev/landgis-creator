@@ -2,21 +2,13 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AdminNavigation from '@/components/admin/AdminNavigation';
-import { cn } from '@/lib/utils';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { propertyService } from '@/services/propertyService';
+import FilterColumnItem from '@/components/admin/filter-settings/FilterColumnItem';
+import FilterPreviewTable from '@/components/admin/filter-settings/FilterPreviewTable';
+import EditColumnDialog from '@/components/admin/filter-settings/EditColumnDialog';
+import CreateColumnDialog from '@/components/admin/filter-settings/CreateColumnDialog';
 
 interface FilterColumn {
   id: string;
@@ -376,321 +368,47 @@ const AdminFilterSettings = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               {sortedColumns.map((column) => (
-                <div
+                <FilterColumnItem
                   key={column.id}
-                  draggable
-                  onDragStart={() => handleDragStart(column.id)}
-                  onDragOver={(e) => handleDragOver(e, column.id)}
+                  column={column}
+                  isDragging={draggedColumn === column.id}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
                   onDragEnd={handleDragEnd}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border border-border bg-card cursor-move transition-all hover:border-primary",
-                    draggedColumn === column.id && "opacity-50"
-                  )}
-                >
-                  <Icon name="GripVertical" size={20} className="text-muted-foreground shrink-0" />
-                  
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <Badge variant="outline" className="shrink-0">
-                      {column.order}
-                    </Badge>
-                    <div className="font-medium truncate">{column.label}</div>
-                    <Badge variant="secondary" className="text-xs shrink-0">
-                      {column.options.length} {column.options.length === 1 ? 'опция' : 'опций'}
-                    </Badge>
-                    {column.defaultValues.length > 0 && (
-                      <Badge variant="default" className="text-xs shrink-0">
-                        По умолчанию: {column.defaultValues.length}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Switch
-                      checked={column.enabled}
-                      onCheckedChange={() => toggleColumn(column.id)}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog(column)}
-                    >
-                      <Icon name="Settings" size={14} className="mr-1" />
-                      Настроить
-                    </Button>
-                    {!['region', 'segment', 'status', 'type'].includes(column.id) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteColumn(column.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Icon name="Trash2" size={14} />
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                  onToggle={toggleColumn}
+                  onEdit={openEditDialog}
+                  onDelete={handleDeleteColumn}
+                />
               ))}
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Icon name="Eye" size={20} />
-                Предпросмотр
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border border-border rounded-lg overflow-hidden">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      {sortedColumns
-                        .filter(col => col.enabled)
-                        .map(column => (
-                          <th
-                            key={column.id}
-                            className="text-left text-xs font-semibold text-muted-foreground px-3 py-2 border-b border-border bg-muted/30"
-                          >
-                            {column.label}
-                          </th>
-                        ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Array.from({ 
-                      length: Math.max(...sortedColumns.filter(c => c.enabled).map(c => Math.min(c.options.length, 5)))
-                    }).map((_, rowIndex) => (
-                      <tr key={rowIndex} className="border-b border-border/50">
-                        {sortedColumns
-                          .filter(col => col.enabled)
-                          .map(column => {
-                            const option = column.options[rowIndex];
-                            const isDefault = column.defaultValues.includes(option);
-                            
-                            return (
-                              <td key={column.id} className="px-3 py-1.5">
-                                {option ? (
-                                  <div
-                                    className={cn(
-                                      "w-full text-left px-2 py-1.5 rounded text-xs transition-all",
-                                      isDefault && "bg-primary/10 text-primary font-medium"
-                                    )}
-                                  >
-                                    <div className="flex items-center justify-between gap-2">
-                                      <span className="truncate">{getOptionLabel(column.id, option)}</span>
-                                      {isDefault && (
-                                        <Icon name="Check" size={12} className="shrink-0" />
-                                      )}
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="h-8" />
-                                )}
-                              </td>
-                            );
-                          })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Предпросмотр показывает первые 5 строк каждого столбца
-              </p>
-            </CardContent>
-          </Card>
+          <FilterPreviewTable
+            columns={sortedColumns}
+            getOptionLabel={getOptionLabel}
+          />
         </div>
       </div>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto">
-          <DialogHeader>
-            <DialogTitle>Настройка столбца: {editingColumn?.label}</DialogTitle>
-            <DialogDescription>
-              Измените порядок опций и установите значения по умолчанию
-            </DialogDescription>
-          </DialogHeader>
+      <EditColumnDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        column={editingColumn}
+        onColumnChange={setEditingColumn}
+        onSave={handleSaveEdit}
+        onMoveOption={moveOption}
+        onToggleDefault={toggleDefaultValue}
+        getOptionLabel={getOptionLabel}
+      />
 
-          {editingColumn && (
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Название столбца</Label>
-                <Input
-                  value={editingColumn.label}
-                  onChange={(e) => setEditingColumn({ ...editingColumn, label: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Путь к атрибуту</Label>
-                <Input
-                  value={editingColumn.attributePath}
-                  onChange={(e) => setEditingColumn({ ...editingColumn, attributePath: e.target.value })}
-                  placeholder="attributes.region"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Укажите путь к атрибуту в объекте (напр. attributes.region, status, type)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Порядок опций</Label>
-                <div className="border border-border rounded-lg divide-y divide-border max-h-[300px] overflow-y-auto">
-                  {editingColumn.options.map((option, index) => {
-                    const isDefault = editingColumn.defaultValues.includes(option);
-                    return (
-                      <div
-                        key={`${option}-${index}`}
-                        className={cn(
-                          "flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors",
-                          isDefault && "bg-primary/5"
-                        )}
-                      >
-                        <div className="flex flex-col gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => moveOption(index, 'up')}
-                            disabled={index === 0}
-                          >
-                            <Icon name="ChevronUp" size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => moveOption(index, 'down')}
-                            disabled={index === editingColumn.options.length - 1}
-                          >
-                            <Icon name="ChevronDown" size={14} />
-                          </Button>
-                        </div>
-
-                        <Badge variant="outline" className="shrink-0">
-                          {index + 1}
-                        </Badge>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">{getOptionLabel(editingColumn.id, option)}</div>
-                          <div className="text-xs text-muted-foreground truncate">{option}</div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor={`default-${option}`} className="text-xs cursor-pointer">
-                            По умолчанию
-                          </Label>
-                          <Switch
-                            id={`default-${option}`}
-                            checked={isDefault}
-                            onCheckedChange={() => toggleDefaultValue(option)}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  Отмена
-                </Button>
-                <Button onClick={handleSaveEdit}>
-                  <Icon name="Check" size={16} className="mr-2" />
-                  Применить
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Создание нового столбца фильтра</DialogTitle>
-            <DialogDescription>
-              Выберите атрибут из объектов и настройте фильтр
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>Название столбца</Label>
-              <Input
-                value={newColumn.label || ''}
-                onChange={(e) => setNewColumn({ ...newColumn, label: e.target.value })}
-                placeholder="Например: Регион, Категория, Этаж"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Атрибут из объектов</Label>
-              <div className="grid gap-2 max-h-[300px] overflow-y-auto border border-border rounded-lg p-2">
-                {availableAttributes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Загрузка атрибутов...
-                  </p>
-                ) : (
-                  availableAttributes.map((attr) => (
-                    <button
-                      key={attr.path}
-                      onClick={() => setNewColumn({ ...newColumn, attributePath: attr.path })}
-                      className={cn(
-                        "text-left p-3 rounded-lg border transition-all hover:border-primary",
-                        newColumn.attributePath === attr.path 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border"
-                      )}
-                    >
-                      <div className="font-medium text-sm mb-1">{attr.path}</div>
-                      <div className="flex flex-wrap gap-1">
-                        {Array.from(attr.values).slice(0, 5).map(val => (
-                          <Badge key={val} variant="outline" className="text-xs">
-                            {val}
-                          </Badge>
-                        ))}
-                        {attr.values.size > 5 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{attr.values.size - 5}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {attr.values.size} {attr.values.size === 1 ? 'значение' : 'значений'}
-                      </p>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {newColumn.attributePath && (
-              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
-                <Icon name="Info" size={16} className="text-primary shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  После создания вы сможете настроить порядок опций и значения по умолчанию
-                </p>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Отмена
-              </Button>
-              <Button 
-                onClick={handleCreateColumn}
-                disabled={!newColumn.label || !newColumn.attributePath}
-              >
-                <Icon name="Plus" size={16} className="mr-2" />
-                Создать
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CreateColumnDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        newColumn={newColumn}
+        onColumnChange={setNewColumn}
+        onCreate={handleCreateColumn}
+        availableAttributes={availableAttributes}
+      />
     </div>
   );
 };
