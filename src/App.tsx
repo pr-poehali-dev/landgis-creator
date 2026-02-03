@@ -13,7 +13,6 @@ import Users from "./pages/Users";
 import AdminFilterSettings from "./pages/AdminFilterSettings";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
-import AdminPage from "./pages/AdminPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -33,11 +32,6 @@ const App = () => (
             } />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/admin" element={
-              <ProtectedRoute requireAdmin>
-                <AdminPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/old" element={
               <ProtectedRoute requireAdmin>
                 <Admin />
               </ProtectedRoute>
