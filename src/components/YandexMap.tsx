@@ -259,8 +259,48 @@ const YandexMap = ({
       }
     });
 
+    // Рассчитываем границы всех участков и устанавливаем зум
+    if (properties.length > 0 && !selectedProperty) {
+      const allBounds: Array<[number, number]> = [];
+      
+      properties.forEach(property => {
+        if (property.boundary && property.boundary.length >= 3) {
+          allBounds.push(...property.boundary);
+        }
+      });
+
+      if (allBounds.length > 0) {
+        // Находим минимальные и максимальные координаты
+        let minLat = allBounds[0][0];
+        let maxLat = allBounds[0][0];
+        let minLng = allBounds[0][1];
+        let maxLng = allBounds[0][1];
+
+        allBounds.forEach(([lat, lng]) => {
+          if (lat < minLat) minLat = lat;
+          if (lat > maxLat) maxLat = lat;
+          if (lng < minLng) minLng = lng;
+          if (lng > maxLng) maxLng = lng;
+        });
+
+        const bounds = [[minLat, minLng], [maxLat, maxLng]];
+        
+        // Устанавливаем зум с учётом всех участков
+        map.setBounds(bounds as [[number, number], [number, number]], {
+          checkZoomRange: true,
+          zoomMargin: 50,
+          duration: 300
+        });
+
+        // Обновляем стартовую позицию
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+        initialViewRef.current = { center: [center[0], center[1]], zoom };
+      }
+    }
+
     console.log(`✅ Отрисовано ${properties.length} объектов`);
-  }, [properties, isMapReady]);
+  }, [properties, isMapReady, selectedProperty]);
 
   // ========== ВЫДЕЛЕНИЕ ЦЕНТРОИДА ПРИ НАВЕДЕНИИ ==========
   useEffect(() => {
