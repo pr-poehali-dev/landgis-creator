@@ -17,7 +17,7 @@ export default function LoginPage() {
       if (authService.isAuthenticated()) {
         try {
           await authService.getCurrentUser();
-          navigate('/admin');
+          navigate('/');
         } catch {
           authService.logout();
         }
@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     try {
       await authService.login(login, password);
-      navigate('/admin');
+      navigate('/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Ошибка авторизации');
     } finally {
