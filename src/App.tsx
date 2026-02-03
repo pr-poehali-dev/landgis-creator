@@ -9,7 +9,7 @@ import Admin from "./pages/Admin";
 import MapSettings from "./pages/MapSettings";
 import Companies from "./pages/Companies";
 import Users from "./pages/Users";
-import FilterSettings from "./pages/FilterSettings";
+import AdminFilterSettings from "./pages/AdminFilterSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +26,7 @@ const App = () => (
           <Route path="/admin/map-settings" element={<MapSettings />} />
           <Route path="/admin/companies" element={<Companies />} />
           <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/filter-settings" element={<FilterSettings />} />
+          <Route path="/admin/filter-settings" element={<AdminFilterSettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

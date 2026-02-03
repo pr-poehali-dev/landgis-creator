@@ -1,8 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
+
+interface FilterColumnSettings {
+  id: string;
+  label: string;
+  enabled: boolean;
+  order: number;
+  options: string[];
+  defaultValues: string[];
+  attributePath: string;
+}
 
 interface FilterOption {
   value: string;
@@ -32,53 +42,87 @@ const AdvancedFilterPanel = ({
   properties
 }: AdvancedFilterPanelProps) => {
   const [localFilters, setLocalFilters] = useState(filters);
+  const [filterSettings, setFilterSettings] = useState<FilterColumnSettings[]>([]);
 
   useEffect(() => {
     setLocalFilters(filters);
   }, [filters]);
 
-  // Извлекаем уникальные значения для каждого фильтра
-  const getFilterColumns = (): FilterColumn[] => {
-    const regions = new Set<string>();
-    const segments = new Set<string>();
-    const statuses = new Set<string>();
-    const types = new Set<string>();
+  useEffect(() => {
+    const saved = localStorage.getItem('filterSettings');
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        setFilterSettings(settings);
+        
+        const defaultFilters: Record<string, string[]> = {};
+        settings.forEach((setting: FilterColumnSettings) => {
+          if (setting.defaultValues.length > 0) {
+            defaultFilters[setting.id] = setting.defaultValues;
+          }
+        });
+        
+        if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+          onFiltersChange(defaultFilters);
+        }
+      } catch (error) {
+        console.error('Error loading filter settings:', error);
+      }
+    }
+  }, []);
+
+  const statusLabels: Record<string, string> = {
+    available: 'Доступно',
+    reserved: 'Резерв',
+    sold: 'Продано'
+  };
+
+  const typeLabels: Record<string, string> = {
+    land: 'Земля',
+    commercial: 'Коммерция',
+    residential: 'Жильё'
+  };
+
+  const getOptionLabel = (columnId: string, value: string) => {
+    if (columnId === 'status') return statusLabels[value] || value;
+    if (columnId === 'type') return typeLabels[value] || value;
+    return value;
+  };
+
+  const columns = useMemo(() => {
+    const extractedValues = new Map<string, Set<string>>();
 
     properties.forEach(prop => {
       if (prop.attributes?.region && !prop.attributes.region.startsWith('lyr_')) {
-        regions.add(prop.attributes.region);
+        if (!extractedValues.has('region')) extractedValues.set('region', new Set());
+        extractedValues.get('region')!.add(prop.attributes.region);
       }
       
       const segment = prop.attributes?.segment;
+      if (!extractedValues.has('segment')) extractedValues.set('segment', new Set());
       if (Array.isArray(segment)) {
-        segment.forEach(s => segments.add(s));
+        segment.forEach(s => extractedValues.get('segment')!.add(s));
       } else if (typeof segment === 'string') {
-        segment.split(',').forEach(s => segments.add(s.trim()));
+        segment.split(',').forEach(s => extractedValues.get('segment')!.add(s.trim()));
       } else if (prop.segment) {
-        segments.add(prop.segment);
+        extractedValues.get('segment')!.add(prop.segment);
       }
 
-      if (prop.status) statuses.add(prop.status);
-      if (prop.type) types.add(prop.type);
+      if (prop.status) {
+        if (!extractedValues.has('status')) extractedValues.set('status', new Set());
+        extractedValues.get('status')!.add(prop.status);
+      }
+      if (prop.type) {
+        if (!extractedValues.has('type')) extractedValues.set('type', new Set());
+        extractedValues.get('type')!.add(prop.type);
+      }
     });
 
-    const statusLabels: Record<string, string> = {
-      available: 'Доступно',
-      reserved: 'Резерв',
-      sold: 'Продано'
-    };
-
-    const typeLabels: Record<string, string> = {
-      land: 'Земля',
-      commercial: 'Коммерция',
-      residential: 'Жильё'
-    };
-
-    return [
+    const defaultColumns: FilterColumn[] = [
       {
         id: 'region',
         label: 'Регион',
-        options: Array.from(regions).map(r => ({
+        options: Array.from(extractedValues.get('region') || []).sort().map(r => ({
           value: r,
           label: r,
           count: properties.filter(p => p.attributes?.region === r).length
@@ -87,7 +131,7 @@ const AdvancedFilterPanel = ({
       {
         id: 'segment',
         label: 'Сегмент',
-        options: Array.from(segments).map(s => ({
+        options: Array.from(extractedValues.get('segment') || []).sort().map(s => ({
           value: s,
           label: s,
           count: properties.filter(p => {
@@ -101,7 +145,7 @@ const AdvancedFilterPanel = ({
       {
         id: 'status',
         label: 'Статус',
-        options: Array.from(statuses).map(s => ({
+        options: Array.from(extractedValues.get('status') || []).sort().map(s => ({
           value: s,
           label: statusLabels[s] || s,
           count: properties.filter(p => p.status === s).length
@@ -110,16 +154,42 @@ const AdvancedFilterPanel = ({
       {
         id: 'type',
         label: 'Тип',
-        options: Array.from(types).map(t => ({
+        options: Array.from(extractedValues.get('type') || []).sort().map(t => ({
           value: t,
           label: typeLabels[t] || t,
           count: properties.filter(p => p.type === t).length
         }))
       }
     ];
-  };
 
-  const columns = getFilterColumns();
+    if (filterSettings.length === 0) {
+      return defaultColumns;
+    }
+
+    return filterSettings
+      .filter(setting => setting.enabled)
+      .sort((a, b) => a.order - b.order)
+      .map(setting => {
+        const defaultCol = defaultColumns.find(c => c.id === setting.id);
+        if (!defaultCol) return null;
+
+        const orderedOptions = setting.options
+          .map(optionValue => {
+            const found = defaultCol.options.find(o => o.value === optionValue);
+            return found || { value: optionValue, label: getOptionLabel(setting.id, optionValue), count: 0 };
+          })
+          .filter(opt => {
+            return defaultCol.options.some(o => o.value === opt.value);
+          });
+
+        return {
+          id: setting.id,
+          label: setting.label,
+          options: orderedOptions
+        };
+      })
+      .filter(Boolean) as FilterColumn[];
+  }, [properties, filterSettings]);
 
   const toggleFilter = (columnId: string, value: string) => {
     setLocalFilters(prev => {
