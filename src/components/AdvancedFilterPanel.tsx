@@ -303,7 +303,25 @@ const AdvancedFilterPanel = ({
       {isOpen && (
         <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
           {/* Активные фильтры - всегда видно */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 -mt-6 px-6 pt-6">
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 -mt-6 px-6 pt-6 relative">
+            {/* Кнопки в правом верхнем углу */}
+            <div className="absolute top-6 right-6 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={clearFilters}
+              >
+                Сбросить всё
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={onToggle}
+              >
+                Закрыть
+              </Button>
+            </div>
             {activeFilters.length > 0 ? (
               <>
                 {activeFilters.map((filter, idx) => (
@@ -321,14 +339,6 @@ const AdvancedFilterPanel = ({
                     <Icon name="X" size={12} />
                   </Badge>
                 ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={clearFilters}
-                >
-                  Очистить всё
-                </Button>
               </>
             ) : (
               <span className="text-xs text-muted-foreground flex items-center">Фильтры не выбраны</span>
@@ -391,24 +401,7 @@ const AdvancedFilterPanel = ({
             </table>
           </div>
 
-          {/* Кнопки действий */}
-          <div className="flex justify-end gap-2 pt-4 sticky bottom-0 bg-card border-t border-border -mx-6 px-6 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]>">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={clearFilters}
-            >
-              Сбросить всё
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs"
-              onClick={onToggle}
-            >
-              Закрыть
-            </Button>
-          </div>
+
         </div>
       )}
       </div>
