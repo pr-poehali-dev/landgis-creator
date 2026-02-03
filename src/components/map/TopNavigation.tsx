@@ -38,19 +38,6 @@ const TopNavigation = ({
         </div>
       </div>
 
-      <Tabs value={mapType} onValueChange={(v) => onMapTypeChange(v as 'scheme' | 'hybrid')} className="hidden sm:block">
-        <TabsList className="h-8">
-          <TabsTrigger value="scheme" className="gap-1.5 text-xs px-3">
-            <Icon name="Map" size={14} />
-            <span className="hidden md:inline">Схема</span>
-          </TabsTrigger>
-          <TabsTrigger value="hybrid" className="gap-1.5 text-xs px-3">
-            <Icon name="Satellite" size={14} />
-            <span className="hidden md:inline">Гибрид</span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <div className="flex gap-1.5">
         <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
         <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>

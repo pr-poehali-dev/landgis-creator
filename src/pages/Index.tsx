@@ -224,6 +224,8 @@ const Index = () => {
             filters={advancedFilters}
             onFiltersChange={setAdvancedFilters}
             properties={properties}
+            mapType={mapType}
+            onMapTypeChange={setMapType}
           />
           <YandexMap
             properties={filteredProperties}

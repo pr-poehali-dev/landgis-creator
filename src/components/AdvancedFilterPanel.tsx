@@ -32,6 +32,8 @@ interface AdvancedFilterPanelProps {
   filters: Record<string, string[]>;
   onFiltersChange: (filters: Record<string, string[]>) => void;
   properties: any[];
+  mapType?: 'scheme' | 'hybrid';
+  onMapTypeChange?: (type: 'scheme' | 'hybrid') => void;
 }
 
 const AdvancedFilterPanel = ({
@@ -39,7 +41,9 @@ const AdvancedFilterPanel = ({
   onToggle,
   filters,
   onFiltersChange,
-  properties
+  properties,
+  mapType = 'scheme',
+  onMapTypeChange
 }: AdvancedFilterPanelProps) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [filterSettings, setFilterSettings] = useState<FilterColumnSettings[]>([]);
@@ -275,6 +279,36 @@ const AdvancedFilterPanel = ({
 
   return (
     <>
+      {/* Map Type Switcher - верхний левый угол */}
+      {onMapTypeChange && (
+        <div className="absolute top-4 left-4 z-40 flex gap-2">
+          <Button
+            onClick={() => onMapTypeChange('scheme')}
+            size="lg"
+            variant={mapType === 'scheme' ? 'default' : 'outline'}
+            className={cn(
+              "shadow-lg gap-3 px-8 py-6 text-lg font-semibold hover:opacity-90",
+              mapType === 'scheme' ? "bg-accent text-accent-foreground" : ""
+            )}
+          >
+            <Icon name="Map" size={22} />
+            Схема
+          </Button>
+          <Button
+            onClick={() => onMapTypeChange('hybrid')}
+            size="lg"
+            variant={mapType === 'hybrid' ? 'default' : 'outline'}
+            className={cn(
+              "shadow-lg gap-3 px-8 py-6 text-lg font-semibold hover:opacity-90",
+              mapType === 'hybrid' ? "bg-accent text-accent-foreground" : ""
+            )}
+          >
+            <Icon name="Satellite" size={22} />
+            Гибрид
+          </Button>
+        </div>
+      )}
+
       {/* Floating Filter Button - всегда видна */}
       <Button
         onClick={onToggle}
