@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { Property } from '@/services/propertyService';
 
 interface MapScreenshot {
@@ -7,84 +6,56 @@ interface MapScreenshot {
   scheme: string;
 }
 
+async function getStaticMapImage(
+  coordinates: [number, number],
+  layer: 'map' | 'sat',
+  polygon?: Array<[number, number]>
+): Promise<string> {
+  const lon = coordinates[1];
+  const lat = coordinates[0];
+  const zoom = 15;
+  const width = 600;
+  const height = 450;
+
+  let url = `https://static-maps.yandex.ru/1.x/?ll=${lon},${lat}&z=${zoom}&l=${layer}&size=${width},${height}`;
+
+  if (polygon && polygon.length > 0) {
+    const points = polygon.map(coord => `${coord[1]},${coord[0]}`).join(',');
+    url += `&pl=c:ff6b35ff,f:ff6b3533,w:3,${points}`;
+  }
+
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Failed to fetch static map:', error);
+    throw error;
+  }
+}
+
 export async function captureMapScreenshots(
   mapInstance: any,
   property: Property
 ): Promise<MapScreenshot> {
-  const mapContainer = document.querySelector('.ymaps-2-1-79-map') as HTMLElement;
-  
-  if (!mapContainer || !mapInstance) {
-    throw new Error('Карта не найдена');
+  if (!property.coordinates) {
+    throw new Error('Координаты объекта не найдены');
   }
 
-  const originalType = mapInstance.getType();
-  const originalZoom = mapInstance.getZoom();
-  const originalCenter = mapInstance.getCenter();
-
-  if (property.coordinates) {
-    mapInstance.setCenter(property.coordinates, 15);
-  }
-
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  mapInstance.setType('yandex#hybrid');
-  await new Promise(resolve => setTimeout(resolve, 800));
-  const hybridCanvas = await html2canvas(mapContainer, {
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    logging: false,
-    imageTimeout: 0,
-    removeContainer: false
-  });
-  const hybridImage = getCanvasDataURL(hybridCanvas);
-
-  mapInstance.setType('yandex#map');
-  mapInstance.setZoom(originalZoom);
-  await new Promise(resolve => setTimeout(resolve, 800));
-  const schemeCanvas = await html2canvas(mapContainer, {
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    logging: false,
-    imageTimeout: 0,
-    removeContainer: false
-  });
-  const schemeImage = getCanvasDataURL(schemeCanvas);
-
-  mapInstance.setType(originalType);
-  mapInstance.setCenter(originalCenter, originalZoom);
+  const [hybridImage, schemeImage] = await Promise.all([
+    getStaticMapImage(property.coordinates, 'sat', property.boundary),
+    getStaticMapImage(property.coordinates, 'map', property.boundary)
+  ]);
 
   return {
     hybrid: hybridImage,
     scheme: schemeImage
   };
-}
-
-function getCanvasDataURL(canvas: HTMLCanvasElement): string {
-  try {
-    return canvas.toDataURL('image/jpeg', 0.8);
-  } catch (error) {
-    console.warn('toDataURL failed, using canvas as blob:', error);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Cannot get canvas context');
-    
-    const newCanvas = document.createElement('canvas');
-    newCanvas.width = canvas.width;
-    newCanvas.height = canvas.height;
-    const newCtx = newCanvas.getContext('2d');
-    if (!newCtx) throw new Error('Cannot get new canvas context');
-    
-    newCtx.drawImage(canvas, 0, 0);
-    
-    try {
-      return newCanvas.toDataURL('image/jpeg', 0.8);
-    } catch (e) {
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      newCtx.putImageData(imageData, 0, 0);
-      return newCanvas.toDataURL('image/jpeg', 0.8);
-    }
-  }
 }
 
 export async function generatePropertyPDF(
