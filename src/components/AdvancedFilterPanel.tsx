@@ -280,15 +280,16 @@ const AdvancedFilterPanel = ({
         <Button
           onClick={onToggle}
           size="lg"
+          style={{ backgroundColor: 'var(--custom-button)', color: 'white' }}
           className={cn(
-            "absolute top-4 left-1/2 -translate-x-1/2 z-20 shadow-lg gap-2 px-6 py-6 text-base font-semibold",
+            "absolute top-4 left-1/2 -translate-x-1/2 z-20 shadow-lg gap-3 px-12 py-6 text-lg font-semibold min-w-[280px] hover:opacity-90",
             activeCount > 0 && "ring-2 ring-primary ring-offset-2"
           )}
         >
-          <Icon name="Filter" size={20} />
+          <Icon name="Filter" size={22} />
           Фильтры
           {activeCount > 0 && (
-            <Badge variant="secondary" className="ml-1 bg-background">
+            <Badge variant="secondary" className="ml-1 bg-white text-foreground">
               {activeCount}
             </Badge>
           )}
