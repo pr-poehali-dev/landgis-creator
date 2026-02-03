@@ -34,6 +34,7 @@ interface AdvancedFilterPanelProps {
   properties: any[];
   mapType?: 'scheme' | 'hybrid';
   onMapTypeChange?: (type: 'scheme' | 'hybrid') => void;
+  onLayersClick?: () => void;
 }
 
 const AdvancedFilterPanel = ({
@@ -43,7 +44,8 @@ const AdvancedFilterPanel = ({
   onFiltersChange,
   properties,
   mapType = 'scheme',
-  onMapTypeChange
+  onMapTypeChange,
+  onLayersClick
 }: AdvancedFilterPanelProps) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [filterSettings, setFilterSettings] = useState<FilterColumnSettings[]>([]);
@@ -305,6 +307,21 @@ const AdvancedFilterPanel = ({
           >
             <Icon name="Satellite" size={22} />
             Гибрид
+          </Button>
+        </div>
+      )}
+
+      {/* Layers Button - верхний правый угол */}
+      {onLayersClick && (
+        <div className="absolute top-4 right-4 z-40">
+          <Button
+            onClick={onLayersClick}
+            size="lg"
+            variant="outline"
+            className="shadow-lg gap-3 px-8 py-6 text-lg font-semibold hover:opacity-90"
+          >
+            <Icon name="Layers" size={22} />
+            Слои
           </Button>
         </div>
       )}
