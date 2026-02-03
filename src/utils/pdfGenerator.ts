@@ -28,23 +28,29 @@ export async function captureMapScreenshots(
   await new Promise(resolve => setTimeout(resolve, 500));
 
   mapInstance.setType('yandex#hybrid');
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise(resolve => setTimeout(resolve, 800));
   const hybridCanvas = await html2canvas(mapContainer, {
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    logging: false,
+    imageTimeout: 0,
+    removeContainer: false
   });
-  const hybridImage = hybridCanvas.toDataURL('image/jpeg', 0.8);
+  const hybridImage = getCanvasDataURL(hybridCanvas);
 
   mapInstance.setType('yandex#map');
   mapInstance.setZoom(originalZoom);
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await new Promise(resolve => setTimeout(resolve, 800));
   const schemeCanvas = await html2canvas(mapContainer, {
     useCORS: true,
     allowTaint: true,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
+    logging: false,
+    imageTimeout: 0,
+    removeContainer: false
   });
-  const schemeImage = schemeCanvas.toDataURL('image/jpeg', 0.8);
+  const schemeImage = getCanvasDataURL(schemeCanvas);
 
   mapInstance.setType(originalType);
   mapInstance.setCenter(originalCenter, originalZoom);
@@ -53,6 +59,32 @@ export async function captureMapScreenshots(
     hybrid: hybridImage,
     scheme: schemeImage
   };
+}
+
+function getCanvasDataURL(canvas: HTMLCanvasElement): string {
+  try {
+    return canvas.toDataURL('image/jpeg', 0.8);
+  } catch (error) {
+    console.warn('toDataURL failed, using canvas as blob:', error);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Cannot get canvas context');
+    
+    const newCanvas = document.createElement('canvas');
+    newCanvas.width = canvas.width;
+    newCanvas.height = canvas.height;
+    const newCtx = newCanvas.getContext('2d');
+    if (!newCtx) throw new Error('Cannot get new canvas context');
+    
+    newCtx.drawImage(canvas, 0, 0);
+    
+    try {
+      return newCanvas.toDataURL('image/jpeg', 0.8);
+    } catch (e) {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      newCtx.putImageData(imageData, 0, 0);
+      return newCanvas.toDataURL('image/jpeg', 0.8);
+    }
+  }
 }
 
 export async function generatePropertyPDF(
