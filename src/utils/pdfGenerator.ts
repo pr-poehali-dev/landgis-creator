@@ -247,9 +247,5 @@ function formatAttributeValue(value: any): string {
       .join(', ');
   }
   if (Array.isArray(value)) return value.join(', ');
-  const str = String(value);
-  if (str.length > 100) {
-    return str.substring(0, 100) + '...';
-  }
-  return str;
+  return String(value);
 }
