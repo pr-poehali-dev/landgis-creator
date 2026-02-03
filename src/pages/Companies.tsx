@@ -15,6 +15,14 @@ import {
 import Icon from '@/components/ui/icon';
 import AdminNavigation from '@/components/admin/AdminNavigation';
 
+const roles = [
+  { value: 'free', label: 'Бесплатный' },
+  { value: 'lite', label: 'Лайт' },
+  { value: 'max', label: 'Макс' },
+  { value: 'vip', label: 'VIP' },
+  { value: 'admin', label: 'Администратор' }
+];
+
 const Companies = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +34,8 @@ const Companies = () => {
     name: '',
     login: '',
     password: '',
-    role: 'user',
+    passwordConfirm: '',
+    role: 'free',
     inn: '',
     kpp: '',
     legal_address: '',
@@ -53,11 +62,27 @@ const Companies = () => {
     e.preventDefault();
     setError('');
 
+    if (!editingCompany && formData.password !== formData.passwordConfirm) {
+      setError('Пароли не совпадают');
+      return;
+    }
+
+    if (!editingCompany && formData.password.length < 6) {
+      setError('Пароль должен содержать минимум 6 символов');
+      return;
+    }
+
     try {
+      const dataToSend = { ...formData };
+      delete (dataToSend as any).passwordConfirm;
+      
       if (editingCompany) {
-        await companiesService.update({ id: editingCompany.id, ...formData });
+        if (!dataToSend.password) {
+          delete (dataToSend as any).password;
+        }
+        await companiesService.update({ id: editingCompany.id, ...dataToSend });
       } else {
-        await companiesService.create(formData);
+        await companiesService.create(dataToSend);
       }
       await loadCompanies();
       resetForm();
@@ -72,6 +97,7 @@ const Companies = () => {
       name: company.name,
       login: company.login,
       password: '',
+      passwordConfirm: '',
       role: company.role,
       inn: company.inn || '',
       kpp: company.kpp || '',
@@ -98,7 +124,8 @@ const Companies = () => {
       name: '',
       login: '',
       password: '',
-      role: 'user',
+      passwordConfirm: '',
+      role: 'free',
       inn: '',
       kpp: '',
       legal_address: '',
@@ -107,6 +134,7 @@ const Companies = () => {
     });
     setEditingCompany(null);
     setShowForm(false);
+    setError('');
   };
 
   if (loading) {
@@ -181,11 +209,26 @@ const Companies = () => {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       required={!editingCompany}
-                      placeholder={editingCompany ? 'Оставьте пустым, если не меняете' : ''}
+                      placeholder={editingCompany ? 'Оставьте пустым, если не меняете' : 'Минимум 6 символов'}
                     />
                   </div>
 
-                  <div>
+                  {!editingCompany && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Повторите пароль *
+                      </label>
+                      <Input
+                        type="password"
+                        value={formData.passwordConfirm}
+                        onChange={(e) => setFormData({ ...formData, passwordConfirm: e.target.value })}
+                        required
+                        placeholder="Повторите пароль"
+                      />
+                    </div>
+                  )}
+
+                  <div className={!editingCompany ? '' : 'md:col-start-2'}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Роль *
                     </label>
@@ -194,8 +237,9 @@ const Companies = () => {
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     >
-                      <option value="user">Пользователь</option>
-                      <option value="admin">Администратор</option>
+                      {roles.map(role => (
+                        <option key={role.value} value={role.value}>{role.label}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -266,53 +310,59 @@ const Companies = () => {
 
         <Card>
           <CardContent className="pt-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Логин</TableHead>
-                  <TableHead>Роль</TableHead>
-                  <TableHead>Статус</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {companies.map((company) => (
-                  <TableRow key={company.id}>
-                    <TableCell className="font-medium">{company.name}</TableCell>
-                    <TableCell>{company.login}</TableCell>
-                    <TableCell>
-                      <Badge variant={company.role === 'admin' ? 'default' : 'secondary'}>
-                        {company.role === 'admin' ? 'Администратор' : 'Пользователь'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={company.is_active ? 'default' : 'secondary'}>
-                        {company.is_active ? 'Активна' : 'Неактивна'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(company)}
-                        >
-                          <Icon name="Pencil" size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(company.id)}
-                        >
-                          <Icon name="Trash2" size={16} />
-                        </Button>
-                      </div>
-                    </TableCell>
+            {companies.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Компании не найдены
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Название</TableHead>
+                    <TableHead>Логин</TableHead>
+                    <TableHead>Роль</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {companies.map((company) => (
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell>{company.login}</TableCell>
+                      <TableCell>
+                        <Badge variant={company.role === 'admin' ? 'default' : 'secondary'}>
+                          {roles.find(r => r.value === company.role)?.label || company.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={company.is_active ? 'default' : 'secondary'}>
+                          {company.is_active ? 'Активна' : 'Неактивна'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(company)}
+                          >
+                            <Icon name="Pencil" size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(company.id)}
+                          >
+                            <Icon name="Trash2" size={16} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       </div>
