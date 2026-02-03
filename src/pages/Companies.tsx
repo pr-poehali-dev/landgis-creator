@@ -51,8 +51,10 @@ const Companies = () => {
     try {
       const data = await companiesService.getAll();
       setCompanies(data);
+      setError('');
     } catch (err) {
-      setError('Ошибка загрузки данных');
+      console.error('Load companies error:', err);
+      setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
     } finally {
       setLoading(false);
     }
@@ -161,7 +163,7 @@ const Companies = () => {
         )}
 
         <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800">
+          <h2 className="text-xl font-semibold text-gray-200">
             Управление компаниями
           </h2>
           <Button onClick={() => setShowForm(!showForm)}>
@@ -173,13 +175,13 @@ const Companies = () => {
         {showForm && (
           <Card className="mb-6">
             <CardContent className="pt-6">
-              <h3 className="text-lg font-semibold mb-4">
+              <h3 className="text-lg font-semibold mb-4 text-gray-200">
                 {editingCompany ? 'Редактирование компании' : 'Новая компания'}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Название *
                     </label>
                     <Input
@@ -190,7 +192,7 @@ const Companies = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Логин *
                     </label>
                     <Input
@@ -201,7 +203,7 @@ const Companies = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Пароль {!editingCompany && '*'}
                     </label>
                     <Input
@@ -215,7 +217,7 @@ const Companies = () => {
 
                   {!editingCompany && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-200 mb-1">
                         Повторите пароль *
                       </label>
                       <Input
@@ -229,11 +231,11 @@ const Companies = () => {
                   )}
 
                   <div className={!editingCompany ? '' : 'md:col-start-2'}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Роль *
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     >
@@ -244,7 +246,7 @@ const Companies = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       ИНН
                     </label>
                     <Input
@@ -254,7 +256,7 @@ const Companies = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       КПП
                     </label>
                     <Input
@@ -264,7 +266,7 @@ const Companies = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Email
                     </label>
                     <Input
@@ -275,7 +277,7 @@ const Companies = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Телефон
                     </label>
                     <Input
@@ -285,7 +287,7 @@ const Companies = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-200 mb-1">
                       Юридический адрес
                     </label>
                     <Input
