@@ -302,9 +302,9 @@ const AdvancedFilterPanel = ({
 
       {/* Выпадающая панель */}
       {isOpen && (
-        <div className="p-4 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
+        <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto scroll-shadow">
           {/* Активные фильтры - всегда видно */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-3 border-b border-border sticky top-0 bg-card z-10">
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 px-6">
             {activeFilters.length > 0 ? (
               <>
                 {activeFilters.map((filter, idx) => (
@@ -393,7 +393,7 @@ const AdvancedFilterPanel = ({
           </div>
 
           {/* Кнопки действий */}
-          <div className="flex justify-end gap-2 pt-2 sticky bottom-0 bg-card/95 backdrop-blur-lg border-t border-border -mx-4 px-4 py-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+          <div className="flex justify-end gap-2 pt-4 sticky bottom-0 bg-card border-t border-border -mx-6 px-6 py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]>">
             <Button
               variant="outline"
               size="sm"
