@@ -49,11 +49,14 @@ const Companies = () => {
 
   const loadCompanies = async () => {
     try {
+      console.log('🔍 Loading companies, token:', authService.getToken());
+      console.log('🔍 Current user:', authService.getUser());
       const data = await companiesService.getAll();
+      console.log('✅ Companies loaded:', data.length);
       setCompanies(data);
       setError('');
     } catch (err) {
-      console.error('Load companies error:', err);
+      console.error('❌ Load companies error:', err);
       setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
     } finally {
       setLoading(false);
