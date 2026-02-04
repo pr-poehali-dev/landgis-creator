@@ -149,7 +149,7 @@ export const useMapObjects = ({
           map.setBounds(bounds, {
             checkZoomRange: true,
             zoomMargin: 50,
-            duration: 800
+            duration: 1500
           });
 
           const finalHandler = () => {
