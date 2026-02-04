@@ -166,12 +166,15 @@ const Companies = () => {
 
   const toggleActiveStatus = async (company: Company) => {
     try {
+      console.log('🔄 Toggling active status for company:', company.id, 'from', company.is_active, 'to', !company.is_active);
       await companiesService.update({
         id: company.id,
         is_active: !company.is_active
       });
+      console.log('✅ Status toggled successfully');
       await loadCompanies();
     } catch (err: unknown) {
+      console.error('❌ Error toggling status:', err);
       setError(err instanceof Error ? err.message : 'Ошибка изменения статуса');
     }
   };
