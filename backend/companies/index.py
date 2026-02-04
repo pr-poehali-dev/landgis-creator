@@ -41,6 +41,8 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"SELECT role FROM {schema}.companies WHERE id = %s AND is_active = true", (user_id,))
             user = cur.fetchone()
             
+            print(f"🔍 Auth check: user_id={user_id}, found={user is not None}, role={user['role'] if user else None}")
+            
             if not user or user['role'] != 'admin':
                 conn.close()
                 return error_response('Доступ запрещен', 403)
