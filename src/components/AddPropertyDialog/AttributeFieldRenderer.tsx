@@ -52,8 +52,12 @@ export const AttributeFieldRenderer = ({
           <Textarea
             id={key}
             value={value}
-            onChange={(e) => onAttributeChange(key, e.target.value)}
-            className="min-h-[80px]"
+            onChange={(e) => {
+              onAttributeChange(key, e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
+            className="min-h-[80px] resize-none overflow-hidden"
           />
         </div>
       );
@@ -66,14 +70,26 @@ export const AttributeFieldRenderer = ({
           </Label>
           <Input
             id={key}
-            type="number"
+            type="text"
+            inputMode="decimal"
             value={value}
-            onChange={(e) => onAttributeChange(key, parseFloat(e.target.value) || 0)}
+            onChange={(e) => {
+              const val = e.target.value.replace(',', '.');
+              if (val === '' || val === '0' || /^0?\.\d*$/.test(val) || /^\d+\.?\d*$/.test(val)) {
+                onAttributeChange(key, val === '' ? 0 : val);
+              }
+            }}
           />
         </div>
       );
 
     case 'money':
+      const formatMoneyDisplay = (val: any): string => {
+        const num = typeof val === 'string' ? parseFloat(val) : val;
+        if (isNaN(num) || num === 0) return '';
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+      };
+
       return (
         <div key={key} className="space-y-2">
           <Label htmlFor={key} className="text-sm font-medium">
@@ -82,9 +98,15 @@ export const AttributeFieldRenderer = ({
           <div className="relative">
             <Input
               id={key}
-              type="number"
-              value={value}
-              onChange={(e) => onAttributeChange(key, parseFloat(e.target.value) || 0)}
+              type="text"
+              inputMode="numeric"
+              value={formatMoneyDisplay(value)}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/\s/g, '');
+                if (raw === '' || /^\d+$/.test(raw)) {
+                  onAttributeChange(key, raw === '' ? 0 : parseInt(raw));
+                }
+              }}
               className="pr-8"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₽</span>

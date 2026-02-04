@@ -143,11 +143,6 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.location || formData.price <= 0 || formData.area <= 0) {
-      toast.error('Заполните все обязательные поля');
-      return;
-    }
-
     try {
       await onAdd(formData);
       onOpenChange(false);
@@ -179,7 +174,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
             Добавить объект недвижимости
           </DialogTitle>
           <DialogDescription>
-            Заполните информацию о новом объекте. Все поля обязательны для заполнения.
+            Заполните информацию о новом объекте.
           </DialogDescription>
         </DialogHeader>
 
