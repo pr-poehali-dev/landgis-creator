@@ -31,7 +31,7 @@ export const useMapInitialization = ({
       const map = new window.ymaps.Map(mapRef.current, {
         center: [55.751244, 37.618423],
         zoom: 12,
-        controls: ['zoomControl', 'fullscreenControl'],
+        controls: ['zoomControl'],
         // ⚠️ КРИТИЧНО: настройки для плавной работы
         suppressMapOpenBlock: true,
       }, {
