@@ -132,33 +132,17 @@ const YandexMap = ({
 
   return (
     <div className="relative w-full h-full">
-      <div 
-        ref={mapRef} 
-        className="w-full h-full"
-        onClick={(e) => {
-          if (showAttributesPanel && selectedProperty && e.target === mapRef.current) {
-            handleClosePanel();
-          }
-        }}
-      />
+      <div ref={mapRef} className="w-full h-full" />
 
       {showAttributesPanel && selectedProperty && (
-        <>
-          <div 
-            className="absolute inset-0 z-40"
-            onClick={handleClosePanel}
-          />
-          <div className="absolute z-50">
-            <PropertyAttributesPanel
-              property={selectedProperty}
-              onClose={handleClosePanel}
-              userRole={userRole}
-              onZoomToProperty={() => zoomToProperty(selectedProperty)}
-              onAttributesUpdate={() => {}}
-              onGeneratePDF={handleGeneratePDF}
-            />
-          </div>
-        </>
+        <PropertyAttributesPanel
+          property={selectedProperty}
+          onClose={handleClosePanel}
+          userRole={userRole}
+          onZoomToProperty={() => zoomToProperty(selectedProperty)}
+          onAttributesUpdate={() => {}}
+          onGeneratePDF={handleGeneratePDF}
+        />
       )}
     </div>
   );
