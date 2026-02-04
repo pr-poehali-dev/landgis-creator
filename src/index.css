@@ -127,6 +127,7 @@
   height: 14px;
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
+  transition: all 0.2s ease;
 }
 
 *::-webkit-scrollbar-button:vertical:start:decrement {
@@ -158,5 +159,20 @@
 }
 
 *::-webkit-scrollbar-button:hover {
-  background-color: hsl(var(--muted));
+  background-color: hsl(var(--accent) / 0.2);
+  border-color: hsl(var(--accent));
+  transform: scale(1.05);
+}
+
+*::-webkit-scrollbar-button:active {
+  background-color: hsl(var(--accent) / 0.3);
+  transform: scale(0.95);
+}
+
+*::-webkit-scrollbar-thumb {
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-track {
+  transition: background 0.2s ease;
 }
