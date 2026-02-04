@@ -39,8 +39,8 @@ const TopNavigation = ({
   };
 
   return (
-    <div className="h-12 border-b border-border flex items-center justify-between px-3 lg:px-4 bg-card/30 backdrop-blur w-full">
-      <div className="flex items-center gap-2 flex-shrink-0">
+    <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
+      <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 lg:hidden">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Icon name="Map" className="text-primary" size={18} />
@@ -55,7 +55,7 @@ const TopNavigation = ({
         )}
       </div>
 
-      <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         {user?.role === 'admin' && (
           <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
             <Icon name="Database" size={14} />
@@ -64,7 +64,7 @@ const TopNavigation = ({
         )}
       </div>
 
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 ml-auto">
         <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
           <Icon name="Plus" size={14} />
           <span className="hidden md:inline">Добавить объект</span>
