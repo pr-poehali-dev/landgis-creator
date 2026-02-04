@@ -128,6 +128,8 @@ export const useMapZoom = ({
 
       if (propertyId === hoveredPropertyId) {
         const style = polygonStyleService.getStyleForProperty(property);
+        const map = mapInstanceRef.current;
+        const currentZoom = map ? map.getZoom() : 10;
         
         // Создаём увеличенную иконку с полной заливкой для ховера
         const hoverKey = `${style.fillColor}-1.0-${style.strokeColor}-${style.strokeWidth}-hover`;
@@ -144,6 +146,8 @@ export const useMapZoom = ({
         centroid.options.set('iconImageSize', [45, 45]);
         centroid.options.set('iconImageOffset', [-22.5, -22.5]);
         centroid.options.set('zIndex', 1000);
+        // Показываем центроид при наведении, если зум не слишком близкий
+        centroid.options.set('visible', currentZoom < 14);
       } else {
         const style = polygonStyleService.getStyleForProperty(property);
         
@@ -162,9 +166,13 @@ export const useMapZoom = ({
         centroid.options.set('iconImageSize', [30, 30]);
         centroid.options.set('iconImageOffset', [-15, -15]);
         centroid.options.set('zIndex', hoveredPropertyId ? 1 : 100);
+        // Скрываем центроид если зум слишком близкий
+        const map = mapInstanceRef.current;
+        const currentZoom = map ? map.getZoom() : 10;
+        centroid.options.set('visible', currentZoom < 14);
       }
     });
-  }, [hoveredPropertyId, isMapReady, properties]);
+  }, [hoveredPropertyId, isMapReady, properties, mapInstanceRef]);
 
   // Переключение типа карты
   useEffect(() => {
