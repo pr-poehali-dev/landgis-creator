@@ -28,12 +28,17 @@ def handler(event: dict, context) -> dict:
     token = auth_header.replace('Bearer ', '')
     
     try:
+        user_id = int(token)
+    except (ValueError, TypeError):
+        return error_response('Неверный токен', 401)
+    
+    try:
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         schema = os.environ.get('MAIN_DB_SCHEMA', 'public')
         
         # Проверка прав администратора
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(f"SELECT role FROM {schema}.companies WHERE id = %s AND is_active = true", (token,))
+            cur.execute(f"SELECT role FROM {schema}.companies WHERE id = %s AND is_active = true", (user_id,))
             user = cur.fetchone()
             
             if not user or user['role'] != 'admin':
