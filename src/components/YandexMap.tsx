@@ -130,6 +130,45 @@ const YandexMap = ({
     onSelectProperty(null);
   };
 
+  const handleReturnToOverview = () => {
+    if (!mapInstanceRef.current || properties.length === 0) return;
+
+    const bounds = properties.reduce((acc, prop) => {
+      if (prop.boundary && prop.boundary.length >= 3) {
+        prop.boundary.forEach(coord => {
+          if (!acc) {
+            acc = [[coord[0], coord[1]], [coord[0], coord[1]]];
+          } else {
+            acc[0][0] = Math.min(acc[0][0], coord[0]);
+            acc[0][1] = Math.min(acc[0][1], coord[1]);
+            acc[1][0] = Math.max(acc[1][0], coord[0]);
+            acc[1][1] = Math.max(acc[1][1], coord[1]);
+          }
+        });
+      } else {
+        const [lat, lon] = prop.coordinates;
+        if (!acc) {
+          acc = [[lat, lon], [lat, lon]];
+        } else {
+          acc[0][0] = Math.min(acc[0][0], lat);
+          acc[0][1] = Math.min(acc[0][1], lon);
+          acc[1][0] = Math.max(acc[1][0], lat);
+          acc[1][1] = Math.max(acc[1][1], lon);
+        }
+      }
+      return acc;
+    }, null as [[number, number], [number, number]] | null);
+
+    if (bounds) {
+      mapInstanceRef.current.setBounds(bounds, {
+        checkZoomRange: true,
+        duration: 500
+      });
+    }
+
+    handleClosePanel();
+  };
+
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
@@ -142,6 +181,7 @@ const YandexMap = ({
           onZoomToProperty={() => zoomToProperty(selectedProperty)}
           onAttributesUpdate={() => {}}
           onGeneratePDF={handleGeneratePDF}
+          onReturnToOverview={handleReturnToOverview}
         />
       )}
     </div>

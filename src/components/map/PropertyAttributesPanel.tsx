@@ -25,9 +25,10 @@ interface PropertyAttributesPanelProps {
   onAttributesUpdate: (updatedAttrs: Record<string, any>) => void;
   onZoomToProperty?: () => void;
   onGeneratePDF?: () => void;
+  onReturnToOverview?: () => void;
 }
 
-const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF }: PropertyAttributesPanelProps) => {
+const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview }: PropertyAttributesPanelProps) => {
   if (!property.attributes) return null;
 
   return (
@@ -76,7 +77,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
               </Button>
             )}
             <Button
-              onClick={onClose}
+              onClick={onReturnToOverview || onClose}
               variant="outline"
               size="sm"
               className="h-7 px-3 gap-1.5"
