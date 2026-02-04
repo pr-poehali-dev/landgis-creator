@@ -31,6 +31,7 @@ const Index = () => {
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({});
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
+  const [visiblePropertyIds, setVisiblePropertyIds] = useState<number[]>([]);
 
   useEffect(() => {
     loadProperties();
@@ -166,9 +167,12 @@ const Index = () => {
         return true;
       });
       
-      return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
+      // Фильтр по видимым участкам на карте (только если есть visiblePropertyIds)
+      const matchesVisible = visiblePropertyIds.length === 0 || visiblePropertyIds.includes(property.id);
+      
+      return matchesSearch && matchesType && matchesSegment && matchesAdvanced && matchesVisible;
     }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
-  }, [properties, searchQuery, filterType, filterSegment, advancedFilters]);
+  }, [properties, searchQuery, filterType, filterSegment, advancedFilters, visiblePropertyIds]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -255,6 +259,7 @@ const Index = () => {
             hoveredPropertyId={hoveredPropertyId}
             logoUrl={appSettings.logo}
             companyName={appSettings.title}
+            onVisiblePropertiesChange={setVisiblePropertyIds}
           />
         </div>
 
