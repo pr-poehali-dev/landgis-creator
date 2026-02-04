@@ -29,6 +29,7 @@ const Companies = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [error, setError] = useState('');
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
 
   const [formData, setFormData] = useState({
     name: '',
@@ -149,6 +150,18 @@ const Companies = () => {
     setEditingCompany(null);
     setShowForm(false);
     setError('');
+  };
+
+  const togglePasswordVisibility = (id: number) => {
+    setVisiblePasswords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   if (loading) {
@@ -345,7 +358,27 @@ const Companies = () => {
                     <TableRow key={company.id}>
                       <TableCell className="font-medium">{company.name}</TableCell>
                       <TableCell>{company.login}</TableCell>
-                      <TableCell className="font-mono text-sm">{company.password || '••••••••'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm">
+                            {visiblePasswords.has(company.id) 
+                              ? company.password || 'не задан'
+                              : '••••••••'
+                            }
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => togglePasswordVisibility(company.id)}
+                          >
+                            <Icon 
+                              name={visiblePasswords.has(company.id) ? 'EyeOff' : 'Eye'} 
+                              size={14} 
+                            />
+                          </Button>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge variant={company.role === 'admin' ? 'default' : 'secondary'}>
                           {roles.find(r => r.value === company.role)?.label || company.role}
