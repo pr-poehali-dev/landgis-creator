@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { getMarkerColor } from '@/components/map/MapHelpers';
+import { polygonStyleService } from '@/services/polygonStyleService';
 
 interface Property {
   id: number;
@@ -44,6 +45,7 @@ export const useMapZoom = ({
   isAnimatingRef,
   initialViewRef
 }: UseMapZoomProps) => {
+  const hoverSvgCacheRef = useRef<Map<string, string>>(new Map());
   
   // Функция зума к участку
   const zoomToProperty = (property: Property) => {
@@ -121,14 +123,45 @@ export const useMapZoom = ({
     if (!isMapReady) return;
 
     centroidsRef.current.forEach(({ centroid, propertyId }) => {
+      const property = properties.find(p => p.id === propertyId);
+      if (!property) return;
+
       if (propertyId === hoveredPropertyId) {
+        const style = polygonStyleService.getStyleForProperty(property);
+        
+        // Создаём увеличенную иконку с полной заливкой для ховера
+        const hoverKey = `${style.fillColor}-1.0-${style.strokeColor}-${style.strokeWidth}-hover`;
+        let hoverSvgDataUrl = hoverSvgCacheRef.current.get(hoverKey);
+        
+        if (!hoverSvgDataUrl) {
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45"><circle cx="22.5" cy="22.5" r="18" fill="${style.fillColor}" fill-opacity="1.0" stroke="${style.strokeColor}" stroke-width="${Math.max(style.strokeWidth, 3)}"/></svg>`;
+          const svgBase64 = btoa(unescape(encodeURIComponent(svg)));
+          hoverSvgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+          hoverSvgCacheRef.current.set(hoverKey, hoverSvgDataUrl);
+        }
+        
+        centroid.options.set('iconImageHref', hoverSvgDataUrl);
+        centroid.options.set('iconImageSize', [45, 45]);
+        centroid.options.set('iconImageOffset', [-22.5, -22.5]);
         centroid.options.set('zIndex', 1000);
-        centroid.options.set('iconImageSize', [40, 40]);
-        centroid.options.set('iconImageOffset', [-20, -20]);
       } else {
-        centroid.options.set('zIndex', hoveredPropertyId ? 1 : 100);
+        const style = polygonStyleService.getStyleForProperty(property);
+        
+        // Возвращаем нормальную иконку
+        const normalKey = `${style.fillColor}-${style.fillOpacity}-${style.strokeColor}-${style.strokeWidth}`;
+        let normalSvgDataUrl = hoverSvgCacheRef.current.get(normalKey);
+        
+        if (!normalSvgDataUrl) {
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="${style.fillColor}" fill-opacity="${style.fillOpacity}" stroke="${style.strokeColor}" stroke-width="${style.strokeWidth}"/></svg>`;
+          const svgBase64 = btoa(unescape(encodeURIComponent(svg)));
+          normalSvgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+          hoverSvgCacheRef.current.set(normalKey, normalSvgDataUrl);
+        }
+        
+        centroid.options.set('iconImageHref', normalSvgDataUrl);
         centroid.options.set('iconImageSize', [30, 30]);
         centroid.options.set('iconImageOffset', [-15, -15]);
+        centroid.options.set('zIndex', hoveredPropertyId ? 1 : 100);
       }
     });
   }, [hoveredPropertyId, isMapReady, properties]);
