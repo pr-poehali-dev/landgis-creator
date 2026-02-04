@@ -122,12 +122,12 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
           </p>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto border rounded-lg">
+        <div className="flex-1 overflow-auto border rounded-lg relative">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 sticky top-0 z-10">
+            <thead className="bg-card sticky top-0 z-10 shadow-sm">
               <tr>
                 {headers.map((header, idx) => (
-                  <th key={idx} className="px-3 py-2 text-left font-medium border-r border-border whitespace-nowrap">
+                  <th key={idx} className="px-3 py-2 text-left font-medium border-r border-border whitespace-nowrap bg-card">
                     {header}
                   </th>
                 ))}
