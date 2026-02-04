@@ -162,7 +162,7 @@ const YandexMap = ({
     if (bounds) {
       mapInstanceRef.current.setBounds(bounds, {
         checkZoomRange: true,
-        duration: 500
+        duration: 1500
       });
     }
 

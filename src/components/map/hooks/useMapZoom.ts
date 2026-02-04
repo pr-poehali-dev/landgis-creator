@@ -85,7 +85,7 @@ export const useMapZoom = ({
         else if (maxDiff > 0.01) targetZoom = 15;
         
         const zoomSteps = Math.abs(targetZoom - currentZoom);
-        const stepDuration = 150;
+        const stepDuration = 200;
         
         let step = 0;
         const animate = () => {
@@ -93,7 +93,7 @@ export const useMapZoom = ({
             map.setBounds(bounds, {
               checkZoomRange: true,
               zoomMargin: 60,
-              duration: 500
+              duration: 800
             });
             
             const finalHandler = () => {
@@ -163,7 +163,7 @@ export const useMapZoom = ({
         
         map.setZoom(targetZoom, {
           checkZoomRange: true,
-          duration: 500
+          duration: 1000
         });
         
         const finalHandler = () => {
