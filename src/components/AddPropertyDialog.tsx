@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 import { DisplayConfig } from '@/services/displayConfigService';
@@ -68,6 +69,8 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
             initialAttributes[key] = false;
           } else if (config.formatType === 'number' || config.formatType === 'money') {
             initialAttributes[key] = 0;
+          } else if (config.formatType === 'multiselect') {
+            initialAttributes[key] = JSON.stringify([]);
           } else {
             initialAttributes[key] = '';
           }
@@ -281,6 +284,76 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        );
+
+      case 'multiselect':
+        const parseMultiselectValue = (val: any): string[] => {
+          if (Array.isArray(val)) return val;
+          if (typeof val === 'string' && val) {
+            try {
+              const parsed = JSON.parse(val);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              return [];
+            }
+          }
+          return [];
+        };
+
+        const selectedValues = parseMultiselectValue(value);
+        const options = config.formatOptions?.options || [];
+
+        const toggleMultiselectOption = (option: string) => {
+          const newValues = selectedValues.includes(option)
+            ? selectedValues.filter(v => v !== option)
+            : [...selectedValues, option];
+          handleAttributeChange(key, JSON.stringify(newValues));
+        };
+
+        const removeMultiselectOption = (option: string) => {
+          const newValues = selectedValues.filter(v => v !== option);
+          handleAttributeChange(key, JSON.stringify(newValues));
+        };
+
+        return (
+          <div key={key} className="space-y-2">
+            <Label className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <div className="space-y-2">
+              {selectedValues.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedValues.map(val => (
+                    <Badge key={val} variant="secondary" className="flex items-center gap-1">
+                      {val}
+                      <button
+                        type="button"
+                        onClick={() => removeMultiselectOption(val)}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <Icon name="X" size={12} />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <Select value="" onValueChange={toggleMultiselectOption}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Добавить значение..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((option: string) => (
+                    <SelectItem key={option} value={option}>
+                      <div className="flex items-center gap-2">
+                        {selectedValues.includes(option) && <Icon name="Check" size={14} />}
+                        {option}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         );
 
