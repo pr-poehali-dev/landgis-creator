@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Get active attribute",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "active_attribute": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

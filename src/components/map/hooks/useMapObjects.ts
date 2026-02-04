@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getMarkerColor } from '@/components/map/MapHelpers';
+import { polygonStyleService } from '@/services/polygonStyleService';
 
 interface Property {
   id: number;
@@ -45,9 +46,21 @@ export const useMapObjects = ({
   onAttributesPanelChange
 }: UseMapObjectsProps) => {
   const previousPropertiesHashRef = useRef<string>('');
+  const [stylesLoaded, setStylesLoaded] = useState(false);
 
   useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current || !clustererRef.current) return;
+    polygonStyleService.loadSettings().then(() => setStylesLoaded(true));
+    
+    const unsubscribe = polygonStyleService.subscribe(() => {
+      setStylesLoaded(false);
+      setTimeout(() => setStylesLoaded(true), 100);
+    });
+    
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current || !clustererRef.current || !stylesLoaded) return;
 
     const map = mapInstanceRef.current;
     const clusterer = clustererRef.current;
@@ -69,16 +82,17 @@ export const useMapObjects = ({
     properties.forEach((property) => {
       // Добавляем полигон, если есть границы
       if (property.boundary && property.boundary.length >= 3) {
+        const style = polygonStyleService.getStyleForProperty(property);
+        
         const polygon = new window.ymaps.Polygon(
           [property.boundary],
           { hintContent: property.title },
           {
-            fillColor: getMarkerColor(property.segment) + '40',
-            strokeColor: getMarkerColor(property.segment),
-            strokeWidth: 2,
+            fillColor: style.fillColor,
+            strokeColor: style.strokeColor,
+            strokeWidth: style.strokeWidth,
             strokeStyle: 'solid',
-            // ⚠️ КРИТИЧНО: плавные переходы для полигонов
-            fillOpacity: 0.25,
+            fillOpacity: style.fillOpacity,
             strokeOpacity: 1
           }
         );
@@ -164,5 +178,5 @@ export const useMapObjects = ({
     }
 
     console.log(`✅ Отрисовано ${properties.length} объектов`);
-  }, [properties, isMapReady, selectedProperty]);
+  }, [properties, isMapReady, selectedProperty, stylesLoaded]);
 };

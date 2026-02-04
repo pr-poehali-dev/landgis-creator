@@ -10,6 +10,7 @@ const AdminNavigation = () => {
   const tabs = [
     { path: '/admin', icon: 'Database', label: 'База данных' },
     { path: '/admin/map-settings', icon: 'Settings', label: 'Настройки' },
+    { path: '/admin/polygon-styles', icon: 'Palette', label: 'Дизайн участков' },
     { path: '/admin/companies', icon: 'Building2', label: 'Компании' },
     { path: '/admin/users', icon: 'Users', label: 'Пользователи' },
     { path: '/admin/filter-settings', icon: 'Filter', label: 'Фильтры' },

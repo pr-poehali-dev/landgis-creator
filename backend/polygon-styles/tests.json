@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Get polygon styles",
+      "method": "GET",
+      "path": "/?attribute_key=segment",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "partial"
+    }
+  ]
+}

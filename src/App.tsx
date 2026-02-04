@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import MapSettings from "./pages/MapSettings";
+import PolygonStyleSettings from "./pages/PolygonStyleSettings";
 import Companies from "./pages/Companies";
 import Users from "./pages/Users";
 import AdminFilterSettings from "./pages/AdminFilterSettings";
@@ -54,6 +55,11 @@ const App = () => (
             <Route path="/admin/filter-settings" element={
               <ProtectedRoute requireAdmin>
                 <AdminFilterSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/polygon-styles" element={
+              <ProtectedRoute requireAdmin>
+                <PolygonStyleSettings />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
