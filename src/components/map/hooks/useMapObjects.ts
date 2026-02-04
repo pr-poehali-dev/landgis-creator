@@ -192,5 +192,46 @@ export const useMapObjects = ({
     }
 
     console.log(`✅ Отрисовано ${properties.length} объектов`);
-  }, [properties, isMapReady, selectedProperty, stylesLoaded]);
+  }, [properties, isMapReady, stylesLoaded]);
+
+  // Отдельный эффект для выделения выбранного участка
+  useEffect(() => {
+    if (!isMapReady || !selectedProperty) return;
+
+    const selectedCentroid = centroidsRef.current.find(({ propertyId }) => propertyId === selectedProperty.id);
+    if (!selectedCentroid) return;
+
+    const style = polygonStyleService.getStyleForProperty(selectedProperty);
+    
+    // Создаем увеличенную иконку с полной заливкой для выбранного центроида
+    const styleKey = `${style.fillColor}-1.0-${style.strokeColor}-${style.strokeWidth}-selected`;
+    let svgDataUrl = svgCacheRef.current.get(styleKey);
+    
+    if (!svgDataUrl) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45"><circle cx="22.5" cy="22.5" r="18" fill="${style.fillColor}" fill-opacity="1.0" stroke="${style.strokeColor}" stroke-width="${style.strokeWidth}"/></svg>`;
+      const svgBase64 = btoa(unescape(encodeURIComponent(svg)));
+      svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+      svgCacheRef.current.set(styleKey, svgDataUrl);
+    }
+
+    selectedCentroid.centroid.options.set('iconImageHref', svgDataUrl);
+    selectedCentroid.centroid.options.set('iconImageSize', [45, 45]);
+    selectedCentroid.centroid.options.set('iconImageOffset', [-22.5, -22.5]);
+    selectedCentroid.centroid.options.set('zIndex', 2000);
+
+    // Возвращаем cleanup для сброса при снятии выделения
+    return () => {
+      if (selectedCentroid?.centroid) {
+        const normalStyleKey = `${style.fillColor}-${style.fillOpacity}-${style.strokeColor}-${style.strokeWidth}`;
+        const normalSvgDataUrl = svgCacheRef.current.get(normalStyleKey);
+        
+        if (normalSvgDataUrl) {
+          selectedCentroid.centroid.options.set('iconImageHref', normalSvgDataUrl);
+          selectedCentroid.centroid.options.set('iconImageSize', [30, 30]);
+          selectedCentroid.centroid.options.set('iconImageOffset', [-15, -15]);
+          selectedCentroid.centroid.options.set('zIndex', 100);
+        }
+      }
+    };
+  }, [selectedProperty, isMapReady]);
 };
