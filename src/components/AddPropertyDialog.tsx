@@ -319,7 +319,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader className="flex-shrink-0 px-6">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Icon name="Plus" className="text-primary" size={18} />
@@ -331,7 +331,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 py-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 py-4 px-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title" className="flex items-center gap-2">
@@ -536,7 +536,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           </div>
         </form>
 
-        <DialogFooter className="flex-shrink-0 border-t pt-4">
+        <DialogFooter className="flex-shrink-0 border-t pt-4 px-6">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Отмена
           </Button>
