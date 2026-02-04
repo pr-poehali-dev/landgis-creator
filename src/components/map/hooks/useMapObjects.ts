@@ -47,6 +47,7 @@ export const useMapObjects = ({
 }: UseMapObjectsProps) => {
   const previousPropertiesHashRef = useRef<string>('');
   const [stylesLoaded, setStylesLoaded] = useState(false);
+  const svgCacheRef = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     polygonStyleService.loadSettings().then(() => setStylesLoaded(true));
@@ -111,18 +112,23 @@ export const useMapObjects = ({
       if (property.boundary && property.boundary.length >= 3) {
         const style = polygonStyleService.getStyleForProperty(property);
         
-        // Создаем SVG с base64 кодированием
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
-          <circle cx="15" cy="15" r="12" fill="${style.fillColor}" fill-opacity="${style.fillOpacity}" stroke="${style.strokeColor}" stroke-width="${style.strokeWidth}"/>
-        </svg>`;
-        const svgBase64 = btoa(unescape(encodeURIComponent(svg)));
+        // Кешируем SVG иконки по стилю
+        const styleKey = `${style.fillColor}-${style.fillOpacity}-${style.strokeColor}-${style.strokeWidth}`;
+        let svgDataUrl = svgCacheRef.current.get(styleKey);
+        
+        if (!svgDataUrl) {
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="${style.fillColor}" fill-opacity="${style.fillOpacity}" stroke="${style.strokeColor}" stroke-width="${style.strokeWidth}"/></svg>`;
+          const svgBase64 = btoa(unescape(encodeURIComponent(svg)));
+          svgDataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+          svgCacheRef.current.set(styleKey, svgDataUrl);
+        }
         
         const centroid = new window.ymaps.Placemark(
           property.coordinates,
           { hintContent: property.title },
           {
             iconLayout: 'default#image',
-            iconImageHref: `data:image/svg+xml;base64,${svgBase64}`,
+            iconImageHref: svgDataUrl,
             iconImageSize: [30, 30],
             iconImageOffset: [-15, -15]
           }

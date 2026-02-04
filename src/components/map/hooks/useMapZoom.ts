@@ -122,20 +122,13 @@ export const useMapZoom = ({
 
     centroidsRef.current.forEach(({ centroid, propertyId }) => {
       if (propertyId === hoveredPropertyId) {
-        centroid.options.set('preset', 'islands#yellowCircleDotIcon');
-        centroid.options.set('iconColor', '#FF0000');
-        centroid.options.set('iconImageSize', [60, 60]);
-        centroid.options.set('iconImageOffset', [-30, -30]);
         centroid.options.set('zIndex', 1000);
+        centroid.options.set('iconImageSize', [40, 40]);
+        centroid.options.set('iconImageOffset', [-20, -20]);
       } else {
-        const property = properties.find(p => p.id === propertyId);
-        if (property) {
-          centroid.options.set('preset', 'islands#circleIcon');
-          centroid.options.set('iconColor', getMarkerColor(property.segment));
-          centroid.options.set('iconImageSize', [30, 30]);
-          centroid.options.set('iconImageOffset', [-15, -15]);
-          centroid.options.set('zIndex', hoveredPropertyId ? 1 : 100);
-        }
+        centroid.options.set('zIndex', hoveredPropertyId ? 1 : 100);
+        centroid.options.set('iconImageSize', [30, 30]);
+        centroid.options.set('iconImageOffset', [-15, -15]);
       }
     });
   }, [hoveredPropertyId, isMapReady, properties]);
