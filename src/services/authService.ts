@@ -12,6 +12,7 @@ export interface Company {
   id: number;
   name: string;
   login: string;
+  password?: string;
   role: string;
   inn?: string;
   kpp?: string;

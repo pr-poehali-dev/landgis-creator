@@ -63,7 +63,8 @@ def get_all_companies(conn, schema):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(f"""
             SELECT id, name, login, role, inn, kpp, legal_address, 
-                   contact_email, contact_phone, is_active, created_at, updated_at
+                   contact_email, contact_phone, is_active, plain_password as password, 
+                   created_at, updated_at
             FROM {schema}.companies 
             ORDER BY created_at DESC
         """)
@@ -89,12 +90,12 @@ def create_company(conn, schema, data):
     
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute(f"""
-            INSERT INTO {schema}.companies (name, login, password_hash, role, inn, kpp, 
+            INSERT INTO {schema}.companies (name, login, password_hash, plain_password, role, inn, kpp, 
                                             legal_address, contact_email, contact_phone)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id, name, login, role, created_at
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, name, login, role, plain_password as password, created_at
         """, (
-            name, login, password_hash, role,
+            name, login, password_hash, password, role,
             data.get('inn'), data.get('kpp'), data.get('legal_address'),
             data.get('contact_email'), data.get('contact_phone')
         ))
@@ -128,6 +129,8 @@ def update_company(conn, schema, data):
         password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         updates.append('password_hash = %s')
         params.append(password_hash)
+        updates.append('plain_password = %s')
+        params.append(data['password'])
     if 'role' in data:
         updates.append('role = %s')
         params.append(data['role'])
@@ -161,7 +164,7 @@ def update_company(conn, schema, data):
             UPDATE {schema}.companies 
             SET {', '.join(updates)}
             WHERE id = %s
-            RETURNING id, name, login, role, updated_at
+            RETURNING id, name, login, role, plain_password as password, updated_at
         """, params)
         updated_company = cur.fetchone()
         conn.commit()

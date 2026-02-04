@@ -334,6 +334,7 @@ const Companies = () => {
                   <TableRow>
                     <TableHead>Название</TableHead>
                     <TableHead>Логин</TableHead>
+                    <TableHead>Пароль</TableHead>
                     <TableHead>Роль</TableHead>
                     <TableHead>Статус</TableHead>
                     <TableHead className="text-right">Действия</TableHead>
@@ -344,6 +345,7 @@ const Companies = () => {
                     <TableRow key={company.id}>
                       <TableCell className="font-medium">{company.name}</TableCell>
                       <TableCell>{company.login}</TableCell>
+                      <TableCell className="font-mono text-sm">{company.password || '••••••••'}</TableCell>
                       <TableCell>
                         <Badge variant={company.role === 'admin' ? 'default' : 'secondary'}>
                           {roles.find(r => r.value === company.role)?.label || company.role}
