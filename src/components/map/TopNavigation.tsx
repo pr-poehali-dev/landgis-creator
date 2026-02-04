@@ -62,14 +62,6 @@ const TopNavigation = ({
             Админка
           </Button>
         )}
-        <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
-          <Icon name="Plus" size={14} />
-          <span className="hidden md:inline">Добавить объект</span>
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5" onClick={handleLogout}>
-          <Icon name="LogOut" size={14} />
-          <span className="hidden lg:inline">Выйти</span>
-        </Button>
       </div>
     </div>
   );

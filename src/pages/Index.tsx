@@ -11,6 +11,8 @@ import SidebarPanel from '@/components/map/SidebarPanel';
 import MobileSidebar from '@/components/map/MobileSidebar';
 import TopNavigation from '@/components/map/TopNavigation';
 import StatisticsBar from '@/components/map/StatisticsBar';
+import MapActionButtons from '@/components/map/MapActionButtons';
+import { authService } from '@/services/authService';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -239,6 +241,13 @@ const Index = () => {
             hoveredPropertyId={hoveredPropertyId}
             logoUrl={appSettings.logo}
             companyName={appSettings.title}
+          />
+          <MapActionButtons
+            onAddProperty={() => setIsAddDialogOpen(true)}
+            onLogout={() => {
+              authService.logout();
+              navigate('/login');
+            }}
           />
         </div>
 
