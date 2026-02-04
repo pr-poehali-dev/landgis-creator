@@ -39,7 +39,7 @@ const TopNavigation = ({
   };
 
   return (
-    <div className="h-12 border-b border-border flex items-center justify-between px-3 lg:px-4 bg-card/30 backdrop-blur">
+    <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 lg:hidden">
           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -52,7 +52,7 @@ const TopNavigation = ({
         </div>
       </div>
 
-      <div className="flex gap-1.5">
+      <div className="flex items-center gap-2 ml-auto">
         {user?.role === 'admin' && (
           <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
         )}
@@ -62,6 +62,14 @@ const TopNavigation = ({
             Админка
           </Button>
         )}
+        <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
+          <Icon name="Plus" size={14} />
+          <span className="hidden md:inline">Добавить объект</span>
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5" onClick={handleLogout}>
+          <Icon name="LogOut" size={14} />
+          <span className="hidden lg:inline">Выйти</span>
+        </Button>
       </div>
     </div>
   );
