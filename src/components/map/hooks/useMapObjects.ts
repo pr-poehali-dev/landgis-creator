@@ -109,12 +109,14 @@ export const useMapObjects = ({
 
       // Добавляем центроид
       if (property.boundary && property.boundary.length >= 3) {
+        const style = polygonStyleService.getStyleForProperty(property);
+        
         const centroid = new window.ymaps.Placemark(
           property.coordinates,
           { hintContent: property.title },
           {
-            preset: 'islands#circleIcon',
-            iconColor: getMarkerColor(property.segment),
+            iconLayout: 'default#image',
+            iconImageHref: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="${encodeURIComponent(style.fillColor)}" fill-opacity="${style.fillOpacity}" stroke="${encodeURIComponent(style.strokeColor)}" stroke-width="${style.strokeWidth}"/></svg>`,
             iconImageSize: [30, 30],
             iconImageOffset: [-15, -15]
           }
