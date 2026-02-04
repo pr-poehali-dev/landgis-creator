@@ -165,6 +165,11 @@ const Companies = () => {
   };
 
   const toggleActiveStatus = async (company: Company) => {
+    if (company.role === 'admin') {
+      setError('Нельзя деактивировать аккаунт администратора');
+      return;
+    }
+
     try {
       console.log('🔄 Toggling active status for company:', company.id, 'from', company.is_active, 'to', !company.is_active);
       await companiesService.update({
@@ -407,19 +412,21 @@ const Companies = () => {
                           >
                             {company.is_active ? 'Активна' : 'Неактивна'}
                           </Badge>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => toggleActiveStatus(company)}
-                            title={company.is_active ? 'Деактивировать' : 'Активировать'}
-                          >
-                            <Icon 
-                              name={company.is_active ? 'ToggleRight' : 'ToggleLeft'} 
-                              size={20}
-                              className={company.is_active ? 'text-green-500' : 'text-gray-400'}
-                            />
-                          </Button>
+                          {company.role !== 'admin' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => toggleActiveStatus(company)}
+                              title={company.is_active ? 'Деактивировать' : 'Активировать'}
+                            >
+                              <Icon 
+                                name={company.is_active ? 'ToggleRight' : 'ToggleLeft'} 
+                                size={20}
+                                className={company.is_active ? 'text-green-500' : 'text-gray-400'}
+                              />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
