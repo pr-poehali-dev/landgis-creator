@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { Property } from '@/services/propertyService';
@@ -18,6 +19,7 @@ interface SidebarPanelProps {
   onPropertyHover: (id: number | null) => void;
   properties: Property[];
   formatPrice: (price: number) => string;
+  onOpenDataTable?: () => void;
 }
 
 const SidebarPanel = ({
@@ -33,7 +35,8 @@ const SidebarPanel = ({
   onPropertySelect,
   onPropertyHover,
   properties,
-  formatPrice
+  formatPrice,
+  onOpenDataTable
 }: SidebarPanelProps) => {
   return (
     <div className="hidden lg:flex w-80 border-r border-border flex-col bg-card/50 backdrop-blur">
@@ -61,6 +64,15 @@ const SidebarPanel = ({
             onChange={(e) => onSearchChange(e.target.value)}
           />
         </div>
+
+        <Button 
+          variant="outline" 
+          className="w-full mb-3 h-9 text-sm gap-2"
+          onClick={onOpenDataTable}
+        >
+          <Icon name="Table" size={16} />
+          Таблица данных
+        </Button>
 
         <div className="grid grid-cols-2 gap-2">
           <Select value={filterType} onValueChange={onFilterTypeChange}>

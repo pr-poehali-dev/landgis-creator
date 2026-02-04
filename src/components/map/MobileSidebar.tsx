@@ -22,6 +22,7 @@ interface MobileSidebarProps {
   onPropertyHover: (id: number | null) => void;
   properties: Property[];
   formatPrice: (price: number) => string;
+  onOpenDataTable?: () => void;
 }
 
 const MobileSidebar = ({
@@ -39,7 +40,8 @@ const MobileSidebar = ({
   onPropertySelect,
   onPropertyHover,
   properties,
-  formatPrice
+  formatPrice,
+  onOpenDataTable
 }: MobileSidebarProps) => {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -74,6 +76,15 @@ const MobileSidebar = ({
                 onChange={(e) => onSearchChange(e.target.value)}
               />
             </div>
+
+            <Button 
+              variant="outline" 
+              className="w-full mb-4 gap-2"
+              onClick={onOpenDataTable}
+            >
+              <Icon name="Table" size={16} />
+              Таблица данных
+            </Button>
 
             <div className="grid grid-cols-2 gap-2">
               <Select value={filterType} onValueChange={onFilterTypeChange}>

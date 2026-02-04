@@ -11,6 +11,7 @@ import SidebarPanel from '@/components/map/SidebarPanel';
 import MobileSidebar from '@/components/map/MobileSidebar';
 import TopNavigation from '@/components/map/TopNavigation';
 import StatisticsBar from '@/components/map/StatisticsBar';
+import DataTableDialog from '@/components/map/DataTableDialog';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const Index = () => {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({});
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isDataTableOpen, setIsDataTableOpen] = useState(false);
 
   useEffect(() => {
     loadProperties();
@@ -188,6 +190,7 @@ const Index = () => {
         onPropertyHover={setHoveredPropertyId}
         properties={properties}
         formatPrice={formatPrice}
+        onOpenDataTable={() => setIsDataTableOpen(true)}
       />
 
       <div className="flex-1 flex flex-col">
@@ -235,6 +238,12 @@ const Index = () => {
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         onAdd={handleAddProperty}
+      />
+
+      <DataTableDialog
+        open={isDataTableOpen}
+        onOpenChange={setIsDataTableOpen}
+        properties={filteredProperties}
       />
     </div>
   );
