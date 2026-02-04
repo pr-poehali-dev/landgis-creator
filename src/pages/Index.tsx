@@ -183,39 +183,17 @@ const Index = () => {
       />
 
       <div className="flex-1 flex flex-col">
-        <div className="h-12 border-b border-border flex items-center justify-between px-3 lg:px-4 bg-card/30 backdrop-blur">
-          <div className="flex items-center gap-2">
-            <MobileSidebar
-              isOpen={isMobileSidebarOpen}
-              onOpenChange={setIsMobileSidebarOpen}
-              appSettings={appSettings}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              filterType={filterType}
-              onFilterTypeChange={setFilterType}
-              filterSegment={filterSegment}
-              onFilterSegmentChange={setFilterSegment}
-              filteredProperties={filteredProperties}
-              selectedProperty={selectedProperty}
-              onPropertySelect={handleMobilePropertySelect}
-              onPropertyHover={setHoveredPropertyId}
-              properties={properties}
-              formatPrice={formatPrice}
-            />
-
-            <TopNavigation
-              mapType={mapType}
-              onMapTypeChange={setMapType}
-              currentUserRole={currentUserRole}
-              onRoleChange={setCurrentUserRole}
-              onNavigateAdmin={() => navigate('/admin')}
-              isFilterPanelOpen={isFilterPanelOpen}
-              onFilterPanelToggle={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-              filterCount={filterCount}
-              onAddProperty={() => setIsAddDialogOpen(true)}
-            />
-          </div>
-        </div>
+        <TopNavigation
+          mapType={mapType}
+          onMapTypeChange={setMapType}
+          currentUserRole={currentUserRole}
+          onRoleChange={setCurrentUserRole}
+          onNavigateAdmin={() => navigate('/admin')}
+          isFilterPanelOpen={isFilterPanelOpen}
+          onFilterPanelToggle={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+          filterCount={filterCount}
+          onAddProperty={() => setIsAddDialogOpen(true)}
+        />
 
         <div className="flex-1 relative bg-muted/20">
           <AdvancedFilterPanel
