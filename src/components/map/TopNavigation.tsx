@@ -64,26 +64,15 @@ const TopNavigation = ({
         )}
       </div>
 
-      <div className="flex items-center ml-auto">
-        <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
-          <Button 
-            size="sm" 
-            className="bg-primary hover:bg-primary/90 h-8 text-xs px-3 gap-1.5 rounded-md" 
-            onClick={onAddProperty}
-          >
-            <Icon name="Plus" size={14} />
-            <span className="hidden md:inline">Добавить объект</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-8 text-xs px-3 gap-1.5 rounded-md hover:bg-muted" 
-            onClick={handleLogout}
-          >
-            <Icon name="LogOut" size={14} />
-            <span className="hidden lg:inline">Выйти</span>
-          </Button>
-        </div>
+      <div className="flex items-center gap-2 ml-auto">
+        <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
+          <Icon name="Plus" size={14} />
+          <span className="hidden md:inline">Добавить объект</span>
+        </Button>
+        <Button variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5" onClick={handleLogout}>
+          <Icon name="LogOut" size={14} />
+          <span className="hidden lg:inline">Выйти</span>
+        </Button>
       </div>
     </div>
   );

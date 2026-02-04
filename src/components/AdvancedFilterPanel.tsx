@@ -283,31 +283,33 @@ const AdvancedFilterPanel = ({
     <>
       {/* Map Type Switcher - верхний левый угол */}
       {onMapTypeChange && (
-        <div className="absolute top-4 left-4 z-40 flex gap-2">
-          <Button
-            onClick={() => onMapTypeChange('scheme')}
-            size="lg"
-            variant={mapType === 'scheme' ? 'default' : 'outline'}
-            className={cn(
-              "shadow-lg gap-3 px-8 py-6 text-lg font-semibold hover:opacity-90",
-              mapType === 'scheme' ? "bg-accent text-accent-foreground" : ""
-            )}
-          >
-            <Icon name="Map" size={22} />
-            Схема
-          </Button>
-          <Button
-            onClick={() => onMapTypeChange('hybrid')}
-            size="lg"
-            variant={mapType === 'hybrid' ? 'default' : 'outline'}
-            className={cn(
-              "shadow-lg gap-3 px-8 py-6 text-lg font-semibold hover:opacity-90",
-              mapType === 'hybrid' ? "bg-accent text-accent-foreground" : ""
-            )}
-          >
-            <Icon name="Satellite" size={22} />
-            Гибрид
-          </Button>
+        <div className="absolute top-4 left-4 z-40">
+          <div className="inline-flex rounded-lg border border-border bg-muted/50 p-1 shadow-lg backdrop-blur">
+            <Button
+              onClick={() => onMapTypeChange('scheme')}
+              size="lg"
+              variant="ghost"
+              className={cn(
+                "gap-3 px-8 py-6 text-lg font-semibold rounded-md transition-all",
+                mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
+              )}
+            >
+              <Icon name="Map" size={22} />
+              Схема
+            </Button>
+            <Button
+              onClick={() => onMapTypeChange('hybrid')}
+              size="lg"
+              variant="ghost"
+              className={cn(
+                "gap-3 px-8 py-6 text-lg font-semibold rounded-md transition-all",
+                mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
+              )}
+            >
+              <Icon name="Satellite" size={22} />
+              Гибрид
+            </Button>
+          </div>
         </div>
       )}
 
