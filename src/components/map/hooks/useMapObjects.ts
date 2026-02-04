@@ -197,7 +197,7 @@ export const useMapObjects = ({
       const zoom = map.getZoom();
       setCurrentZoom(zoom);
       
-      const shouldShowCentroids = zoom < 16;
+      const shouldShowCentroids = zoom < 14;
       centroidsRef.current.forEach(({ centroid }) => {
         if (shouldShowCentroids) {
           centroid.options.set('visible', true);
@@ -255,7 +255,7 @@ export const useMapObjects = ({
           selectedCentroid.centroid.options.set('iconImageOffset', [-15, -15]);
           selectedCentroid.centroid.options.set('zIndex', 100);
           // Восстанавливаем видимость в зависимости от зума
-          const shouldBeVisible = currentZoom < 16;
+          const shouldBeVisible = currentZoom < 14;
           selectedCentroid.centroid.options.set('visible', shouldBeVisible);
         }
       }
