@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import YandexMap from '@/components/YandexMap';
@@ -81,92 +81,94 @@ const Index = () => {
     }
   };
 
-  const filteredProperties = properties.filter(property => {
-    const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         property.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === 'all' || property.type === filterType;
-    
-    let matchesSegment = filterSegment === 'all';
-    if (!matchesSegment) {
-      const segmentValue = property.attributes?.segment;
-      if (Array.isArray(segmentValue)) {
-        matchesSegment = segmentValue.includes(filterSegment);
-      } else if (typeof segmentValue === 'string') {
-        try {
-          const parsed = JSON.parse(segmentValue);
-          if (Array.isArray(parsed)) {
-            matchesSegment = parsed.includes(filterSegment);
-          } else {
-            matchesSegment = segmentValue === filterSegment;
-          }
-        } catch {
-          matchesSegment = segmentValue === filterSegment || 
-                          segmentValue.split(',').map(s => s.trim()).includes(filterSegment);
-        }
-      } else {
-        matchesSegment = property.segment === filterSegment;
-      }
-    }
-
-    const matchesAdvanced = Object.entries(advancedFilters).every(([key, values]) => {
-      if (!values || values.length === 0) return true;
+  const filteredProperties = useMemo(() => {
+    return properties.filter(property => {
+      const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           property.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = filterType === 'all' || property.type === filterType;
       
-      const saved = localStorage.getItem('filterSettings');
-      let attributePath = '';
-      
-      if (saved) {
-        try {
-          const settings = JSON.parse(saved);
-          const setting = settings.find((s: any) => s.id === key);
-          if (setting) {
-            attributePath = setting.attributePath;
-          }
-        } catch (error) {
-          console.error('Error loading filter settings:', error);
-        }
-      }
-
-      if (key === 'region' || attributePath === 'attributes.region') {
-        const region = property.attributes?.region;
-        if (!region || region.startsWith('lyr_')) return false;
-        return values.includes(region);
-      }
-      if (key === 'segment' || attributePath === 'attributes.segment') {
-        const seg = property.attributes?.segment;
-        if (Array.isArray(seg)) return seg.some(s => values.includes(s));
-        if (typeof seg === 'string') {
+      let matchesSegment = filterSegment === 'all';
+      if (!matchesSegment) {
+        const segmentValue = property.attributes?.segment;
+        if (Array.isArray(segmentValue)) {
+          matchesSegment = segmentValue.includes(filterSegment);
+        } else if (typeof segmentValue === 'string') {
           try {
-            const parsed = JSON.parse(seg);
-            if (Array.isArray(parsed)) return parsed.some(s => values.includes(s));
+            const parsed = JSON.parse(segmentValue);
+            if (Array.isArray(parsed)) {
+              matchesSegment = parsed.includes(filterSegment);
+            } else {
+              matchesSegment = segmentValue === filterSegment;
+            }
           } catch {
-            // fallback to comma-separated
+            matchesSegment = segmentValue === filterSegment || 
+                            segmentValue.split(',').map(s => s.trim()).includes(filterSegment);
           }
-          return seg.split(',').some(s => values.includes(s.trim()));
-        }
-        return values.includes(property.segment);
-      }
-      if (key === 'status' || attributePath === 'status') {
-        return values.includes(property.status);
-      }
-      if (key === 'type' || attributePath === 'type') {
-        return values.includes(property.type);
-      }
-
-      if (attributePath) {
-        const getValue = (obj: any, path: string): any => {
-          return path.split('.').reduce((current, key) => current?.[key], obj);
-        };
-        const propValue = getValue(property, attributePath);
-        if (propValue && typeof propValue === 'string') {
-          return values.includes(propValue);
+        } else {
+          matchesSegment = property.segment === filterSegment;
         }
       }
 
-      return true;
-    });
-    
-    return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
-  }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
+      const matchesAdvanced = Object.entries(advancedFilters).every(([key, values]) => {
+        if (!values || values.length === 0) return true;
+        
+        const saved = localStorage.getItem('filterSettings');
+        let attributePath = '';
+        
+        if (saved) {
+          try {
+            const settings = JSON.parse(saved);
+            const setting = settings.find((s: any) => s.id === key);
+            if (setting) {
+              attributePath = setting.attributePath;
+            }
+          } catch (error) {
+            console.error('Error loading filter settings:', error);
+          }
+        }
+
+        if (key === 'region' || attributePath === 'attributes.region') {
+          const region = property.attributes?.region;
+          if (!region || region.startsWith('lyr_')) return false;
+          return values.includes(region);
+        }
+        if (key === 'segment' || attributePath === 'attributes.segment') {
+          const seg = property.attributes?.segment;
+          if (Array.isArray(seg)) return seg.some(s => values.includes(s));
+          if (typeof seg === 'string') {
+            try {
+              const parsed = JSON.parse(seg);
+              if (Array.isArray(parsed)) return parsed.some(s => values.includes(s));
+            } catch {
+              // fallback to comma-separated
+            }
+            return seg.split(',').some(s => values.includes(s.trim()));
+          }
+          return values.includes(property.segment);
+        }
+        if (key === 'status' || attributePath === 'status') {
+          return values.includes(property.status);
+        }
+        if (key === 'type' || attributePath === 'type') {
+          return values.includes(property.type);
+        }
+
+        if (attributePath) {
+          const getValue = (obj: any, path: string): any => {
+            return path.split('.').reduce((current, key) => current?.[key], obj);
+          };
+          const propValue = getValue(property, attributePath);
+          if (propValue && typeof propValue === 'string') {
+            return values.includes(propValue);
+          }
+        }
+
+        return true;
+      });
+      
+      return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
+    }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
+  }, [properties, searchQuery, filterType, filterSegment, advancedFilters]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -189,6 +191,14 @@ const Index = () => {
     }
   };
 
+  const handlePropertyHover = useMemo(() => {
+    let timeoutId: NodeJS.Timeout;
+    return (id: number | null) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => setHoveredPropertyId(id), 50);
+    };
+  }, []);
+
   const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
@@ -204,7 +214,7 @@ const Index = () => {
         filteredProperties={filteredProperties}
         selectedProperty={selectedProperty}
         onPropertySelect={handlePropertySelect}
-        onPropertyHover={setHoveredPropertyId}
+        onPropertyHover={handlePropertyHover}
         properties={properties}
         formatPrice={formatPrice}
         onOpenDataTable={() => setIsDataTableOpen(true)}
