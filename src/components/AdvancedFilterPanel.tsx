@@ -290,7 +290,7 @@ const AdvancedFilterPanel = ({
               size="lg"
               variant="ghost"
               className={cn(
-                "gap-3 px-8 py-6 text-lg font-semibold rounded-md transition-all",
+                "gap-3 px-8 py-4 text-lg font-semibold rounded-md transition-all",
                 mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
@@ -302,7 +302,7 @@ const AdvancedFilterPanel = ({
               size="lg"
               variant="ghost"
               className={cn(
-                "gap-3 px-8 py-6 text-lg font-semibold rounded-md transition-all",
+                "gap-3 px-8 py-4 text-lg font-semibold rounded-md transition-all",
                 mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
