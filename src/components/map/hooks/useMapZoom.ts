@@ -155,48 +155,23 @@ export const useMapZoom = ({
 
     // Сброс выбора
     if (!selectedProperty) {
-      if (previousSelectedRef.current && initialViewRef.current) {
+      if (previousSelectedRef.current) {
         isAnimatingRef.current = true;
         
         const currentZoom = map.getZoom();
-        const currentCenter = map.getCenter();
-        const targetZoom = initialViewRef.current.zoom;
-        const targetCenter = initialViewRef.current.center;
+        const targetZoom = Math.max(currentZoom - 2, 10); // Отдаляемся на 2 уровня
         
-        const zoomSteps = Math.max(Math.abs(targetZoom - currentZoom), 8);
-        const stepDuration = 150;
+        map.setZoom(targetZoom, {
+          checkZoomRange: true,
+          duration: 500
+        });
         
-        let step = 0;
-        const animate = () => {
-          if (step >= zoomSteps) {
-            map.setCenter(targetCenter, targetZoom, {
-              checkZoomRange: true,
-              duration: 500
-            });
-            
-            const finalHandler = () => {
-              isAnimatingRef.current = false;
-              previousSelectedRef.current = null;
-              map.events.remove('actionend', finalHandler);
-            };
-            map.events.add('actionend', finalHandler);
-            return;
-          }
-          
-          const progress = step / zoomSteps;
-          const newZoom = currentZoom + ((targetZoom - currentZoom) * progress);
-          const newCenter: [number, number] = [
-            currentCenter[0] + ((targetCenter[0] - currentCenter[0]) * progress),
-            currentCenter[1] + ((targetCenter[1] - currentCenter[1]) * progress)
-          ];
-          
-          map.setCenter(newCenter, Math.round(newZoom), { duration: stepDuration });
-          
-          step++;
-          setTimeout(animate, stepDuration);
+        const finalHandler = () => {
+          isAnimatingRef.current = false;
+          previousSelectedRef.current = null;
+          map.events.remove('actionend', finalHandler);
         };
-        
-        animate();
+        map.events.add('actionend', finalHandler);
       }
       return;
     }
