@@ -111,22 +111,18 @@ export const useMapObjects = ({
       if (property.boundary && property.boundary.length >= 3) {
         const style = polygonStyleService.getStyleForProperty(property);
         
-        // Конвертируем hex цвет в rgba с прозрачностью
-        const hexToRgba = (hex: string, alpha: number) => {
-          const r = parseInt(hex.slice(1, 3), 16);
-          const g = parseInt(hex.slice(3, 5), 16);
-          const b = parseInt(hex.slice(5, 7), 16);
-          return `rgba(${r},${g},${b},${alpha})`;
-        };
-        
-        const fillColorRgba = hexToRgba(style.fillColor, style.fillOpacity);
+        // Создаем SVG с base64 кодированием
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
+          <circle cx="15" cy="15" r="12" fill="${style.fillColor}" fill-opacity="${style.fillOpacity}" stroke="${style.strokeColor}" stroke-width="${style.strokeWidth}"/>
+        </svg>`;
+        const svgBase64 = btoa(unescape(encodeURIComponent(svg)));
         
         const centroid = new window.ymaps.Placemark(
           property.coordinates,
           { hintContent: property.title },
           {
             iconLayout: 'default#image',
-            iconImageHref: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="${encodeURIComponent(fillColorRgba)}" stroke="${encodeURIComponent(style.strokeColor)}" stroke-width="${style.strokeWidth}"/></svg>`,
+            iconImageHref: `data:image/svg+xml;base64,${svgBase64}`,
             iconImageSize: [30, 30],
             iconImageOffset: [-15, -15]
           }
