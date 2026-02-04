@@ -110,16 +110,18 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>Таблица данных</DialogTitle>
+          <div className="flex items-center justify-between pr-8">
+            <div>
+              <DialogTitle>Таблица данных</DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Показано объектов: {properties.length}
+              </p>
+            </div>
             <Button onClick={handleExportToExcel} size="sm" className="gap-2">
               <Icon name="FileDown" size={16} />
               Экспорт в Excel
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Показано объектов: {properties.length}
-          </p>
         </DialogHeader>
 
         <div className="flex-1 overflow-auto border rounded-lg relative">
