@@ -43,7 +43,7 @@ def handler(event: dict, context) -> dict:
             
             print(f"🔍 Auth check: user_id={user_id}, found={user is not None}, role={user['role'] if user else None}")
             
-            if not user or user['role'] != 'admin':
+            if not user or user['role'] not in ('admin', 'vip'):
                 conn.close()
                 return error_response('Доступ запрещен', 403)
         
