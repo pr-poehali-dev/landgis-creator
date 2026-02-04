@@ -20,6 +20,7 @@ interface SidebarPanelProps {
   properties: Property[];
   formatPrice: (price: number) => string;
   onOpenDataTable?: () => void;
+  totalFilteredCount?: number;
 }
 
 const SidebarPanel = ({
@@ -36,7 +37,8 @@ const SidebarPanel = ({
   onPropertyHover,
   properties,
   formatPrice,
-  onOpenDataTable
+  onOpenDataTable,
+  totalFilteredCount
 }: SidebarPanelProps) => {
   return (
     <div className="hidden lg:flex w-80 border-r border-border flex-col bg-card/50 backdrop-blur">
@@ -101,6 +103,21 @@ const SidebarPanel = ({
           </Select>
         </div>
       </div>
+
+      {(totalFilteredCount !== undefined && totalFilteredCount > 0) && (
+        <div className="px-4 py-2 border-b border-border bg-muted/30">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Icon name="Eye" size={14} />
+              <span>Видимых на карте</span>
+            </div>
+            <div className="font-semibold">
+              <span className="text-primary">{filteredProperties.length}</span>
+              <span className="text-muted-foreground"> / {totalFilteredCount}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {filteredProperties.map(property => (

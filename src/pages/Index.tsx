@@ -82,7 +82,8 @@ const Index = () => {
     }
   };
 
-  const filteredProperties = useMemo(() => {
+  // Базовая фильтрация без учёта видимости на карте
+  const baseFilteredProperties = useMemo(() => {
     return properties.filter(property => {
       const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            property.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -167,12 +168,15 @@ const Index = () => {
         return true;
       });
       
-      // Фильтр по видимым участкам на карте (только если есть visiblePropertyIds)
-      const matchesVisible = visiblePropertyIds.length === 0 || visiblePropertyIds.includes(property.id);
-      
-      return matchesSearch && matchesType && matchesSegment && matchesAdvanced && matchesVisible;
+      return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
     }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
-  }, [properties, searchQuery, filterType, filterSegment, advancedFilters, visiblePropertyIds]);
+  }, [properties, searchQuery, filterType, filterSegment, advancedFilters]);
+
+  // Финальная фильтрация с учётом видимости на карте
+  const filteredProperties = useMemo(() => {
+    if (visiblePropertyIds.length === 0) return baseFilteredProperties;
+    return baseFilteredProperties.filter(property => visiblePropertyIds.includes(property.id));
+  }, [baseFilteredProperties, visiblePropertyIds]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
@@ -222,6 +226,7 @@ const Index = () => {
         properties={properties}
         formatPrice={formatPrice}
         onOpenDataTable={() => setIsDataTableOpen(true)}
+        totalFilteredCount={baseFilteredProperties.length}
       />
 
       <div className="flex-1 flex flex-col">
@@ -249,7 +254,7 @@ const Index = () => {
             onLayersClick={() => toast.info('Функция "Слои" в разработке')}
           />
           <YandexMap
-            properties={filteredProperties}
+            properties={baseFilteredProperties}
             selectedProperty={selectedProperty}
             onSelectProperty={setSelectedProperty}
             mapType={mapType}
