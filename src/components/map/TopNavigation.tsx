@@ -62,24 +62,6 @@ const TopNavigation = ({
             Админка
           </Button>
         )}
-        <Button 
-          variant={isFilterPanelOpen ? "default" : "outline"} 
-          size="sm" 
-          className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5"
-          onClick={onFilterPanelToggle}
-        >
-          <Icon name="Filter" size={14} />
-          Фильтры
-          {filterCount > 0 && (
-            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-background text-[10px] font-semibold">
-              {filterCount}
-            </span>
-          )}
-        </Button>
-        <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5">
-          <Icon name="Layers" size={14} />
-          Слои
-        </Button>
         <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
           <Icon name="Plus" size={14} />
           <span className="hidden md:inline">Добавить объект</span>
