@@ -90,6 +90,21 @@ const PolygonStyleSettings = () => {
         if (value) {
           if (Array.isArray(value)) {
             value.forEach(v => values.add(v));
+          } else if (typeof value === 'string') {
+            try {
+              const parsed = JSON.parse(value);
+              if (Array.isArray(parsed)) {
+                parsed.forEach(v => values.add(String(v)));
+              } else {
+                values.add(String(value));
+              }
+            } catch {
+              if (value.includes(',')) {
+                value.split(',').map(v => v.trim()).forEach(v => values.add(v));
+              } else {
+                values.add(String(value));
+              }
+            }
           } else {
             values.add(String(value));
           }

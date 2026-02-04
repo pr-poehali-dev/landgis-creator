@@ -92,8 +92,17 @@ const Index = () => {
       if (Array.isArray(segmentValue)) {
         matchesSegment = segmentValue.includes(filterSegment);
       } else if (typeof segmentValue === 'string') {
-        matchesSegment = segmentValue === filterSegment || 
-                        segmentValue.split(',').map(s => s.trim()).includes(filterSegment);
+        try {
+          const parsed = JSON.parse(segmentValue);
+          if (Array.isArray(parsed)) {
+            matchesSegment = parsed.includes(filterSegment);
+          } else {
+            matchesSegment = segmentValue === filterSegment;
+          }
+        } catch {
+          matchesSegment = segmentValue === filterSegment || 
+                          segmentValue.split(',').map(s => s.trim()).includes(filterSegment);
+        }
       } else {
         matchesSegment = property.segment === filterSegment;
       }
@@ -125,7 +134,15 @@ const Index = () => {
       if (key === 'segment' || attributePath === 'attributes.segment') {
         const seg = property.attributes?.segment;
         if (Array.isArray(seg)) return seg.some(s => values.includes(s));
-        if (typeof seg === 'string') return seg.split(',').some(s => values.includes(s.trim()));
+        if (typeof seg === 'string') {
+          try {
+            const parsed = JSON.parse(seg);
+            if (Array.isArray(parsed)) return parsed.some(s => values.includes(s));
+          } catch {
+            // fallback to comma-separated
+          }
+          return seg.split(',').some(s => values.includes(s.trim()));
+        }
         return values.includes(property.segment);
       }
       if (key === 'status' || attributePath === 'status') {

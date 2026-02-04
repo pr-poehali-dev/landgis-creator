@@ -113,7 +113,16 @@ const AdvancedFilterPanel = ({
       if (Array.isArray(segment)) {
         segment.forEach(s => extractedValues.get('segment')!.add(s));
       } else if (typeof segment === 'string') {
-        segment.split(',').forEach(s => extractedValues.get('segment')!.add(s.trim()));
+        try {
+          const parsed = JSON.parse(segment);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(s => extractedValues.get('segment')!.add(s));
+          } else {
+            extractedValues.get('segment')!.add(segment);
+          }
+        } catch {
+          segment.split(',').forEach(s => extractedValues.get('segment')!.add(s.trim()));
+        }
       } else if (prop.segment) {
         extractedValues.get('segment')!.add(prop.segment);
       }
@@ -157,7 +166,13 @@ const AdvancedFilterPanel = ({
           count: properties.filter(p => {
             const seg = p.attributes?.segment;
             if (Array.isArray(seg)) return seg.includes(s);
-            if (typeof seg === 'string') return seg.split(',').map(x => x.trim()).includes(s);
+            if (typeof seg === 'string') {
+              try {
+                const parsed = JSON.parse(seg);
+                if (Array.isArray(parsed)) return parsed.includes(s);
+              } catch {}
+              return seg.split(',').map(x => x.trim()).includes(s);
+            }
             return p.segment === s;
           }).length
         }))

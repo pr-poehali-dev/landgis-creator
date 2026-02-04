@@ -60,6 +60,19 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
         return 'Кнопка';
       }
     default:
+      // Дефолтная обработка для обычных полей - тоже проверяем на JSON-массив
+      if (typeof value === 'string' && (value.startsWith('[') || value.includes(','))) {
+        try {
+          const parsed = JSON.parse(value);
+          if (Array.isArray(parsed)) {
+            return parsed.join(', ');
+          }
+        } catch {
+          if (value.includes(',')) {
+            return value.split(',').map(v => v.trim()).join(', ');
+          }
+        }
+      }
       return String(value);
   }
 };

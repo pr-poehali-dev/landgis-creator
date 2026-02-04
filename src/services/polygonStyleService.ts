@@ -72,7 +72,18 @@ class PolygonStyleService {
       value = property.attributes?.[active_attribute];
     }
 
-    if (value && Array.isArray(value)) {
+    if (value && typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          value = parsed[0];
+        }
+      } catch {
+        if (value.includes(',')) {
+          value = value.split(',')[0].trim();
+        }
+      }
+    } else if (value && Array.isArray(value)) {
       value = value[0];
     }
 
