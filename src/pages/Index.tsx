@@ -62,8 +62,16 @@ const Index = () => {
 
   const handleAddProperty = async (formData: PropertyFormData) => {
     try {
-      await propertyService.createProperty(formData);
+      const newProperty = await propertyService.createProperty(formData);
       toast.success('Объект успешно добавлен!');
+      
+      // Зум к добавленному объекту
+      setTimeout(() => {
+        if (newProperty) {
+          setSelectedProperty(newProperty);
+          setShowAttributesPanel(true);
+        }
+      }, 500);
     } catch (error) {
       console.error('Error creating property:', error);
       toast.error('Не удалось добавить объект');
