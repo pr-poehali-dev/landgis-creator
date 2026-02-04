@@ -28,10 +28,16 @@ export const AttributeFieldRenderer = ({
     const showWhen = config.conditionalDisplay.showWhen;
     const dependValue = formData.attributes?.[dependsOnKey];
     
+    const normalizeValue = (val: any): string => {
+      if (val === true || val === 'true') return 'да';
+      if (val === false || val === 'false') return 'нет';
+      return String(val).toLowerCase();
+    };
+    
     if (Array.isArray(showWhen)) {
-      return showWhen.includes(String(dependValue));
+      return showWhen.some(when => normalizeValue(dependValue) === normalizeValue(when));
     }
-    return String(dependValue) === String(showWhen);
+    return normalizeValue(dependValue) === normalizeValue(showWhen);
   };
 
   if (!shouldShow()) return null;
