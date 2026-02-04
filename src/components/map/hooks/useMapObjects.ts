@@ -48,6 +48,7 @@ export const useMapObjects = ({
   const previousPropertiesHashRef = useRef<string>('');
   const [stylesLoaded, setStylesLoaded] = useState(false);
   const svgCacheRef = useRef<Map<string, string>>(new Map());
+  const [currentZoom, setCurrentZoom] = useState<number>(10);
 
   useEffect(() => {
     polygonStyleService.loadSettings().then(() => setStylesLoaded(true));
@@ -191,7 +192,29 @@ export const useMapObjects = ({
       }
     }
 
+    // Подписываемся на изменение зума для управления видимостью центроидов
+    const handleZoomChange = () => {
+      const zoom = map.getZoom();
+      setCurrentZoom(zoom);
+      
+      const shouldShowCentroids = zoom < 16;
+      centroidsRef.current.forEach(({ centroid }) => {
+        if (shouldShowCentroids) {
+          centroid.options.set('visible', true);
+        } else {
+          centroid.options.set('visible', false);
+        }
+      });
+    };
+    
+    map.events.add('boundschange', handleZoomChange);
+    handleZoomChange(); // Первоначальная проверка
+
     console.log(`✅ Отрисовано ${properties.length} объектов`);
+    
+    return () => {
+      map.events.remove('boundschange', handleZoomChange);
+    };
   }, [properties, isMapReady, stylesLoaded]);
 
   // Отдельный эффект для выделения выбранного участка
@@ -218,6 +241,7 @@ export const useMapObjects = ({
     selectedCentroid.centroid.options.set('iconImageSize', [45, 45]);
     selectedCentroid.centroid.options.set('iconImageOffset', [-22.5, -22.5]);
     selectedCentroid.centroid.options.set('zIndex', 2000);
+    selectedCentroid.centroid.options.set('visible', true); // Выбранный центроид всегда виден
 
     // Возвращаем cleanup для сброса при снятии выделения
     return () => {
@@ -230,8 +254,11 @@ export const useMapObjects = ({
           selectedCentroid.centroid.options.set('iconImageSize', [30, 30]);
           selectedCentroid.centroid.options.set('iconImageOffset', [-15, -15]);
           selectedCentroid.centroid.options.set('zIndex', 100);
+          // Восстанавливаем видимость в зависимости от зума
+          const shouldBeVisible = currentZoom < 16;
+          selectedCentroid.centroid.options.set('visible', shouldBeVisible);
         }
       }
     };
-  }, [selectedProperty, isMapReady]);
+  }, [selectedProperty, isMapReady, currentZoom]);
 };
