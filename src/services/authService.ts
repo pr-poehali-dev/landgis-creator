@@ -59,6 +59,38 @@ export const authService = {
     return await response.json();
   },
 
+  async getAvailableCompanies(): Promise<User[]> {
+    const token = this.getToken();
+    if (!token) throw new Error('Не авторизован');
+
+    const response = await fetch(`${AUTH_API_URL}?action=available_companies`, {
+      headers: { 'X-Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка загрузки списка компаний');
+    }
+
+    return await response.json();
+  },
+
+  async switchCompany(companyId: number): Promise<void> {
+    const token = this.getToken();
+    if (!token) throw new Error('Не авторизован');
+
+    const response = await fetch(`${AUTH_API_URL}?action=me`, {
+      headers: { 'X-Authorization': `Bearer ${companyId}` }
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка переключения компании');
+    }
+
+    const user = await response.json();
+    localStorage.setItem('auth_token', String(companyId));
+    localStorage.setItem('user', JSON.stringify(user));
+  },
+
   logout() {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');

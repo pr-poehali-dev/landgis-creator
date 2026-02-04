@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import RoleSwitcher from '@/components/admin/RoleSwitcher';
+import CompanySwitcher from '@/components/admin/CompanySwitcher';
 import { UserRole } from '@/types/userRoles';
 import { authService } from '@/services/authService';
 import { useNavigate } from 'react-router-dom';
@@ -46,13 +47,9 @@ const TopNavigation = ({
           </div>
           <h1 className="text-lg font-bold">LandGis</h1>
         </div>
-        {user && (
-          <div className="hidden lg:flex items-center gap-2 ml-4">
-            <span className="text-xs text-muted-foreground">
-              {user.name} ({user.role === 'admin' ? 'Администратор' : 'Пользователь'})
-            </span>
-          </div>
-        )}
+        <div className="hidden lg:flex items-center gap-2 ml-4">
+          <CompanySwitcher />
+        </div>
       </div>
 
       <div className="flex gap-1.5">

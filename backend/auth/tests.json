@@ -15,6 +15,12 @@
       "method": "GET",
       "path": "/?action=me",
       "expectedStatus": 401
+    },
+    {
+      "name": "Получение списка компаний без авторизации",
+      "method": "GET",
+      "path": "/?action=available_companies",
+      "expectedStatus": 401
     }
   ]
 }

@@ -34,6 +34,10 @@ def handler(event: dict, context) -> dict:
         elif method == 'GET' and action == 'me':
             auth_header = event.get('headers', {}).get('X-Authorization', '')
             result = get_current_user(conn, schema, auth_header)
+        # GET ?action=available_companies - получение списка доступных компаний для переключения
+        elif method == 'GET' and action == 'available_companies':
+            auth_header = event.get('headers', {}).get('X-Authorization', '')
+            result = get_available_companies(conn, schema, auth_header)
         else:
             result = error_response('Метод не поддерживается', 405)
         
@@ -107,6 +111,50 @@ def get_current_user(conn, schema, auth_header):
             'statusCode': 200,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
             'body': json.dumps(dict(user)),
+            'isBase64Encoded': False
+        }
+
+def get_available_companies(conn, schema, auth_header):
+    """Возвращает список компаний для переключения (для админа - все активные, для других - только их компанию)"""
+    if not auth_header.startswith('Bearer '):
+        return error_response('Требуется авторизация', 401)
+    
+    token = auth_header.replace('Bearer ', '')
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        # Получаем текущего пользователя
+        cur.execute(f"""
+            SELECT id, name, login, role, is_active
+            FROM {schema}.companies 
+            WHERE id = %s
+        """, (token,))
+        current_user = cur.fetchone()
+        
+        if not current_user or not current_user['is_active']:
+            return error_response('Пользователь не найден или деактивирован', 403)
+        
+        # Если админ - возвращаем все активные компании
+        if current_user['role'] == 'admin':
+            cur.execute(f"""
+                SELECT id, name, login, role
+                FROM {schema}.companies 
+                WHERE is_active = true
+                ORDER BY name
+            """)
+        else:
+            # Если не админ - возвращаем только его компанию
+            cur.execute(f"""
+                SELECT id, name, login, role
+                FROM {schema}.companies 
+                WHERE id = %s AND is_active = true
+            """, (current_user['id'],))
+        
+        companies = cur.fetchall()
+        
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps([dict(c) for c in companies]),
             'isBase64Encoded': False
         }
 
