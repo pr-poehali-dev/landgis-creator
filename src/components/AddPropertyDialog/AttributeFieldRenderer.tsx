@@ -1,0 +1,215 @@
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import Icon from '@/components/ui/icon';
+import { DisplayConfig } from '@/services/displayConfigService';
+
+interface AttributeFieldRendererProps {
+  config: DisplayConfig;
+  value: any;
+  formData: any;
+  onAttributeChange: (key: string, value: any) => void;
+}
+
+export const AttributeFieldRenderer = ({ 
+  config, 
+  value, 
+  formData, 
+  onAttributeChange 
+}: AttributeFieldRendererProps) => {
+  const key = config.originalKey || config.configKey;
+
+  const shouldShow = () => {
+    if (!config.conditionalDisplay) return true;
+    const dependsOnKey = config.conditionalDisplay.dependsOn;
+    const showWhen = config.conditionalDisplay.showWhen;
+    const dependValue = formData.attributes?.[dependsOnKey];
+    
+    if (Array.isArray(showWhen)) {
+      return showWhen.includes(String(dependValue));
+    }
+    return String(dependValue) === String(showWhen);
+  };
+
+  if (!shouldShow()) return null;
+
+  switch (config.formatType) {
+    case 'textarea':
+      return (
+        <div key={key} className="space-y-2">
+          <Label htmlFor={key} className="text-sm font-medium">
+            {config.displayName}
+          </Label>
+          <Textarea
+            id={key}
+            value={value}
+            onChange={(e) => onAttributeChange(key, e.target.value)}
+            className="min-h-[80px]"
+          />
+        </div>
+      );
+
+    case 'number':
+      return (
+        <div key={key} className="space-y-2">
+          <Label htmlFor={key} className="text-sm font-medium">
+            {config.displayName}
+          </Label>
+          <Input
+            id={key}
+            type="number"
+            value={value}
+            onChange={(e) => onAttributeChange(key, parseFloat(e.target.value) || 0)}
+          />
+        </div>
+      );
+
+    case 'money':
+      return (
+        <div key={key} className="space-y-2">
+          <Label htmlFor={key} className="text-sm font-medium">
+            {config.displayName}
+          </Label>
+          <div className="relative">
+            <Input
+              id={key}
+              type="number"
+              value={value}
+              onChange={(e) => onAttributeChange(key, parseFloat(e.target.value) || 0)}
+              className="pr-8"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₽</span>
+          </div>
+        </div>
+      );
+
+    case 'toggle':
+    case 'boolean':
+      return (
+        <div key={key} className="flex items-center justify-between py-2 border-b border-border">
+          <Label htmlFor={key} className="text-sm font-medium cursor-pointer">
+            {config.displayName}
+          </Label>
+          <Button
+            type="button"
+            id={key}
+            variant={value ? "default" : "outline"}
+            size="sm"
+            onClick={() => onAttributeChange(key, !value)}
+            className="min-w-[60px]"
+          >
+            {value ? 'Да' : 'Нет'}
+          </Button>
+        </div>
+      );
+
+    case 'select':
+      return (
+        <div key={key} className="space-y-2">
+          <Label htmlFor={key} className="text-sm font-medium">
+            {config.displayName}
+          </Label>
+          <Select value={value} onValueChange={(val) => onAttributeChange(key, val)}>
+            <SelectTrigger id={key}>
+              <SelectValue placeholder="Выберите значение" />
+            </SelectTrigger>
+            <SelectContent>
+              {config.formatOptions?.options?.map((option: string) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      );
+
+    case 'multiselect':
+      const parseMultiselectValue = (val: any): string[] => {
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string' && val) {
+          try {
+            const parsed = JSON.parse(val);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        }
+        return [];
+      };
+
+      const selectedValues = parseMultiselectValue(value);
+      const options = config.formatOptions?.options || [];
+
+      const toggleMultiselectOption = (option: string) => {
+        const newValues = selectedValues.includes(option)
+          ? selectedValues.filter(v => v !== option)
+          : [...selectedValues, option];
+        onAttributeChange(key, JSON.stringify(newValues));
+      };
+
+      const removeMultiselectOption = (option: string) => {
+        const newValues = selectedValues.filter(v => v !== option);
+        onAttributeChange(key, JSON.stringify(newValues));
+      };
+
+      return (
+        <div key={key} className="space-y-2">
+          <Label className="text-sm font-medium">
+            {config.displayName}
+          </Label>
+          <div className="space-y-2">
+            {selectedValues.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedValues.map(val => (
+                  <Badge key={val} variant="secondary" className="flex items-center gap-1">
+                    {val}
+                    <button
+                      type="button"
+                      onClick={() => removeMultiselectOption(val)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <Icon name="X" size={12} />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <Select value="" onValueChange={toggleMultiselectOption}>
+              <SelectTrigger>
+                <SelectValue placeholder="Добавить значение..." />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((option: string) => (
+                  <SelectItem key={option} value={option}>
+                    <div className="flex items-center gap-2">
+                      {selectedValues.includes(option) && <Icon name="Check" size={14} />}
+                      {option}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
+    default:
+      return (
+        <div key={key} className="space-y-2">
+          <Label htmlFor={key} className="text-sm font-medium">
+            {config.displayName}
+          </Label>
+          <Input
+            id={key}
+            type="text"
+            value={value}
+            onChange={(e) => onAttributeChange(key, e.target.value)}
+          />
+        </div>
+      );
+  }
+};
