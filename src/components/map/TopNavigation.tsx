@@ -53,7 +53,9 @@ const TopNavigation = ({
       </div>
 
       <div className="flex gap-1.5">
-        <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
+        {user?.role === 'admin' && (
+          <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
+        )}
         {user?.role === 'admin' && (
           <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
             <Icon name="Database" size={14} />
