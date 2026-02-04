@@ -50,18 +50,21 @@ const TopNavigation = ({
         <div className="hidden lg:flex items-center gap-2 ml-4">
           <CompanySwitcher />
         </div>
-      </div>
-
-      <div className="flex items-center gap-2 ml-auto">
         {user?.role === 'admin' && (
           <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
         )}
+      </div>
+
+      <div className="flex items-center justify-center flex-1">
         {user?.role === 'admin' && (
           <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
             <Icon name="Database" size={14} />
             Админка
           </Button>
         )}
+      </div>
+
+      <div className="flex items-center gap-2">
         <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
           <Icon name="Plus" size={14} />
           <span className="hidden md:inline">Добавить объект</span>
