@@ -115,6 +115,15 @@ def update_company(conn, schema, data):
     if not company_id:
         return error_response('Требуется поле id', 400)
     
+    # Проверка роли компании перед изменением статуса
+    if 'is_active' in data:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(f"SELECT role FROM {schema}.companies WHERE id = %s", (company_id,))
+            company = cur.fetchone()
+            
+            if company and company['role'] == 'admin':
+                return error_response('Нельзя деактивировать аккаунт администратора', 403)
+    
     # Формирование запроса на обновление
     updates = []
     params = []
