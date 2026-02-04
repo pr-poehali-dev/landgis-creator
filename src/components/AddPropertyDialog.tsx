@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
+import { DisplayConfig } from '@/services/displayConfigService';
 
 interface AddPropertyDialogProps {
   open: boolean;
@@ -23,6 +25,7 @@ export interface PropertyFormData {
   segment: 'premium' | 'standard' | 'economy';
   status: 'available' | 'reserved' | 'sold';
   boundary?: Array<[number, number]>;
+  attributes?: Record<string, any>;
 }
 
 const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps) => {
@@ -35,10 +38,46 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     coordinates: [55.751244, 37.618423],
     segment: 'standard',
     status: 'available',
-    boundary: undefined
+    boundary: undefined,
+    attributes: {}
   });
   const [kmlFile, setKmlFile] = useState<File | null>(null);
   const [isParsingKml, setIsParsingKml] = useState(false);
+  const [attributeConfigs, setAttributeConfigs] = useState<DisplayConfig[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      loadAttributeConfigs();
+    }
+  }, [open]);
+
+  const loadAttributeConfigs = () => {
+    const saved = localStorage.getItem('attributeConfigs');
+    if (saved) {
+      try {
+        const configsMap: Record<string, DisplayConfig> = JSON.parse(saved);
+        const configsArray = Object.values(configsMap)
+          .filter(config => config.enabled)
+          .sort((a, b) => a.displayOrder - b.displayOrder);
+        setAttributeConfigs(configsArray);
+        
+        const initialAttributes: Record<string, any> = {};
+        configsArray.forEach(config => {
+          const key = config.originalKey || config.configKey;
+          if (config.formatType === 'toggle' || config.formatType === 'boolean') {
+            initialAttributes[key] = false;
+          } else if (config.formatType === 'number' || config.formatType === 'money') {
+            initialAttributes[key] = 0;
+          } else {
+            initialAttributes[key] = '';
+          }
+        });
+        setFormData(prev => ({ ...prev, attributes: initialAttributes }));
+      } catch (error) {
+        console.error('Error loading attribute configs:', error);
+      }
+    }
+  };
 
   const parseKmlFile = async (file: File) => {
     setIsParsingKml(true);
@@ -97,6 +136,16 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     }
   };
 
+  const handleAttributeChange = (key: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      attributes: {
+        ...prev.attributes,
+        [key]: value
+      }
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -118,7 +167,8 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
         coordinates: [55.751244, 37.618423],
         segment: 'standard',
         status: 'available',
-        boundary: undefined
+        boundary: undefined,
+        attributes: {}
       });
       setKmlFile(null);
     } catch (error) {
@@ -126,10 +176,150 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     }
   };
 
+  const renderAttributeField = (config: DisplayConfig) => {
+    const key = config.originalKey || config.configKey;
+    const value = formData.attributes?.[key] || '';
+
+    const shouldShow = () => {
+      if (!config.conditionalDisplay) return true;
+      const dependsOnKey = config.conditionalDisplay.dependsOn;
+      const showWhen = config.conditionalDisplay.showWhen;
+      const dependValue = formData.attributes?.[dependsOnKey];
+      
+      if (Array.isArray(showWhen)) {
+        return showWhen.includes(String(dependValue));
+      }
+      return String(dependValue) === String(showWhen);
+    };
+
+    if (!shouldShow()) return null;
+
+    switch (config.formatType) {
+      case 'textarea':
+        return (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key} className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <Textarea
+              id={key}
+              value={value}
+              onChange={(e) => handleAttributeChange(key, e.target.value)}
+              className="min-h-[80px]"
+            />
+          </div>
+        );
+
+      case 'number':
+        return (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key} className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <Input
+              id={key}
+              type="number"
+              value={value}
+              onChange={(e) => handleAttributeChange(key, parseFloat(e.target.value) || 0)}
+            />
+          </div>
+        );
+
+      case 'money':
+        return (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key} className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <div className="relative">
+              <Input
+                id={key}
+                type="number"
+                value={value}
+                onChange={(e) => handleAttributeChange(key, parseFloat(e.target.value) || 0)}
+                className="pr-8"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₽</span>
+            </div>
+          </div>
+        );
+
+      case 'toggle':
+      case 'boolean':
+        return (
+          <div key={key} className="flex items-center justify-between py-2 border-b border-border">
+            <Label htmlFor={key} className="text-sm font-medium cursor-pointer">
+              {config.displayName}
+            </Label>
+            <Button
+              type="button"
+              variant={value ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleAttributeChange(key, !value)}
+              className="h-8"
+            >
+              {value ? (config.formatOptions?.trueLabel || 'Да') : (config.formatOptions?.falseLabel || 'Нет')}
+            </Button>
+          </div>
+        );
+
+      case 'select':
+        return (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key} className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <Select value={value} onValueChange={(val) => handleAttributeChange(key, val)}>
+              <SelectTrigger id={key}>
+                <SelectValue placeholder="Выберите значение" />
+              </SelectTrigger>
+              <SelectContent>
+                {config.formatOptions?.options?.map((option: string) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+
+      case 'date':
+        return (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key} className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <Input
+              id={key}
+              type="date"
+              value={value}
+              onChange={(e) => handleAttributeChange(key, e.target.value)}
+            />
+          </div>
+        );
+
+      default:
+        return (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key} className="text-sm font-medium">
+              {config.displayName}
+            </Label>
+            <Input
+              id={key}
+              type="text"
+              value={value}
+              onChange={(e) => handleAttributeChange(key, e.target.value)}
+            />
+          </div>
+        );
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
               <Icon name="Plus" className="text-primary" size={18} />
@@ -141,7 +331,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto space-y-4 py-4">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title" className="flex items-center gap-2">
@@ -238,18 +428,6 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
                   </Button>
                 )}
               </div>
-              {formData.boundary && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Icon name="Check" size={12} className="text-green-500" />
-                  Загружено {formData.boundary.length} точек границы
-                </p>
-              )}
-              {isParsingKml && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Icon name="Loader2" size={12} className="animate-spin" />
-                  Обработка файла...
-                </p>
-              )}
               <p className="text-xs text-muted-foreground">
                 Опционально: загрузите KML файл с границами участка для отображения на карте
               </p>
@@ -264,65 +442,63 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
                 <Input
                   id="price"
                   type="number"
-                  placeholder="15000000"
-                  value={formData.price || ''}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                  placeholder="1500000"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
                   required
-                  min="0"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="area" className="flex items-center gap-2">
-                  <Icon name="Maximize2" size={16} />
+                  <Icon name="Maximize" size={16} />
                   Площадь (м²)
                 </Label>
                 <Input
                   id="area"
                   type="number"
                   placeholder="500"
-                  value={formData.area || ''}
-                  onChange={(e) => setFormData({ ...formData, area: Number(e.target.value) })}
+                  value={formData.area}
+                  onChange={(e) => setFormData({ ...formData, area: parseFloat(e.target.value) || 0 })}
                   required
-                  min="0"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="latitude" className="flex items-center gap-2">
-                  <Icon name="Navigation" size={16} />
+                <Label htmlFor="lat" className="flex items-center gap-2">
+                  <Icon name="MapPin" size={16} />
                   Широта
                 </Label>
                 <Input
-                  id="latitude"
+                  id="lat"
                   type="number"
                   step="0.000001"
                   placeholder="55.751244"
                   value={formData.coordinates[0]}
                   onChange={(e) => setFormData({ 
                     ...formData, 
-                    coordinates: [Number(e.target.value), formData.coordinates[1]]
+                    coordinates: [parseFloat(e.target.value) || 0, formData.coordinates[1]] 
                   })}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="longitude" className="flex items-center gap-2">
-                  <Icon name="Navigation" size={16} />
+                <Label htmlFor="lon" className="flex items-center gap-2">
+                  <Icon name="MapPin" size={16} />
                   Долгота
                 </Label>
                 <Input
-                  id="longitude"
+                  id="lon"
                   type="number"
                   step="0.000001"
                   placeholder="37.618423"
                   value={formData.coordinates[1]}
                   onChange={(e) => setFormData({ 
                     ...formData, 
-                    coordinates: [formData.coordinates[0], Number(e.target.value)]
+                    coordinates: [formData.coordinates[0], parseFloat(e.target.value) || 0] 
                   })}
                   required
                 />
@@ -339,29 +515,36 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Доступен</SelectItem>
+                  <SelectItem value="available">Доступно</SelectItem>
                   <SelectItem value="reserved">Резерв</SelectItem>
-                  <SelectItem value="sold">Продан</SelectItem>
+                  <SelectItem value="sold">Продано</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full sm:w-auto"
-            >
-              Отмена
-            </Button>
-            <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
-              <Icon name="Plus" size={16} className="mr-2" />
-              Добавить объект
-            </Button>
-          </DialogFooter>
+            {attributeConfigs.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+                  <Icon name="List" size={16} />
+                  Дополнительные атрибуты
+                </h3>
+                <div className="space-y-4">
+                  {attributeConfigs.map(config => renderAttributeField(config))}
+                </div>
+              </div>
+            )}
+          </div>
         </form>
+
+        <DialogFooter className="flex-shrink-0 border-t pt-4">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Отмена
+          </Button>
+          <Button onClick={handleSubmit} className="gap-2">
+            <Icon name="Plus" size={16} />
+            Добавить объект
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
