@@ -164,6 +164,18 @@ const Companies = () => {
     });
   };
 
+  const toggleActiveStatus = async (company: Company) => {
+    try {
+      await companiesService.update({
+        id: company.id,
+        is_active: !company.is_active
+      });
+      await loadCompanies();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Ошибка изменения статуса');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -385,9 +397,27 @@ const Companies = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={company.is_active ? 'default' : 'secondary'}>
-                          {company.is_active ? 'Активна' : 'Неактивна'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={company.is_active ? 'default' : 'secondary'}
+                            className={company.is_active ? 'bg-green-500 hover:bg-green-600' : ''}
+                          >
+                            {company.is_active ? 'Активна' : 'Неактивна'}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => toggleActiveStatus(company)}
+                            title={company.is_active ? 'Деактивировать' : 'Активировать'}
+                          >
+                            <Icon 
+                              name={company.is_active ? 'ToggleRight' : 'ToggleLeft'} 
+                              size={20}
+                              className={company.is_active ? 'text-green-500' : 'text-gray-400'}
+                            />
+                          </Button>
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
