@@ -90,19 +90,29 @@ export const AttributeFieldRenderer = ({
     case 'boolean':
       return (
         <div key={key} className="flex items-center justify-between py-2 border-b border-border">
-          <Label htmlFor={key} className="text-sm font-medium cursor-pointer">
+          <Label htmlFor={key} className="text-sm font-medium">
             {config.displayName}
           </Label>
-          <Button
-            type="button"
-            id={key}
-            variant={value ? "default" : "outline"}
-            size="sm"
-            onClick={() => onAttributeChange(key, !value)}
-            className="min-w-[60px]"
-          >
-            {value ? 'Да' : 'Нет'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant={value ? "default" : "outline"}
+              size="sm"
+              onClick={() => onAttributeChange(key, true)}
+              className="min-w-[60px]"
+            >
+              Да
+            </Button>
+            <Button
+              type="button"
+              variant={!value ? "default" : "outline"}
+              size="sm"
+              onClick={() => onAttributeChange(key, false)}
+              className="min-w-[60px]"
+            >
+              Нет
+            </Button>
+          </div>
         </div>
       );
 
