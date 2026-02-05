@@ -20,10 +20,10 @@ const MapSettings = () => {
     setLocalSettings(appSettings);
   }, [appSettings]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
     try {
-      saveSettings(localSettings);
+      await saveSettings(localSettings);
       toast.success('Настройки дизайна сохранены');
       window.location.reload();
     } catch (error) {

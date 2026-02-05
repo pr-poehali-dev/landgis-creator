@@ -1,0 +1,26 @@
+{
+  "tests": [
+    {
+      "name": "Get empty settings",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Update settings",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "logo": "data:image/png;base64,test",
+        "title": "Test App"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
