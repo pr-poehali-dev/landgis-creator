@@ -51,15 +51,6 @@ const TopNavigation = ({
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-3">
-        <div className="hidden lg:flex items-center gap-2">
-          <CompanySwitcher />
-        </div>
-        {user?.role === 'admin' && (
-          <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
-        )}
-      </div>
-
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         {appSettings?.logo ? (
           <img 
             src={appSettings.logo} 
@@ -71,6 +62,15 @@ const TopNavigation = ({
             <Icon name="Map" className="text-primary" size={18} />
           </div>
         )}
+        <div className="hidden lg:flex items-center gap-2">
+          <CompanySwitcher />
+        </div>
+        {user?.role === 'admin' && (
+          <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
+        )}
+      </div>
+
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         {user?.role === 'admin' && (
           <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
             <Icon name="Database" size={14} />
