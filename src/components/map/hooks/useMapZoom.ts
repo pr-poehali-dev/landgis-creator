@@ -73,10 +73,16 @@ export const useMapZoom = ({
         map.setBounds(bounds, {
           checkZoomRange: true,
           zoomMargin: [100, 450, 100, 360],
-          duration: 1200
-        }).then(() => {
-          isAnimatingRef.current = false;
+          duration: 1500,
+          flying: true
         });
+        
+        const handler = () => {
+          isAnimatingRef.current = false;
+          map.events.remove('actionend', handler);
+        };
+        
+        map.events.add('actionend', handler);
       }
     }
   };
@@ -160,11 +166,16 @@ export const useMapZoom = ({
         
         map.setZoom(targetZoom, {
           checkZoomRange: true,
-          duration: 1200
-        }).then(() => {
+          duration: 1500
+        });
+        
+        const handler = () => {
           isAnimatingRef.current = false;
           previousSelectedRef.current = null;
-        });
+          map.events.remove('actionend', handler);
+        };
+        
+        map.events.add('actionend', handler);
       }
       return;
     }
