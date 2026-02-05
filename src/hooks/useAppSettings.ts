@@ -30,30 +30,51 @@ export const useAppSettings = () => {
 
   const loadSettings = async () => {
     try {
-      // Сначала пробуем загрузить из localStorage
+      // Пробуем загрузить из localStorage для быстрого отображения
       const saved = localStorage.getItem(STORAGE_KEY);
+      let localSettings: AppSettings | null = null;
+      
       if (saved) {
-        const parsed = JSON.parse(saved);
-        // Проверяем, что логотип валидный (не тестовый)
-        if (parsed.logo && parsed.logo.length > 100) {
-          setSettings({ ...defaultSettings, ...parsed });
-          setIsLoading(false);
-          return;
+        try {
+          const parsed = JSON.parse(saved);
+          // Проверяем, что логотип валидный (не тестовый)
+          if (parsed.logo && parsed.logo.length > 100) {
+            localSettings = { ...defaultSettings, ...parsed };
+            setSettings(localSettings);
+          }
+        } catch (e) {
+          console.error('Error parsing localStorage:', e);
         }
       }
 
-      // Если localStorage пустой или логотип невалидный, загружаем из API
-      const response = await fetch(SETTINGS_API);
-      if (response.ok) {
-        const apiSettings = await response.json();
-        // Фильтруем тестовые данные из API
-        if (apiSettings.logo && apiSettings.logo.length < 100) {
-          delete apiSettings.logo;
+      // ВСЕГДА проверяем API (особенно важно для мобильных, где localStorage ненадёжен)
+      try {
+        const response = await fetch(SETTINGS_API);
+        if (response.ok) {
+          const apiSettings = await response.json();
+          
+          // Фильтруем тестовые данные из API
+          if (apiSettings.logo && apiSettings.logo.length < 100) {
+            delete apiSettings.logo;
+          }
+          
+          const merged = { ...defaultSettings, ...apiSettings };
+          
+          // Обновляем только если API вернул настройки с логотипом
+          if (merged.logo && merged.logo.length > 100) {
+            setSettings(merged);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          } else if (!localSettings) {
+            // Если ни в API, ни в localStorage нет логотипа, используем дефолт
+            setSettings(merged);
+          }
         }
-        const merged = { ...defaultSettings, ...apiSettings };
-        setSettings(merged);
-        // Сохраняем в localStorage для следующего раза
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch (apiError) {
+        console.error('API fetch error, using localStorage:', apiError);
+        // Если API недоступен, используем localStorage
+        if (localSettings) {
+          setSettings(localSettings);
+        }
       }
     } catch (error) {
       console.error('Error loading app settings:', error);
