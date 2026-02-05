@@ -167,23 +167,8 @@ export const useMapZoom = ({
     // Сброс выбора
     if (!selectedProperty) {
       if (previousSelectedRef.current) {
-        isAnimatingRef.current = true;
-        
-        map.setBounds(map.getBounds(), {
-          checkZoomRange: true,
-          duration: 1500
-        }).then(() => {
-          const currentZoom = map.getZoom();
-          const targetZoom = Math.max(currentZoom - 2, 10);
-          
-          return map.setZoom(targetZoom, {
-            checkZoomRange: true,
-            duration: 1500
-          });
-        }).then(() => {
-          isAnimatingRef.current = false;
-          previousSelectedRef.current = null;
-        });
+        // Не делаем анимацию при закрытии - она управляется из YandexMap
+        previousSelectedRef.current = null;
       }
       return;
     }

@@ -187,6 +187,20 @@ const YandexMap = ({
   };
 
   const handleClosePanel = () => {
+    // Плавная анимация отдаления при закрытии панели
+    if (mapInstanceRef.current && selectedProperty) {
+      const currentZoom = mapInstanceRef.current.getZoom();
+      const targetZoom = Math.max(currentZoom - 2, 10);
+      
+      isAnimatingRef.current = true;
+      mapInstanceRef.current.setZoom(targetZoom, {
+        checkZoomRange: true,
+        duration: 1500
+      }).then(() => {
+        isAnimatingRef.current = false;
+      });
+    }
+    
     if (onAttributesPanelChange) onAttributesPanelChange(false);
     onSelectProperty(null);
   };
@@ -194,6 +208,11 @@ const YandexMap = ({
   const handleReturnToOverview = () => {
     if (!mapInstanceRef.current || properties.length === 0) return;
 
+    // Сначала закрываем панель
+    if (onAttributesPanelChange) onAttributesPanelChange(false);
+    onSelectProperty(null);
+
+    // Затем анимируем возврат к общему виду всех участков
     const bounds = properties.reduce((acc, prop) => {
       if (prop.boundary && prop.boundary.length >= 3) {
         prop.boundary.forEach(coord => {
@@ -221,13 +240,15 @@ const YandexMap = ({
     }, null as [[number, number], [number, number]] | null);
 
     if (bounds) {
+      isAnimatingRef.current = true;
       mapInstanceRef.current.setBounds(bounds, {
         checkZoomRange: true,
-        duration: 1500
+        zoomMargin: 50,
+        duration: 2000
+      }).then(() => {
+        isAnimatingRef.current = false;
       });
     }
-
-    handleClosePanel();
   };
 
   return (
