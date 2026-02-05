@@ -87,7 +87,13 @@ const Index = () => {
 
   // Применяем фильтрацию по ролям видимости
   const visibleByRoleProperties = useMemo(() => {
-    return visibilityService.filterPropertiesByRole(properties, currentUserRole);
+    const filtered = visibilityService.filterPropertiesByRole(properties, currentUserRole);
+    console.log(`🔐 Фильтрация по роли ${currentUserRole}:`, {
+      всего: properties.length,
+      видимо: filtered.length,
+      скрыто: properties.length - filtered.length
+    });
+    return filtered;
   }, [properties, currentUserRole]);
 
   // Базовая фильтрация без учёта видимости на карте

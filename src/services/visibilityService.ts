@@ -74,18 +74,26 @@ class VisibilityService {
     }
 
     const rule = this.getRuleForRole(userRole);
+    console.log(`📋 Правило для роли ${userRole}:`, rule);
     
     // Если нет правил или нет условий - показываем все
     if (!rule || rule.propertyConditions.length === 0) {
+      console.log(`⚠️ Нет правил или условий для ${userRole}, показываем все`);
       return properties;
     }
 
+    console.log(`🔍 Применяем ${rule.propertyConditions.length} условий для ${userRole}`);
+    
     // Применяем условия фильтрации
-    return properties.filter(property => {
-      return rule.propertyConditions.every(condition => 
+    const filtered = properties.filter(property => {
+      const passes = rule.propertyConditions.every(condition => 
         this.checkCondition(property, condition)
       );
+      return passes;
     });
+    
+    console.log(`✅ Отфильтровано: ${filtered.length} из ${properties.length}`);
+    return filtered;
   }
 
   isAttributeVisible(attributePath: string, userRole: UserRole): boolean {
