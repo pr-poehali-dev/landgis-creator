@@ -365,27 +365,37 @@ const AttributeConfigItem = ({
                 }
                 
                 if (parentConfig?.formatType === 'select' && parentOptions.length > 0) {
+                  const selectedValues = Array.isArray(config.conditionalDisplay.showWhen) 
+                    ? config.conditionalDisplay.showWhen 
+                    : config.conditionalDisplay.showWhen 
+                      ? [String(config.conditionalDisplay.showWhen)]
+                      : [];
+
                   return (
                     <div>
-                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда</label>
-                      <Select
-                        value={String(config.conditionalDisplay.showWhen)}
-                        onValueChange={(value) => {
-                          onConfigChange(index, 'conditionalDisplay', {
-                            ...config.conditionalDisplay,
-                            showWhen: value
-                          });
-                        }}
-                      >
-                        <SelectTrigger className="text-xs h-7">
-                          <SelectValue placeholder="Выберите значение" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {parentOptions.map((opt: string) => (
-                            <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда (можно выбрать несколько)</label>
+                      <div className="border border-border rounded text-xs p-1.5 max-h-32 overflow-y-auto space-y-1">
+                        {parentOptions.map((opt: string) => (
+                          <label key={opt} className="flex items-center gap-1.5 px-1 py-0.5 hover:bg-accent rounded cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedValues.includes(opt)}
+                              onChange={(e) => {
+                                const newValues = e.target.checked
+                                  ? [...selectedValues, opt]
+                                  : selectedValues.filter(v => v !== opt);
+                                
+                                onConfigChange(index, 'conditionalDisplay', {
+                                  ...config.conditionalDisplay,
+                                  showWhen: newValues.length === 1 ? newValues[0] : newValues
+                                });
+                              }}
+                              className="rounded h-3 w-3"
+                            />
+                            <span className="text-xs">{opt}</span>
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   );
                 }
@@ -394,16 +404,24 @@ const AttributeConfigItem = ({
                   <div>
                     <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда значение равно</label>
                     <Input
-                      value={String(config.conditionalDisplay.showWhen || '')}
+                      value={Array.isArray(config.conditionalDisplay.showWhen) 
+                        ? config.conditionalDisplay.showWhen.join(', ')
+                        : String(config.conditionalDisplay.showWhen || '')}
                       onChange={(e) => {
+                        const inputValue = e.target.value;
+                        const values = inputValue.includes(',') 
+                          ? inputValue.split(',').map(v => v.trim()).filter(v => v)
+                          : inputValue;
+                        
                         onConfigChange(index, 'conditionalDisplay', {
                           ...config.conditionalDisplay,
-                          showWhen: e.target.value
+                          showWhen: values
                         });
                       }}
                       className="text-xs h-7"
-                      placeholder="Введите значение"
+                      placeholder="Значение или несколько через запятую"
                     />
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Можно указать несколько значений через запятую</p>
                   </div>
                 );
               })()}
