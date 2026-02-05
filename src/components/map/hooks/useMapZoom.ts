@@ -169,22 +169,27 @@ export const useMapZoom = ({
       if (previousSelectedRef.current) {
         isAnimatingRef.current = true;
         
-        const currentZoom = map.getZoom();
-        const targetZoom = Math.max(currentZoom - 2, 10);
-        
-        map.setZoom(targetZoom, {
+        map.setBounds(map.getBounds(), {
           checkZoomRange: true,
           duration: 1500
-        });
-        
-        const handler = () => {
+        }).then(() => {
+          const currentZoom = map.getZoom();
+          const targetZoom = Math.max(currentZoom - 2, 10);
+          
+          return map.setZoom(targetZoom, {
+            checkZoomRange: true,
+            duration: 1500
+          });
+        }).then(() => {
           isAnimatingRef.current = false;
           previousSelectedRef.current = null;
-          map.events.remove('actionend', handler);
-        };
-        
-        map.events.add('actionend', handler);
+        });
       }
+      return;
+    }
+
+    // Не делаем ничего, если выбран тот же участок
+    if (previousSelectedRef.current?.id === selectedProperty.id) {
       return;
     }
 
@@ -219,40 +224,17 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Вычисляем целевой зум и центр с учетом отступов панелей
-        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-        
-        // Смещаем центр влево, чтобы компенсировать правую панель атрибутов
-        const centerLat = (minLat + maxLat) / 2;
-        const centerLng = (minLng + maxLng) / 2;
-        
-        // Вычисляем оптимальный зум для границ
-        const latDiff = maxLat - minLat;
-        const lngDiff = maxLng - minLng;
-        const targetZoom = Math.min(
-          Math.floor(Math.log2(360 / lngDiff / 1.5)),
-          Math.floor(Math.log2(180 / latDiff / 1.5)),
-          16
-        );
-        
-        // Двухэтапная анимация: сначала движение, потом зум
-        map.panTo([centerLat, centerLng], {
-          duration: 1000
+        // Используем setBounds с плавной анимацией и отступами для панели
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: [100, 450, 100, 360],
+          duration: 2000
+        }).then(() => {
+          console.log('✅ Анимация завершена');
+          isAnimatingRef.current = false;
+        }).catch(() => {
+          isAnimatingRef.current = false;
         });
-        
-        setTimeout(() => {
-          map.setZoom(targetZoom, {
-            duration: 800
-          });
-          
-          const handler = () => {
-            console.log('✅ Анимация завершена');
-            isAnimatingRef.current = false;
-            map.events.remove('actionend', handler);
-          };
-          
-          map.events.add('actionend', handler);
-        }, 1000);
       }
     } else {
       console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
