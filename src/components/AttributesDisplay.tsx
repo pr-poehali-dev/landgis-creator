@@ -68,6 +68,8 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       hasNewSystemAccess,
       enabled: c.enabled,
       visibleRoles: c.visibleRoles,
+      visibleRolesContent: JSON.stringify(c.visibleRoles),
+      includesUserRole: c.visibleRoles?.includes(userRole),
       originalKey: c.originalKey
     });
     
