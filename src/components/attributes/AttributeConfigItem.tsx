@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { DisplayConfig } from '@/services/displayConfigService';
-import { propertyService } from '@/services/propertyService';
 
 interface AttributeConfigItemProps {
   config: DisplayConfig;
@@ -28,39 +26,29 @@ const AttributeConfigItem = ({
   onToggleEnabled,
   onDelete
 }: AttributeConfigItemProps) => {
-  const [availableValues, setAvailableValues] = useState<string[]>([]);
+  const getAvailableValuesForDependency = (): string[] => {
+    if (!config.conditionalDisplay?.dependsOn) {
+      return [];
+    }
 
-  useEffect(() => {
-    const loadValuesForDependency = async () => {
-      if (!config.conditionalDisplay?.dependsOn) {
-        setAvailableValues([]);
-        return;
-      }
+    const dependentConfig = allConfigs.find(c => c.configKey === config.conditionalDisplay!.dependsOn);
+    
+    if (!dependentConfig) {
+      return [];
+    }
 
-      try {
-        const properties = await propertyService.getProperties();
-        const valuesSet = new Set<string>();
-        
-        properties.forEach(prop => {
-          const value = prop.attributes?.[config.conditionalDisplay!.dependsOn!];
-          if (value !== undefined && value !== null && value !== '') {
-            if (typeof value === 'string') {
-              valuesSet.add(value);
-            } else if (typeof value === 'number' || typeof value === 'boolean') {
-              valuesSet.add(String(value));
-            }
-          }
-        });
+    if (dependentConfig.formatType === 'boolean') {
+      return ['да', 'нет'];
+    }
 
-        setAvailableValues(Array.from(valuesSet).sort());
-      } catch (error) {
-        console.error('Error loading values for conditional display:', error);
-        setAvailableValues([]);
-      }
-    };
+    if (dependentConfig.formatType === 'select' && dependentConfig.formatOptions?.options) {
+      return dependentConfig.formatOptions.options;
+    }
 
-    loadValuesForDependency();
-  }, [config.conditionalDisplay?.dependsOn]);
+    return [];
+  };
+
+  const availableValues = getAvailableValuesForDependency();
   return (
     <div className="border rounded-lg p-3 space-y-3 bg-card">
       <div className="flex items-center justify-between gap-2">
