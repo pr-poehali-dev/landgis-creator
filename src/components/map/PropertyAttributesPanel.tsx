@@ -54,7 +54,16 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
           <Badge variant="secondary" className="w-fit">
             Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
           </Badge>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex justify-between gap-2">
+            <Button
+              onClick={onReturnToOverview || onClose}
+              variant="outline"
+              size="sm"
+              className="h-7 px-3 gap-1.5"
+            >
+              <Icon name="MapPin" size={14} />
+              Вернуться к обзору
+            </Button>
             {onGeneratePDF && (
               <Button
                 onClick={onGeneratePDF}
@@ -65,15 +74,6 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
                 Скачать PDF
               </Button>
             )}
-            <Button
-              onClick={onReturnToOverview || onClose}
-              variant="outline"
-              size="sm"
-              className="h-7 px-3 gap-1.5"
-            >
-              <Icon name="MapPin" size={14} />
-              Вернуться к обзору
-            </Button>
           </div>
         </div>
       </CardHeader>
