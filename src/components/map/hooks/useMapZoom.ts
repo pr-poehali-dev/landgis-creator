@@ -74,7 +74,8 @@ export const useMapZoom = ({
         map.setBounds(bounds, {
           checkZoomRange: true,
           zoomMargin: [100, 450, 100, 360], // [top, right, bottom, left] в пикселях
-          duration: 1500
+          duration: 2000,
+          timingFunction: 'ease-in-out'
         });
         
         const finalHandler = () => {
@@ -165,7 +166,8 @@ export const useMapZoom = ({
         
         map.setZoom(targetZoom, {
           checkZoomRange: true,
-          duration: 1500
+          duration: 2000,
+          timingFunction: 'ease-in-out'
         });
         
         const finalHandler = () => {
