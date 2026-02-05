@@ -28,6 +28,10 @@ const Index = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
+  
+  useEffect(() => {
+    console.log('📍 Index.tsx currentUserRole changed to:', currentUserRole);
+  }, [currentUserRole]);
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
   const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);

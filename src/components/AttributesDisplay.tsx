@@ -15,6 +15,7 @@ interface AttributesDisplayProps {
 }
 
 const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttributesUpdate }: AttributesDisplayProps) => {
+  console.log('📊 AttributesDisplay received userRole:', userRole);
   const [isConfigMode, setIsConfigMode] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
