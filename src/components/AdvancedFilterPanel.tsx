@@ -364,7 +364,7 @@ const AdvancedFilterPanel = ({
 
       {/* Filter Panel */}
       <div className={cn(
-        "absolute top-20 left-0 right-0 z-30 bg-card border-b border-border shadow-xl transition-all duration-300",
+        "absolute top-20 left-4 right-4 z-30 bg-card border border-border rounded-lg shadow-xl transition-all duration-300",
         isOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
       )}>
 
