@@ -56,17 +56,16 @@ const TopNavigation = ({
             <img 
               src={appSettings.logo} 
               alt="Logo" 
-              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+              className="h-8 max-w-[200px] object-contain flex-shrink-0"
             />
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Icon name="Map" className="text-primary" size={18} />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Icon name="Map" className="text-primary" size={18} />
+              </div>
+              <h1 className="text-lg font-bold truncate">{appSettings?.title || 'LandGis'}</h1>
             </div>
           )}
-          <div className="flex flex-col">
-            <h1 className="text-lg font-bold truncate leading-tight">{appSettings?.title || 'LandGis'}</h1>
-            <span className="text-[9px] text-red-500 font-mono leading-none">{debugInfo}</span>
-          </div>
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4">
           <CompanySwitcher />
