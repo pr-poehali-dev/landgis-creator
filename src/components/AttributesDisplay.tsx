@@ -58,21 +58,23 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
   const enabledConfigs = configs.filter(c => {
-    // Проверяем доступ через старую систему (конфиги атрибутов)
-    const hasOldSystemAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
-    
-    // Проверяем доступ через новую систему (правила видимости из админки)
+    // Сначала проверяем новую систему видимости (приоритет)
     const attributePath = `attributes.${c.originalKey || c.configKey}`;
     const hasNewSystemAccess = visibilityService.isAttributeVisible(attributePath, userRole as UserRole);
     
-    // Доступ есть только если разрешено в ОБЕИХ системах
-    const hasAccess = hasOldSystemAccess && hasNewSystemAccess;
+    // Если новая система запретила — скрываем сразу
+    if (!hasNewSystemAccess) {
+      return false;
+    }
+    
+    // Если новая система разрешила, проверяем старую систему (конфиги атрибутов)
+    const hasOldSystemAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
     
     if (isEditing && c.configType === 'attribute') {
-      return hasAccess;
+      return hasOldSystemAccess;
     }
     const hasData = attributes && (attributes[c.originalKey || c.configKey] !== undefined);
-    return hasAccess && hasData;
+    return hasOldSystemAccess && hasData;
   });
 
   if (isConfigMode) {
