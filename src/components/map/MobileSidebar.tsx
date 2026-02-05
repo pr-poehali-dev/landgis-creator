@@ -1,7 +1,6 @@
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { Property } from '@/services/propertyService';
 import { AppSettings } from '@/hooks/useAppSettings';
@@ -12,10 +11,6 @@ interface MobileSidebarProps {
   appSettings: AppSettings;
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  filterType: string;
-  onFilterTypeChange: (value: string) => void;
-  filterSegment: string;
-  onFilterSegmentChange: (value: string) => void;
   filteredProperties: Property[];
   selectedProperty: Property | null;
   onPropertySelect: (property: Property, closePanel: boolean) => void;
@@ -31,10 +26,6 @@ const MobileSidebar = ({
   appSettings,
   searchQuery,
   onSearchChange,
-  filterType,
-  onFilterTypeChange,
-  filterSegment,
-  onFilterSegmentChange,
   filteredProperties,
   selectedProperty,
   onPropertySelect,
@@ -79,60 +70,49 @@ const MobileSidebar = ({
 
             <Button 
               variant="outline" 
-              className="w-full mb-4 gap-2"
+              className="w-full gap-2"
               onClick={onOpenDataTable}
             >
               <Icon name="Table" size={16} />
               Таблица данных
             </Button>
-
-            <div className="grid grid-cols-2 gap-2">
-              <Select value={filterType} onValueChange={onFilterTypeChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Тип" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все типы</SelectItem>
-                  <SelectItem value="land">Земля</SelectItem>
-                  <SelectItem value="commercial">Коммерция</SelectItem>
-                  <SelectItem value="residential">Жильё</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={filterSegment} onValueChange={onFilterSegmentChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Сегмент" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все сегменты</SelectItem>
-                  <SelectItem value="premium">Премиум</SelectItem>
-                  <SelectItem value="standard">Стандарт</SelectItem>
-                  <SelectItem value="economy">Эконом</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {filteredProperties.map(property => (
-              <div
-                key={property.id}
-                className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg ${
-                  selectedProperty?.id === property.id ? 'bg-accent' : ''
-                }`}
-                onClick={() => onPropertySelect(property, true)}
-                onMouseEnter={() => onPropertyHover(property.id)}
-                onMouseLeave={() => onPropertyHover(null)}
-              >
-                <div className="text-sm font-medium mb-1">{property.title}</div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Icon name="MapPin" size={12} />
-                  {property.attributes?.region && !property.attributes.region.startsWith('lyr_')
-                    ? property.attributes.region
-                    : 'Регион не указан'}
-                </div>
+            {filteredProperties.length === 0 ? (
+              <div className="text-center text-muted-foreground text-sm py-8">
+                <Icon name="SearchX" size={32} className="mx-auto mb-2 opacity-50" />
+                Участки не найдены
               </div>
-            ))}
+            ) : (
+              filteredProperties.map(property => (
+                <div
+                  key={property.id}
+                  className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg border ${
+                    selectedProperty?.id === property.id ? 'bg-accent border-primary' : 'border-transparent'
+                  }`}
+                  onClick={() => onPropertySelect(property, true)}
+                  onMouseEnter={() => onPropertyHover(property.id)}
+                  onMouseLeave={() => onPropertyHover(null)}
+                >
+                  <div className="text-sm font-medium mb-1.5">{property.title}</div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                    <Icon name="MapPin" size={12} />
+                    {property.attributes?.region && !property.attributes.region.startsWith('lyr_')
+                      ? property.attributes.region
+                      : 'Регион не указан'}
+                  </div>
+                  {property.attributes?.segment && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Icon name="Tag" size={12} />
+                      {Array.isArray(property.attributes.segment) 
+                        ? property.attributes.segment.join(', ')
+                        : property.attributes.segment}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
 
           <div className="p-4 border-t border-border bg-card/80 backdrop-blur">

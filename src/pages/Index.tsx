@@ -316,6 +316,21 @@ const Index = () => {
         onOpenChange={setIsDataTableOpen}
         properties={filteredProperties}
       />
+
+      <MobileSidebar
+        isOpen={isMobileSidebarOpen}
+        onOpenChange={setIsMobileSidebarOpen}
+        appSettings={appSettings}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        filteredProperties={filteredProperties}
+        selectedProperty={selectedProperty}
+        onPropertySelect={handlePropertySelect}
+        onPropertyHover={handlePropertyHover}
+        properties={properties}
+        formatPrice={formatPrice}
+        onOpenDataTable={() => setIsDataTableOpen(true)}
+      />
     </div>
   );
 };
