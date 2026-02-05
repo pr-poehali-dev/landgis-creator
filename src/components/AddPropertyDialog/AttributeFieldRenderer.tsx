@@ -28,16 +28,37 @@ export const AttributeFieldRenderer = ({
     const showWhen = config.conditionalDisplay.showWhen;
     const dependValue = formData.attributes?.[dependsOnKey];
     
+    console.log('[AttributeFieldRenderer] shouldShow check:', {
+      configKey: config.configKey,
+      dependsOnKey,
+      dependValue,
+      showWhen,
+      formDataAttributes: formData.attributes
+    });
+    
+    if (dependValue === undefined || dependValue === null || dependValue === '') {
+      return false;
+    }
+    
     const normalizeValue = (val: any): string => {
       if (val === true || val === 'true') return 'да';
       if (val === false || val === 'false') return 'нет';
-      return String(val).toLowerCase();
+      return String(val).toLowerCase().trim();
     };
     
     if (Array.isArray(showWhen)) {
-      return showWhen.some(when => normalizeValue(dependValue) === normalizeValue(when));
+      const result = showWhen.some(when => normalizeValue(dependValue) === normalizeValue(when));
+      console.log('[AttributeFieldRenderer] Array check result:', result);
+      return result;
     }
-    return normalizeValue(dependValue) === normalizeValue(showWhen);
+    
+    const result = normalizeValue(dependValue) === normalizeValue(showWhen);
+    console.log('[AttributeFieldRenderer] Single value check:', {
+      normalized_dependValue: normalizeValue(dependValue),
+      normalized_showWhen: normalizeValue(showWhen),
+      result
+    });
+    return result;
   };
 
   if (!shouldShow()) return null;
