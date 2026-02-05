@@ -59,6 +59,8 @@ const AttributeViewMode = ({
     return normalizeValue(parentValue) === normalizeValue(showWhen);
   };
 
+  console.log('🔑 AttributeViewMode userRole:', userRole, 'isAdmin:', userRole === 'admin');
+  
   return (
     <>
       <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
