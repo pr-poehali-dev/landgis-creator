@@ -31,11 +31,30 @@ const AttributeConfigMode = ({
   onDelete,
   onAdd
 }: AttributeConfigModeProps) => {
+  const handleResetStorage = () => {
+    if (confirm('Удалить ВСЕ настройки атрибутов и начать с чистого листа? Это действие нельзя отменить.')) {
+      localStorage.removeItem('attributeConfigs');
+      localStorage.removeItem('attributeConfigs_global_v1');
+      localStorage.removeItem('attributeConfigs_migrated_v1');
+      alert('Настройки удалены. Страница перезагрузится.');
+      window.location.reload();
+    }
+  };
+
   return (
     <>
       <div className="flex justify-between items-center mb-4 pb-2 border-b">
         <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
         <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetStorage}
+            title="Удалить все настройки и начать с чистого листа"
+          >
+            <Icon name="RotateCcw" size={16} className="mr-2" />
+            Сброс
+          </Button>
           <Button
             variant="ghost"
             size="sm"
