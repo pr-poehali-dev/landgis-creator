@@ -6,6 +6,14 @@ import func2url from '../../../backend/func2url.json';
 // Возвращаемся к локальному ключу - у админа там правильный порядок
 const GLOBAL_STORAGE_KEY = 'attributeConfigs';
 
+// Правильный порядок атрибутов по умолчанию
+const DEFAULT_ATTRIBUTE_ORDER = [
+  'region', 'segment', 'uchastok', 'ID', 'ekspos', 'ird', 'oks', 'status_mpt', 
+  'lgota', 'date', 'prava', 'pravoobl', 'zareg_ogran', 'broker', 'contacts', 
+  'soinvest', 'str_soor', 'grad_param', 'istochnik', 'type_predl', 
+  'status_publ', 'insight'
+];
+
 export const useAttributeConfigs = (attributes?: Record<string, any>) => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
 
@@ -150,7 +158,26 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       setConfigs(mergedConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
     } else {
       const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
-      const newConfigs: DisplayConfig[] = attributeKeys.map((key, index) => {
+      
+      // Сортируем ключи по DEFAULT_ATTRIBUTE_ORDER
+      const sortedKeys = attributeKeys.sort((a, b) => {
+        const aIndex = DEFAULT_ATTRIBUTE_ORDER.indexOf(a);
+        const bIndex = DEFAULT_ATTRIBUTE_ORDER.indexOf(b);
+        
+        // Если оба ключа в списке - сортируем по индексу
+        if (aIndex !== -1 && bIndex !== -1) {
+          return aIndex - bIndex;
+        }
+        
+        // Если только один в списке - он идет первым
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+        
+        // Если оба не в списке - по алфавиту
+        return a.localeCompare(b);
+      });
+      
+      const newConfigs: DisplayConfig[] = sortedKeys.map((key, index) => {
         const defaultConfig: DisplayConfig = {
           id: Date.now() + index,
           configType: 'attribute',
@@ -177,10 +204,33 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
           defaultConfig.displayName = 'Стоимость';
         }
         
+        if (key === 'oks') {
+          defaultConfig.formatType = 'toggle';
+          defaultConfig.displayName = 'Наличие ОКС';
+          defaultConfig.formatOptions = {
+            trueLabel: 'Да',
+            falseLabel: 'Нет'
+          };
+        }
+        
+        if (key === 'status_mpt') {
+          defaultConfig.formatType = 'toggle';
+          defaultConfig.displayName = 'Статус МПТ';
+          defaultConfig.formatOptions = {
+            trueLabel: 'Да',
+            falseLabel: 'Нет'
+          };
+        }
+        
+        if (key === 'ID') {
+          defaultConfig.formatType = 'text';
+          defaultConfig.displayName = 'ID';
+        }
+        
         return defaultConfig;
       });
       
-      setConfigs(newConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+      setConfigs(newConfigs);
     }
   };
 
