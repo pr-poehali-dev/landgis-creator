@@ -70,59 +70,19 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Рассчитываем смещение для центрирования между панелями
-        // Левая панель: 320px (80 * 4), правая панель: ~400px
-        const mapContainer = mapRef.current;
-        if (mapContainer) {
-          const containerWidth = mapContainer.offsetWidth;
-          const leftPanelWidth = 320; // ширина сайдбара в пикселях
-          const rightPanelWidth = 400; // примерная ширина панели атрибутов
-          
-          // Рассчитываем центр видимой области между панелями
-          const visibleWidth = containerWidth - leftPanelWidth - rightPanelWidth;
-          const offsetX = (leftPanelWidth - rightPanelWidth) / 2;
-          
-          // Преобразуем пиксельное смещение в географические координаты
-          const pixelCenter = map.getGlobalPixelCenter();
-          const projection = map.options.get('projection');
-          
-          map.setBounds(bounds, {
-            checkZoomRange: true,
-            zoomMargin: [80, 100, 80, 100], // [top, right, bottom, left]
-            duration: 1000,
-            timingFunction: 'ease-in-out'
-          }).then(() => {
-            // После установки bounds смещаем центр для учета боковых панелей
-            const currentCenter = map.getCenter();
-            const currentPixelCenter = map.getGlobalPixelCenter(currentCenter);
-            const newPixelCenter = [
-              currentPixelCenter[0] + offsetX,
-              currentPixelCenter[1]
-            ];
-            const newGeoCenter = map.options.get('projection').fromGlobalPixels(newPixelCenter, map.getZoom());
-            
-            map.panTo(newGeoCenter, {
-              duration: 400,
-              timingFunction: 'ease-out'
-            }).then(() => {
-              isAnimatingRef.current = false;
-            });
-          });
-        } else {
-          // Fallback если не удалось получить контейнер
-          map.setBounds(bounds, {
-            checkZoomRange: true,
-            zoomMargin: 100,
-            duration: 1000,
-            timingFunction: 'ease-in-out'
-          });
-          
-          const finalHandler = () => {
-            isAnimatingRef.current = false;
-            map.events.remove('actionend', finalHandler);
-          };
-          map.events.add('actionend', finalHandler);
-        }
+        // Устанавливаем отступы: слева больше (учитывая сайдбар 320px), справа больше (учитывая панель атрибутов ~400px)
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: [80, 420, 80, 340], // [top, right, bottom, left] в пикселях
+          duration: 1200,
+          useMapMargin: false
+        });
+        
+        const finalHandler = () => {
+          isAnimatingRef.current = false;
+          map.events.remove('actionend', finalHandler);
+        };
+        map.events.add('actionend', finalHandler);
       }
     }
   };
