@@ -5,7 +5,7 @@ import YandexMap from '@/components/YandexMap';
 import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDialog';
 import { propertyService, Property } from '@/services/propertyService';
 import { visibilityService } from '@/services/visibilityService';
-import { UserRole } from '@/types/userRoles';
+import { UserRole, USER_ROLES } from '@/types/userRoles';
 import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import SidebarPanel from '@/components/map/SidebarPanel';
@@ -13,6 +13,8 @@ import MobileSidebar from '@/components/map/MobileSidebar';
 import TopNavigation from '@/components/map/TopNavigation';
 import StatisticsBar from '@/components/map/StatisticsBar';
 import DataTableDialog from '@/components/map/DataTableDialog';
+import Icon from '@/components/ui/icon';
+import { authService } from '@/services/authService';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -259,6 +261,25 @@ const Index = () => {
             onMapTypeChange={setMapType}
             onLayersClick={() => toast.info('Функция "Слои" в разработке')}
           />
+          
+          {/* Баннер режима просмотра для админа */}
+          {authService.getUser()?.role === 'admin' && currentUserRole !== 'admin' && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 max-w-md">
+              <div className="bg-amber-500/95 text-white px-4 py-3 rounded-lg shadow-lg backdrop-blur">
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="Eye" size={16} />
+                  <span className="text-sm font-semibold">Режим просмотра</span>
+                </div>
+                <div className="text-xs opacity-90">
+                  Вы видите карту как пользователь: <span className="font-semibold">{USER_ROLES[currentUserRole].name}</span>
+                </div>
+                <div className="text-xs opacity-90 mt-1">
+                  Участков видно: {visibleByRoleProperties.length} из {properties.length}
+                </div>
+              </div>
+            </div>
+          )}
+          
           <YandexMap
             properties={baseFilteredProperties}
             selectedProperty={selectedProperty}
