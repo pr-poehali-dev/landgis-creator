@@ -8,6 +8,7 @@ interface AttributeViewModeProps {
   attributes: Record<string, any>;
   isEditing: boolean;
   editedAttributes?: Record<string, any>;
+  userRole?: string;
   onEdit: () => void;
   onConfigure: () => void;
   onSave: () => void;
@@ -20,6 +21,7 @@ const AttributeViewMode = ({
   attributes,
   isEditing,
   editedAttributes,
+  userRole = 'user1',
   onEdit,
   onConfigure,
   onSave,
@@ -62,22 +64,26 @@ const AttributeViewMode = ({
       <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
         {!isEditing ? (
           <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onConfigure}
-            >
-              <Icon name="Settings" size={16} className="mr-2" />
-              Настроить
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-            >
-              <Icon name="Pencil" size={16} className="mr-2" />
-              Редактировать
-            </Button>
+            {userRole === 'admin' && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onConfigure}
+                >
+                  <Icon name="Settings" size={16} className="mr-2" />
+                  Настроить
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                >
+                  <Icon name="Pencil" size={16} className="mr-2" />
+                  Редактировать
+                </Button>
+              </>
+            )}
           </>
         ) : (
           <>
