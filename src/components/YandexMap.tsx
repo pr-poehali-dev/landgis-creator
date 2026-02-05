@@ -144,6 +144,29 @@ const YandexMap = ({
     };
   }, [isMapReady, properties, onVisiblePropertiesChange]);
 
+  // Обработчик клика на карту для закрытия панели атрибутов
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
+    
+    const handleMapClick = (e: any) => {
+      // Проверяем, что клик был по самой карте, а не по объекту
+      const target = e.get('target');
+      if (!target || target === map) {
+        if (showAttributesPanel) {
+          handleClosePanel();
+        }
+      }
+    };
+
+    map.events.add('click', handleMapClick);
+
+    return () => {
+      map.events.remove('click', handleMapClick);
+    };
+  }, [isMapReady, showAttributesPanel]);
+
   const handleGeneratePDF = async () => {
     if (!selectedProperty || !mapInstanceRef.current) {
       toast.error('Не удалось сгенерировать PDF');
