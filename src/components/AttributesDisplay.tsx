@@ -5,6 +5,7 @@ import AttributeViewMode from '@/components/attributes/AttributeViewMode';
 import AttributeConfigMode from '@/components/attributes/AttributeConfigMode';
 import { useAttributeConfigs } from '@/components/attributes/useAttributeConfigs';
 import { useAttributeEditing } from '@/components/attributes/useAttributeEditing';
+import { visibilityService } from '@/services/visibilityService';
 
 interface AttributesDisplayProps {
   attributes?: Record<string, any>;
@@ -57,7 +58,16 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
   const enabledConfigs = configs.filter(c => {
-    const hasAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
+    // Проверяем доступ через старую систему (конфиги атрибутов)
+    const hasOldSystemAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
+    
+    // Проверяем доступ через новую систему (правила видимости из админки)
+    const attributePath = `attributes.${c.originalKey || c.configKey}`;
+    const hasNewSystemAccess = visibilityService.isAttributeVisible(attributePath, userRole as UserRole);
+    
+    // Доступ есть только если разрешено в ОБЕИХ системах
+    const hasAccess = hasOldSystemAccess && hasNewSystemAccess;
+    
     if (isEditing && c.configType === 'attribute') {
       return hasAccess;
     }
