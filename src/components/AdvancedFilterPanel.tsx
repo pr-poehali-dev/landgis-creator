@@ -371,27 +371,26 @@ const AdvancedFilterPanel = ({
       {/* Выпадающая панель */}
       {isOpen && (
         <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-          {/* Кнопки вверху справа */}
-          <div className="flex justify-end gap-2 mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={clearFilters}
-            >
-              Сбросить всё
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs"
-              onClick={onToggle}
-            >
-              Закрыть
-            </Button>
-          </div>
-
-          {/* Активные фильтры */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border">
+          {/* Активные фильтры с кнопками */}
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border items-center relative pr-[200px]">
+            {/* Кнопки справа */}
+            <div className="absolute right-0 top-0 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={clearFilters}
+              >
+                Сбросить всё
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={onToggle}
+              >
+                Закрыть
+              </Button>
+            </div>
             {activeFilters.length > 0 ? (
               <>
                 {activeFilters.map((filter, idx) => (
