@@ -53,6 +53,7 @@ const YandexMap = ({
   companyName,
   onVisiblePropertiesChange
 }: YandexMapProps) => {
+  console.log('🗺️ YandexMap received userRole:', userRole);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const clustererRef = useRef<any>(null);
