@@ -75,16 +75,21 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
+        const startTime = performance.now();
         const options: any = {
           checkZoomRange: true,
           zoomMargin: [100, 450, 100, 360],
           duration: 2000
         };
         
+        console.log('⏱️ СТАРТ анимации (кнопка зума)');
         map.setBounds(bounds, options).then(() => {
-          console.log('✅ Анимация завершена');
+          const elapsed = Math.round(performance.now() - startTime);
+          console.log(`✅ Анимация (кнопка) завершена за ${elapsed}мс (настройка: 2000мс)`);
           isAnimatingRef.current = false;
         }).catch(() => {
+          const elapsed = Math.round(performance.now() - startTime);
+          console.log(`❌ Ошибка анимации (кнопка) за ${elapsed}мс`);
           isAnimatingRef.current = false;
         });
       }
@@ -207,17 +212,22 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Плавная анимация
+        // Плавная анимация с замером времени
+        const startTime = performance.now();
         const options: any = {
           checkZoomRange: true,
           zoomMargin: [100, 450, 100, 360],
           duration: 2000
         };
         
+        console.log('⏱️ СТАРТ анимации к участку');
         map.setBounds(bounds, options).then(() => {
-          console.log('✅ Анимация завершена');
+          const elapsed = Math.round(performance.now() - startTime);
+          console.log(`✅ Анимация завершена за ${elapsed}мс (настройка: 2000мс)`);
           isAnimatingRef.current = false;
         }).catch(() => {
+          const elapsed = Math.round(performance.now() - startTime);
+          console.log(`❌ Ошибка анимации за ${elapsed}мс`);
           isAnimatingRef.current = false;
         });
       }
