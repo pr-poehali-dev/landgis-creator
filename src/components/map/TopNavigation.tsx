@@ -60,6 +60,17 @@ const TopNavigation = ({
       </div>
 
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        {appSettings?.logo ? (
+          <img 
+            src={appSettings.logo} 
+            alt="Logo" 
+            className="h-8 max-w-[160px] object-contain lg:hidden" 
+          />
+        ) : (
+          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center lg:hidden">
+            <Icon name="Map" className="text-primary" size={18} />
+          </div>
+        )}
         {user?.role === 'admin' && (
           <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
             <Icon name="Database" size={14} />
