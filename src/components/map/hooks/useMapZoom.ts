@@ -192,8 +192,10 @@ export const useMapZoom = ({
     previousSelectedRef.current = selectedProperty;
     map.balloon.close();
 
-    // Зумируем к участку
-    zoomToProperty(selectedProperty);
+    // Зумируем к участку с небольшой задержкой, чтобы убедиться что полигоны отрисованы
+    setTimeout(() => {
+      zoomToProperty(selectedProperty);
+    }, 100);
   }, [selectedProperty]);
 
   return { zoomToProperty };
