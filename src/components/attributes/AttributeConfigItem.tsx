@@ -219,7 +219,7 @@ const AttributeConfigItem = ({
               {(config.formatOptions?.actions || []).map((action, actIndex) => (
                 <div key={actIndex} className="flex items-center gap-1.5">
                   <Input
-                    value={action}
+                    value={action || ''}
                     onChange={(e) => {
                       const newActions = [...(config.formatOptions?.actions || [])];
                       newActions[actIndex] = e.target.value;
@@ -419,11 +419,12 @@ const AttributeConfigItem = ({
             <label key={role} className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-border hover:bg-accent cursor-pointer">
               <input
                 type="checkbox"
-                checked={config.visibleRoles.includes(role)}
+                checked={(config.visibleRoles || []).includes(role)}
                 onChange={(e) => {
+                  const currentRoles = config.visibleRoles || [];
                   const roles = e.target.checked
-                    ? [...config.visibleRoles, role]
-                    : config.visibleRoles.filter(r => r !== role);
+                    ? [...currentRoles, role]
+                    : currentRoles.filter(r => r !== role);
                   onConfigChange(index, 'visibleRoles', roles);
                 }}
                 className="rounded h-3 w-3"
