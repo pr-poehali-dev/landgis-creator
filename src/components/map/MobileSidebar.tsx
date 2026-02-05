@@ -44,18 +44,14 @@ const MobileSidebar = ({
       <SheetContent side="left" className="w-[85vw] sm:w-96 p-0">
         <div className="flex flex-col h-full bg-card/50 backdrop-blur">
           <div className="p-6 border-b border-border">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center justify-center mb-6">
               {appSettings.logo ? (
-                <img src={appSettings.logo} alt="Logo" className="w-20 h-20 rounded-lg object-cover" />
+                <img src={appSettings.logo} alt="Logo" className="h-12 max-w-[240px] object-contain" />
               ) : (
-                <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Icon name="Map" className="text-primary" size={48} />
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon name="Map" className="text-primary" size={28} />
                 </div>
               )}
-              <div>
-                <h1 className="text-2xl font-bold">{appSettings.title}</h1>
-                <p className="text-xs text-muted-foreground">{appSettings.subtitle}</p>
-              </div>
             </div>
 
             <div className="relative mb-4">
