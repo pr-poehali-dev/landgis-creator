@@ -124,13 +124,38 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         !existingConfigKeys.has(key) && !existingOriginalKeys.has(key)
       );
       
+      const displayNames: Record<string, string> = {
+        'region': 'Регион',
+        'segment': 'Сегмент',
+        'uchastok': 'Земельный участок',
+        'ID': 'ID',
+        'ekspos': 'Стоимость',
+        'ird': 'Наличие ИРД',
+        'oks': 'Наличие ОКС',
+        'status_mpt': 'Статус МПТ',
+        'lgota': 'Льгота по налогу',
+        'date': 'Срок реализации',
+        'prava': 'Права',
+        'pravoobl': 'Правообладатель',
+        'zareg_ogran': 'Зарегистрированные ограничения',
+        'broker': 'Брокер',
+        'contacts': 'Контакты',
+        'soinvest': 'Возможность соинвестирования',
+        'str_soor': 'Строения и сооружения',
+        'grad_param': 'Градостроительные параметры',
+        'istochnik': 'Источник',
+        'type_predl': 'Тип предложения',
+        'status_publ': 'Статус публикации',
+        'insight': 'Инсайт'
+      };
+      
       const newConfigs: DisplayConfig[] = newAttributeKeys.map((key, index) => {
         const defaultConfig: DisplayConfig = {
           id: Date.now() + index,
           configType: 'attribute',
           configKey: key,
           originalKey: key,
-          displayName: key,
+          displayName: displayNames[key] || key,
           displayOrder: savedConfigsArray.length + index,
           visibleRoles: ['admin'],
           enabled: true,
@@ -140,7 +165,6 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         
         if (key === 'region') {
           defaultConfig.formatType = 'select';
-          defaultConfig.displayName = 'Регион';
           defaultConfig.formatOptions = {
             options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
           };
@@ -148,7 +172,26 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         
         if (key === 'ekspos') {
           defaultConfig.formatType = 'money';
-          defaultConfig.displayName = 'Стоимость';
+        }
+        
+        if (key === 'oks') {
+          defaultConfig.formatType = 'toggle';
+          defaultConfig.formatOptions = {
+            trueLabel: 'Да',
+            falseLabel: 'Нет'
+          };
+        }
+        
+        if (key === 'status_mpt') {
+          defaultConfig.formatType = 'toggle';
+          defaultConfig.formatOptions = {
+            trueLabel: 'Да',
+            falseLabel: 'Нет'
+          };
+        }
+        
+        if (key === 'ID') {
+          defaultConfig.formatType = 'text';
         }
         
         return defaultConfig;
@@ -177,13 +220,38 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         return a.localeCompare(b);
       });
       
+      const displayNames: Record<string, string> = {
+        'region': 'Регион',
+        'segment': 'Сегмент',
+        'uchastok': 'Земельный участок',
+        'ID': 'ID',
+        'ekspos': 'Стоимость',
+        'ird': 'Наличие ИРД',
+        'oks': 'Наличие ОКС',
+        'status_mpt': 'Статус МПТ',
+        'lgota': 'Льгота по налогу',
+        'date': 'Срок реализации',
+        'prava': 'Права',
+        'pravoobl': 'Правообладатель',
+        'zareg_ogran': 'Зарегистрированные ограничения',
+        'broker': 'Брокер',
+        'contacts': 'Контакты',
+        'soinvest': 'Возможность соинвестирования',
+        'str_soor': 'Строения и сооружения',
+        'grad_param': 'Градостроительные параметры',
+        'istochnik': 'Источник',
+        'type_predl': 'Тип предложения',
+        'status_publ': 'Статус публикации',
+        'insight': 'Инсайт'
+      };
+      
       const newConfigs: DisplayConfig[] = sortedKeys.map((key, index) => {
         const defaultConfig: DisplayConfig = {
           id: Date.now() + index,
           configType: 'attribute',
           configKey: key,
           originalKey: key,
-          displayName: key,
+          displayName: displayNames[key] || key,
           displayOrder: index,
           visibleRoles: ['admin'],
           enabled: true,
@@ -193,7 +261,6 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         
         if (key === 'region') {
           defaultConfig.formatType = 'select';
-          defaultConfig.displayName = 'Регион';
           defaultConfig.formatOptions = {
             options: ['Москва и МО', 'СПб и ЛО', 'Другие регионы']
           };
@@ -201,12 +268,10 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         
         if (key === 'ekspos') {
           defaultConfig.formatType = 'money';
-          defaultConfig.displayName = 'Стоимость';
         }
         
         if (key === 'oks') {
           defaultConfig.formatType = 'toggle';
-          defaultConfig.displayName = 'Наличие ОКС';
           defaultConfig.formatOptions = {
             trueLabel: 'Да',
             falseLabel: 'Нет'
@@ -215,7 +280,6 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         
         if (key === 'status_mpt') {
           defaultConfig.formatType = 'toggle';
-          defaultConfig.displayName = 'Статус МПТ';
           defaultConfig.formatOptions = {
             trueLabel: 'Да',
             falseLabel: 'Нет'
@@ -224,7 +288,6 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         
         if (key === 'ID') {
           defaultConfig.formatType = 'text';
-          defaultConfig.displayName = 'ID';
         }
         
         return defaultConfig;
