@@ -70,19 +70,13 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Устанавливаем отступы: слева больше (учитывая сайдбар 320px), справа больше (учитывая панель атрибутов ~400px)
         map.setBounds(bounds, {
           checkZoomRange: true,
-          zoomMargin: [100, 450, 100, 360], // [top, right, bottom, left] в пикселях
-          duration: 2000,
-          timingFunction: 'ease-in-out'
-        });
-        
-        const finalHandler = () => {
+          zoomMargin: [100, 450, 100, 360],
+          duration: 1200
+        }).then(() => {
           isAnimatingRef.current = false;
-          map.events.remove('actionend', finalHandler);
-        };
-        map.events.add('actionend', finalHandler);
+        });
       }
     }
   };
@@ -162,20 +156,15 @@ export const useMapZoom = ({
         isAnimatingRef.current = true;
         
         const currentZoom = map.getZoom();
-        const targetZoom = Math.max(currentZoom - 2, 10); // Отдаляемся на 2 уровня
+        const targetZoom = Math.max(currentZoom - 2, 10);
         
         map.setZoom(targetZoom, {
           checkZoomRange: true,
-          duration: 2000,
-          timingFunction: 'ease-in-out'
-        });
-        
-        const finalHandler = () => {
+          duration: 1200
+        }).then(() => {
           isAnimatingRef.current = false;
           previousSelectedRef.current = null;
-          map.events.remove('actionend', finalHandler);
-        };
-        map.events.add('actionend', finalHandler);
+        });
       }
       return;
     }
