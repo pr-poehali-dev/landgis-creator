@@ -255,6 +255,7 @@ const Index = () => {
           filterCount={filterCount}
           onAddProperty={() => setIsAddDialogOpen(true)}
           onOpenPropertiesList={() => setIsMobileSidebarOpen(true)}
+          appSettings={appSettings}
         />
 
         <div className="flex-1 relative bg-muted/20">

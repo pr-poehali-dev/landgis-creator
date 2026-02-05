@@ -18,6 +18,7 @@ interface TopNavigationProps {
   filterCount: number;
   onAddProperty: () => void;
   onOpenPropertiesList?: () => void;
+  appSettings?: { logo?: string; title?: string; subtitle?: string };
 }
 
 const TopNavigation = ({
@@ -30,7 +31,8 @@ const TopNavigation = ({
   onFilterPanelToggle,
   filterCount,
   onAddProperty,
-  onOpenPropertiesList
+  onOpenPropertiesList,
+  appSettings
 }: TopNavigationProps) => {
   const navigate = useNavigate();
   const user = authService.getUser();
@@ -44,10 +46,14 @@ const TopNavigation = ({
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 lg:hidden">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Icon name="Map" className="text-primary" size={18} />
-          </div>
-          <h1 className="text-lg font-bold">LandGis</h1>
+          {appSettings?.logo ? (
+            <img src={appSettings.logo} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+          ) : (
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Icon name="Map" className="text-primary" size={18} />
+            </div>
+          )}
+          <h1 className="text-lg font-bold">{appSettings?.title || 'LandGis'}</h1>
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4">
           <CompanySwitcher />

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Property } from '@/services/propertyService';
 import Icon from '@/components/ui/icon';
 import * as XLSX from 'xlsx';
+import { useAttributeConfigs } from '@/components/attributes/useAttributeConfigs';
 
 interface DataTableDialogProps {
   open: boolean;
@@ -11,38 +12,28 @@ interface DataTableDialogProps {
 }
 
 const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProps) => {
+  // Получаем настроенную конфигурацию атрибутов
+  const sampleAttributes = properties.length > 0 ? properties[0].attributes : undefined;
+  const { configs } = useAttributeConfigs(sampleAttributes);
   
   const handleExportToExcel = () => {
     if (properties.length === 0) return;
 
-    // Получаем все уникальные атрибуты из всех объектов
-    const allAttributeKeys = new Set<string>();
-    properties.forEach(property => {
-      if (property.attributes) {
-        Object.keys(property.attributes).forEach(key => allAttributeKeys.add(key));
-      }
-    });
-
-    // Формируем данные для экспорта
+    // Формируем данные для экспорта используя конфигурацию
     const exportData = properties.map(property => {
-      const row: Record<string, any> = {
-        'Название': property.title,
-        'Тип': property.type === 'land' ? 'Земля' : property.type === 'commercial' ? 'Коммерция' : 'Жильё',
-        'Цена': property.price,
-        'Площадь': property.area,
-        'Местоположение': property.location,
-        'Статус': property.status === 'available' ? 'Доступно' : property.status === 'reserved' ? 'Забронировано' : 'Продано',
-      };
-
-      // Добавляем все атрибуты
-      allAttributeKeys.forEach(key => {
-        const value = property.attributes?.[key];
+      const row: Record<string, any> = {};
+      
+      // Используем настроенный порядок и названия из конфигурации
+      headers.forEach(header => {
+        const value = property.attributes?.[header.key];
         if (Array.isArray(value)) {
-          row[key] = value.join(', ');
+          row[header.label] = value.join(', ');
+        } else if (typeof value === 'boolean') {
+          row[header.label] = value ? 'Да' : 'Нет';
         } else if (value !== undefined && value !== null) {
-          row[key] = value;
+          row[header.label] = value;
         } else {
-          row[key] = '';
+          row[header.label] = '';
         }
       });
 
@@ -55,8 +46,8 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
     XLSX.utils.book_append_sheet(wb, ws, 'Объекты');
 
     // Автоматическая ширина колонок
-    const colWidths = Object.keys(exportData[0] || {}).map(key => ({
-      wch: Math.max(key.length, 15)
+    const colWidths = headers.map(header => ({
+      wch: Math.max(header.label.length, 15)
     }));
     ws['!cols'] = colWidths;
 
@@ -64,46 +55,28 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
     XLSX.writeFile(wb, `Объекты_${new Date().toLocaleDateString('ru-RU')}.xlsx`);
   };
 
-  // Получаем заголовки таблицы в правильном порядке
+  // Получаем заголовки таблицы в правильном порядке из конфигурации
   const getTableHeaders = () => {
-    const baseHeaders = ['Название', 'Тип', 'Цена', 'Площадь', 'Местоположение', 'Статус'];
-    
-    if (properties.length === 0) return baseHeaders;
-
-    // Собираем все уникальные атрибуты
-    const attributeKeys = new Set<string>();
-    properties.forEach(property => {
-      if (property.attributes) {
-        Object.keys(property.attributes).forEach(key => attributeKeys.add(key));
-      }
-    });
-
-    return [...baseHeaders, ...Array.from(attributeKeys)];
+    // Используем displayName из конфигурации для отображения
+    return configs
+      .filter(config => config.enabled)
+      .map(config => ({
+        key: config.originalKey || config.configKey,
+        label: config.displayName
+      }));
   };
 
   const headers = getTableHeaders();
 
-  const getCellValue = (property: Property, header: string) => {
-    switch (header) {
-      case 'Название':
-        return property.title;
-      case 'Тип':
-        return property.type === 'land' ? 'Земля' : property.type === 'commercial' ? 'Коммерция' : 'Жильё';
-      case 'Цена':
-        return `${property.price.toLocaleString('ru-RU')} ₽`;
-      case 'Площадь':
-        return `${property.area} м²`;
-      case 'Местоположение':
-        return property.location;
-      case 'Статус':
-        return property.status === 'available' ? 'Доступно' : property.status === 'reserved' ? 'Забронировано' : 'Продано';
-      default:
-        const value = property.attributes?.[header];
-        if (Array.isArray(value)) {
-          return value.join(', ');
-        }
-        return value !== undefined && value !== null ? String(value) : '';
+  const getCellValue = (property: Property, headerKey: string) => {
+    const value = property.attributes?.[headerKey];
+    if (Array.isArray(value)) {
+      return value.join(', ');
     }
+    if (typeof value === 'boolean') {
+      return value ? 'Да' : 'Нет';
+    }
+    return value !== undefined && value !== null ? String(value) : '';
   };
 
   return (
@@ -130,7 +103,7 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
               <tr>
                 {headers.map((header, idx) => (
                   <th key={idx} className="px-3 py-2 text-left font-medium border-r border-border whitespace-nowrap bg-card">
-                    {header}
+                    {header.label}
                   </th>
                 ))}
               </tr>
@@ -140,7 +113,7 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
                 <tr key={property.id} className={rowIdx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                   {headers.map((header, colIdx) => (
                     <td key={colIdx} className="px-3 py-2 border-r border-border whitespace-nowrap">
-                      {getCellValue(property, header)}
+                      {getCellValue(property, header.key)}
                     </td>
                   ))}
                 </tr>
