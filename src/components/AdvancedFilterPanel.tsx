@@ -371,26 +371,27 @@ const AdvancedFilterPanel = ({
       {/* Выпадающая панель */}
       {isOpen && (
         <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-          {/* Активные фильтры - всегда видно */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border sticky top-0 bg-card z-10 -mx-6 -mt-6 px-6 pt-6 pr-[280px] relative">
-            {/* Кнопки в правом верхнем углу */}
-            <div className="absolute top-6 right-6 flex gap-2 z-20">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={clearFilters}
-              >
-                Сбросить всё
-              </Button>
-              <Button
-                size="sm"
-                className="h-8 text-xs"
-                onClick={onToggle}
-              >
-                Закрыть
-              </Button>
-            </div>
+          {/* Кнопки вверху справа */}
+          <div className="flex justify-end gap-2 mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={clearFilters}
+            >
+              Сбросить всё
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs"
+              onClick={onToggle}
+            >
+              Закрыть
+            </Button>
+          </div>
+
+          {/* Активные фильтры */}
+          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border">
             {activeFilters.length > 0 ? (
               <>
                 {activeFilters.map((filter, idx) => (
@@ -422,7 +423,7 @@ const AdvancedFilterPanel = ({
                   {columns.map(column => (
                     <th
                       key={column.id}
-                      className="text-left text-xs font-semibold text-muted-foreground px-3 py-2 border-b border-border bg-muted/30"
+                      className="text-left text-sm font-semibold text-muted-foreground px-4 py-3 border-b border-border bg-muted/30 align-middle"
                     >
                       {column.label}
                     </th>
