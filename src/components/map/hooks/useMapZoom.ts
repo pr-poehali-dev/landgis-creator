@@ -79,12 +79,12 @@ export const useMapZoom = ({
         const lngDiff = maxLng - minLng;
         const maxDiff = Math.max(latDiff, lngDiff);
         
-        // Простая формула для расчёта зума
-        let targetZoom = 16;
-        if (maxDiff > 0.1) targetZoom = 12;
-        else if (maxDiff > 0.05) targetZoom = 13;
-        else if (maxDiff > 0.02) targetZoom = 14;
-        else if (maxDiff > 0.01) targetZoom = 15;
+        // Простая формула для расчёта зума (уменьшены значения для меньшего приближения)
+        let targetZoom = 14;
+        if (maxDiff > 0.1) targetZoom = 11;
+        else if (maxDiff > 0.05) targetZoom = 12;
+        else if (maxDiff > 0.02) targetZoom = 13;
+        else if (maxDiff > 0.01) targetZoom = 13;
         
         const zoomSteps = Math.abs(targetZoom - currentZoom);
         const stepDuration = 200;
@@ -94,7 +94,7 @@ export const useMapZoom = ({
           if (step >= zoomSteps) {
             map.setBounds(bounds, {
               checkZoomRange: true,
-              zoomMargin: 60,
+              zoomMargin: 100,
               duration: 800
             });
             
