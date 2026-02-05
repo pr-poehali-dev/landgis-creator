@@ -100,6 +100,8 @@ const AdminFilterSettings = () => {
 
         if (prop.attributes) {
           Object.entries(prop.attributes).forEach(([key, value]) => {
+            if (key === 'region' || key === 'segment') return;
+            
             if (!key.startsWith('lyr_') && value && typeof value === 'string') {
               const path = `attributes.${key}`;
               if (!attributeValues.has(path)) {
@@ -110,7 +112,7 @@ const AdminFilterSettings = () => {
           });
         }
 
-        ['status', 'type', 'segment'].forEach(key => {
+        ['status', 'type'].forEach(key => {
           if (prop[key as keyof typeof prop]) {
             if (!attributeValues.has(key)) {
               attributeValues.set(key, new Set());
@@ -138,10 +140,20 @@ const AdminFilterSettings = () => {
       if (saved) {
         const savedSettings = JSON.parse(saved);
         setFilterColumns(prev => {
-          return prev.map(col => {
-            const savedCol = savedSettings.find((s: FilterColumn) => s.id === col.id);
-            return savedCol ? { ...col, ...savedCol, options: col.options } : col;
+          const merged = savedSettings.map((savedCol: FilterColumn) => {
+            const existing = prev.find(col => col.id === savedCol.id);
+            return existing 
+              ? { ...savedCol, options: existing.options }
+              : savedCol;
           });
+          
+          prev.forEach(col => {
+            if (!savedSettings.find((s: FilterColumn) => s.id === col.id)) {
+              merged.push(col);
+            }
+          });
+          
+          return merged.sort((a, b) => a.order - b.order);
         });
       }
     } catch (error) {
