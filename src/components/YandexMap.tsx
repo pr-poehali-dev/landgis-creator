@@ -205,7 +205,7 @@ const YandexMap = ({
     onSelectProperty(null);
   };
 
-  const handleReturnToOverview = async () => {
+  const handleReturnToOverview = () => {
     if (!mapInstanceRef.current || properties.length === 0) return;
 
     // Сначала закрываем панель
@@ -241,43 +241,15 @@ const YandexMap = ({
 
     if (bounds) {
       isAnimatingRef.current = true;
+      const options: any = {
+        checkZoomRange: true,
+        zoomMargin: 100,
+        duration: 2000
+      };
       
-      // Плавная пошаговая анимация
-      const map = mapInstanceRef.current;
-      const currentCenter = map.getCenter();
-      const currentZoom = map.getZoom();
-      
-      const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-      const targetCenter: [number, number] = [
-        (minLat + maxLat) / 2,
-        (minLng + maxLng) / 2
-      ];
-      
-      const latDiff = maxLat - minLat;
-      const lngDiff = maxLng - minLng;
-      const maxDiff = Math.max(latDiff, lngDiff);
-      const targetZoom = Math.max(10, Math.min(18, 17 - Math.log2(maxDiff * 100)));
-      
-      const steps = 10;
-      const stepDuration = 150;
-      
-      for (let i = 1; i <= steps; i++) {
-        const progress = i / steps;
-        const easeProgress = 1 - Math.pow(1 - progress, 3);
-        
-        const intermediateCenter: [number, number] = [
-          currentCenter[0] + (targetCenter[0] - currentCenter[0]) * easeProgress,
-          currentCenter[1] + (targetCenter[1] - currentCenter[1]) * easeProgress
-        ];
-        const intermediateZoom = currentZoom + (targetZoom - currentZoom) * easeProgress;
-        
-        map.setCenter(intermediateCenter, { duration: 0 });
-        map.setZoom(intermediateZoom, { duration: 0 });
-        
-        await new Promise(resolve => setTimeout(resolve, stepDuration));
-      }
-      
-      isAnimatingRef.current = false;
+      mapInstanceRef.current.setBounds(bounds, options).then(() => {
+        isAnimatingRef.current = false;
+      });
     }
   };
 
