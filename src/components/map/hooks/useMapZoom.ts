@@ -50,8 +50,12 @@ export const useMapZoom = ({
   // Функция зума к участку
   const zoomToProperty = (property: Property) => {
     const map = mapInstanceRef.current;
-    if (!map || !property.boundary || property.boundary.length < 3) return;
+    if (!map || !property.boundary || property.boundary.length < 3) {
+      console.log('❌ Зум невозможен:', { map: !!map, boundary: property.boundary?.length });
+      return;
+    }
 
+    console.log('🔍 Поиск полигона для участка:', property.title);
     const existingPolygon = polygonsRef.current.find((polygon: any) => {
       try {
         const coords = polygon.geometry?.getCoordinates()?.[0];
@@ -67,6 +71,7 @@ export const useMapZoom = ({
     
     if (existingPolygon) {
       const bounds = existingPolygon.geometry?.getBounds();
+      console.log('✅ Полигон найден, запускаем анимацию:', bounds);
       if (bounds) {
         isAnimatingRef.current = true;
         
@@ -78,12 +83,15 @@ export const useMapZoom = ({
         });
         
         const handler = () => {
+          console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
           map.events.remove('actionend', handler);
         };
         
         map.events.add('actionend', handler);
       }
+    } else {
+      console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
     }
   };
 
