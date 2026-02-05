@@ -3,8 +3,8 @@ import { DisplayConfig } from '@/services/displayConfigService';
 import { toast } from 'sonner';
 import func2url from '../../../backend/func2url.json';
 
-// КРИТИЧНО: Используем глобальный ключ для ВСЕХ пользователей
-const GLOBAL_STORAGE_KEY = 'attributeConfigs_global_v1';
+// Возвращаемся к локальному ключу - у админа там правильный порядок
+const GLOBAL_STORAGE_KEY = 'attributeConfigs';
 
 export const useAttributeConfigs = (attributes?: Record<string, any>) => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
