@@ -43,17 +43,10 @@ const TopNavigation = ({
     navigate('/login');
   };
 
-  // Расширенная отладка для мобильных
-  useEffect(() => {
-    const rawSettings = localStorage.getItem('app_design_settings');
-    console.log('🔍 TopNavigation Debug:');
-    console.log('localStorage raw:', rawSettings?.substring(0, 100));
-    console.log('appSettings prop:', appSettings);
-    console.log('logo exists:', !!appSettings?.logo);
-    console.log('logo length:', appSettings?.logo?.length);
-  }, [appSettings]);
-
+  const rawSettings = localStorage.getItem('app_design_settings');
   const logoExists = !!(appSettings?.logo && appSettings.logo.trim() !== '');
+  
+  const debugInfo = `LS:${rawSettings ? 'Y' : 'N'} | AS:${appSettings ? 'Y' : 'N'} | L:${appSettings?.logo?.length || 0}`;
   
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
@@ -63,16 +56,17 @@ const TopNavigation = ({
             <img 
               src={appSettings.logo} 
               alt="Logo" 
-              className="w-8 h-8 rounded-lg object-cover flex-shrink-0 bg-red-500"
+              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
             />
           ) : (
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Icon name="Map" className="text-primary" size={18} />
             </div>
           )}
-          <h1 className="text-lg font-bold truncate">{appSettings?.title || 'LandGis'}</h1>
-          {/* Отладка - удалить потом */}
-          <span className="text-[8px] text-red-500">{logoExists ? 'L+' : 'L-'}</span>
+          <div className="flex flex-col">
+            <h1 className="text-lg font-bold truncate leading-tight">{appSettings?.title || 'LandGis'}</h1>
+            <span className="text-[9px] text-red-500 font-mono leading-none">{debugInfo}</span>
+          </div>
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4">
           <CompanySwitcher />
