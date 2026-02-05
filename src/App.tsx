@@ -16,12 +16,15 @@ import AdminVisibilitySettings from "./pages/AdminVisibilitySettings";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { migrateAttributeConfigsToGlobal } from "./utils/migrateAttributeConfigs";
+import { migrateAttributeConfigsToGlobal, forceResetAttributeConfigs } from "./utils/migrateAttributeConfigs";
 
 const queryClient = new QueryClient();
 
 // Выполняем одноразовую миграцию настроек атрибутов
 migrateAttributeConfigsToGlobal();
+
+// Делаем функцию сброса доступной глобально для отладки
+(window as any).resetAttributeConfigs = forceResetAttributeConfigs;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
