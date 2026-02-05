@@ -43,18 +43,14 @@ const SidebarPanel = ({
   return (
     <div className="hidden lg:flex w-80 border-r border-border flex-col bg-card/50 backdrop-blur">
       <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center justify-center mb-4">
           {appSettings.logo ? (
-            <img src={appSettings.logo} alt="Logo" className="w-16 h-16 rounded-lg object-cover" />
+            <img src={appSettings.logo} alt="Logo" className="h-12 max-w-[240px] object-contain" />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon name="Map" className="text-primary" size={36} />
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Icon name="Map" className="text-primary" size={28} />
             </div>
           )}
-          <div>
-            <h1 className="text-xl font-bold">{appSettings.title}</h1>
-            <p className="text-[10px] text-muted-foreground">{appSettings.subtitle}</p>
-          </div>
         </div>
 
         <div className="relative mb-3">
