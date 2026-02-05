@@ -1,97 +1,132 @@
 import { Property } from './propertyService';
+import { UserRole } from '@/types/userRoles';
 
-export interface VisibilityRule {
-  role: string;
-  visibleStatuses: string[];
-  visibleSegments: string[];
-  visiblePropertyIds: number[];
+export interface PropertyVisibilityCondition {
+  attributePath: string;
+  operator: 'equals' | 'notEquals' | 'contains' | 'notContains' | 'exists' | 'notExists';
+  value: string;
 }
 
-const DEFAULT_RULES: VisibilityRule[] = [
-  {
-    role: 'admin',
-    visibleStatuses: ['available', 'reserved', 'sold'],
-    visibleSegments: ['premium', 'standard', 'economy'],
-    visiblePropertyIds: []
-  },
-  {
-    role: 'user1',
-    visibleStatuses: ['available'],
-    visibleSegments: ['premium', 'standard'],
-    visiblePropertyIds: []
-  },
-  {
-    role: 'user2',
-    visibleStatuses: ['available', 'reserved'],
-    visibleSegments: ['standard', 'economy'],
-    visiblePropertyIds: []
-  }
-];
+export interface AttributeVisibilityRule {
+  attributePath: string;
+  label: string;
+  visibleForRoles: UserRole[];
+}
+
+export interface RoleVisibilityRule {
+  role: UserRole;
+  propertyConditions: PropertyVisibilityCondition[];
+  attributeRules: AttributeVisibilityRule[];
+}
 
 class VisibilityService {
-  private getRules(): VisibilityRule[] {
+  private getRules(): RoleVisibilityRule[] {
     try {
-      const saved = localStorage.getItem('visibilityRules');
+      const saved = localStorage.getItem('visibilityRulesV2');
       if (saved) {
         return JSON.parse(saved);
       }
     } catch (error) {
       console.error('Error loading visibility rules:', error);
     }
-    return DEFAULT_RULES;
+    return [];
   }
 
-  private getRuleForRole(role: string): VisibilityRule | null {
+  private getRuleForRole(role: UserRole): RoleVisibilityRule | null {
     const rules = this.getRules();
     return rules.find(r => r.role === role) || null;
   }
 
-  filterPropertiesByRole(properties: Property[], userRole: string): Property[] {
+  private checkCondition(property: Property, condition: PropertyVisibilityCondition): boolean {
+    let propValue: any;
+    
+    if (condition.attributePath.startsWith('attributes.')) {
+      const key = condition.attributePath.replace('attributes.', '');
+      propValue = property.attributes?.[key];
+    } else {
+      propValue = (property as any)[condition.attributePath];
+    }
+    
+    const strValue = String(propValue || '');
+    
+    switch (condition.operator) {
+      case 'equals':
+        return strValue === condition.value;
+      case 'notEquals':
+        return strValue !== condition.value;
+      case 'contains':
+        return strValue.includes(condition.value);
+      case 'notContains':
+        return !strValue.includes(condition.value);
+      case 'exists':
+        return !!propValue;
+      case 'notExists':
+        return !propValue;
+      default:
+        return true;
+    }
+  }
+
+  filterPropertiesByRole(properties: Property[], userRole: UserRole): Property[] {
     // Админ видит все всегда
     if (userRole === 'admin') {
       return properties;
     }
 
     const rule = this.getRuleForRole(userRole);
-    if (!rule) {
-      console.warn(`No visibility rule found for role: ${userRole}`);
+    
+    // Если нет правил или нет условий - показываем все
+    if (!rule || rule.propertyConditions.length === 0) {
       return properties;
     }
 
+    // Применяем условия фильтрации
     return properties.filter(property => {
-      // Проверка статуса
-      const statusMatch = rule.visibleStatuses.includes(property.status);
-      if (!statusMatch) return false;
-
-      // Проверка сегмента
-      const segmentMatch = rule.visibleSegments.includes(property.segment);
-      if (!segmentMatch) return false;
-
-      // Проверка конкретных ID (если указаны)
-      if (rule.visiblePropertyIds.length > 0) {
-        return rule.visiblePropertyIds.includes(property.id);
-      }
-
-      return true;
+      return rule.propertyConditions.every(condition => 
+        this.checkCondition(property, condition)
+      );
     });
   }
 
-  getVisiblePropertiesCount(properties: Property[], userRole: string): number {
-    return this.filterPropertiesByRole(properties, userRole).length;
-  }
-
-  isPropertyVisible(property: Property, userRole: string): boolean {
+  isAttributeVisible(attributePath: string, userRole: UserRole): boolean {
+    // Админ видит все всегда
     if (userRole === 'admin') return true;
 
     const rule = this.getRuleForRole(userRole);
-    if (!rule) return false;
+    if (!rule) return true; // По умолчанию показываем, если нет правил
 
-    const statusMatch = rule.visibleStatuses.includes(property.status);
-    const segmentMatch = rule.visibleSegments.includes(property.segment);
-    const idMatch = rule.visiblePropertyIds.length === 0 || 
-                    rule.visiblePropertyIds.includes(property.id);
+    const attrRule = rule.attributeRules.find(ar => ar.attributePath === attributePath);
+    if (!attrRule) return true; // По умолчанию показываем, если нет правила для атрибута
 
-    return statusMatch && segmentMatch && idMatch;
+    return attrRule.visibleForRoles.includes(userRole);
+  }
+
+  getVisibleAttributesForRole(userRole: UserRole): string[] {
+    if (userRole === 'admin') {
+      return []; // Пустой массив означает "все атрибуты"
+    }
+
+    const rule = this.getRuleForRole(userRole);
+    if (!rule) return [];
+
+    return rule.attributeRules
+      .filter(ar => ar.visibleForRoles.includes(userRole))
+      .map(ar => ar.attributePath);
+  }
+
+  getVisiblePropertiesCount(properties: Property[], userRole: UserRole): number {
+    return this.filterPropertiesByRole(properties, userRole).length;
+  }
+
+  isPropertyVisible(property: Property, userRole: UserRole): boolean {
+    if (userRole === 'admin') return true;
+
+    const rule = this.getRuleForRole(userRole);
+    if (!rule || rule.propertyConditions.length === 0) return true;
+
+    return rule.propertyConditions.every(condition => 
+      this.checkCondition(property, condition)
+    );
   }
 }
 
