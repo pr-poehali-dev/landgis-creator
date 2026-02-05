@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
@@ -42,20 +43,22 @@ const TopNavigation = ({
     navigate('/login');
   };
 
-  console.log('TopNavigation appSettings:', appSettings);
-  console.log('Logo exists:', !!appSettings?.logo);
-  console.log('Logo length:', appSettings?.logo?.length);
+  const [logoError, setLogoError] = useState(false);
+  const hasLogo = appSettings?.logo && appSettings.logo.length > 0 && !logoError;
 
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 lg:hidden">
-          {appSettings?.logo && appSettings.logo.length > 0 ? (
+          {hasLogo ? (
             <img 
               src={appSettings.logo} 
               alt="Logo" 
               className="w-8 h-8 rounded-lg object-cover"
-              onError={(e) => console.error('Logo failed to load:', e)}
+              onError={() => {
+                console.error('Logo failed to load');
+                setLogoError(true);
+              }}
             />
           ) : (
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
