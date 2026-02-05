@@ -173,22 +173,30 @@ export const useMapObjects = ({
           [maxLat, maxLng]
         ];
 
-        // Плавная анимация к отфильтрованным участкам
+        // Плавная двухэтапная анимация к отфильтрованным участкам
         setTimeout(() => {
-          map.setBounds(bounds, {
-            checkZoomRange: true,
-            zoomMargin: 50,
-            duration: 2000,
-            timingFunction: 'ease-in-out'
-          });
-
-          const finalHandler = () => {
+          const centerLat = (minLat + maxLat) / 2;
+          const centerLng = (minLng + maxLng) / 2;
+          
+          const latDiff = maxLat - minLat;
+          const lngDiff = maxLng - minLng;
+          const targetZoom = Math.min(
+            Math.floor(Math.log2(360 / lngDiff / 1.2)),
+            Math.floor(Math.log2(180 / latDiff / 1.2)),
+            14
+          );
+          
+          map.panTo([centerLat, centerLng], {
+            duration: 1200
+          }).then(() => {
+            return map.setZoom(targetZoom, {
+              duration: 800
+            });
+          }).then(() => {
             const center = map.getCenter();
             const zoom = map.getZoom();
             initialViewRef.current = { center: [center[0], center[1]], zoom };
-            map.events.remove('actionend', finalHandler);
-          };
-          map.events.add('actionend', finalHandler);
+          });
         }, 100);
       }
     }

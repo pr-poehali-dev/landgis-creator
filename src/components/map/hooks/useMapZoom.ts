@@ -75,20 +75,30 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        map.setBounds(bounds, {
-          checkZoomRange: true,
-          zoomMargin: [100, 450, 100, 360],
-          duration: 2000,
-          timingFunction: 'ease-in-out'
-        });
+        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+        const centerLat = (minLat + maxLat) / 2;
+        const centerLng = (minLng + maxLng) / 2;
         
-        const handler = () => {
+        const latDiff = maxLat - minLat;
+        const lngDiff = maxLng - minLng;
+        const targetZoom = Math.min(
+          Math.floor(Math.log2(360 / lngDiff / 2.5)),
+          Math.floor(Math.log2(180 / latDiff / 2.5)),
+          16
+        );
+        
+        map.panTo([centerLat, centerLng], {
+          duration: 1200
+        }).then(() => {
+          return map.setZoom(targetZoom, {
+            duration: 800
+          });
+        }).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
-          map.events.remove('actionend', handler);
-        };
-        
-        map.events.add('actionend', handler);
+        }).catch(() => {
+          isAnimatingRef.current = false;
+        });
       }
     } else {
       console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
@@ -209,12 +219,26 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Плавная анимация с режимом полёта
-        map.setBounds(bounds, {
-          checkZoomRange: true,
-          zoomMargin: [100, 450, 100, 360],
-          duration: 2000,
-          timingFunction: 'ease-in-out'
+        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+        const centerLat = (minLat + maxLat) / 2;
+        const centerLng = (minLng + maxLng) / 2;
+        
+        // Вычисляем целевой зум
+        const latDiff = maxLat - minLat;
+        const lngDiff = maxLng - minLng;
+        const targetZoom = Math.min(
+          Math.floor(Math.log2(360 / lngDiff / 2.5)),
+          Math.floor(Math.log2(180 / latDiff / 2.5)),
+          16
+        );
+        
+        // Двухэтапная анимация: сначала panTo, потом setZoom
+        map.panTo([centerLat, centerLng], {
+          duration: 1200
+        }).then(() => {
+          return map.setZoom(targetZoom, {
+            duration: 800
+          });
         }).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
