@@ -81,7 +81,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-3 space-y-2 overflow-y-auto flex-1">
+        <CardContent className="p-3 overflow-y-auto flex-1 flex flex-col">
           <AttributesDisplay 
             attributes={property.attributes}
             userRole={userRole}
@@ -133,7 +133,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
+        <CardContent className="p-4 overflow-y-auto flex-1 flex flex-col">
           <AttributesDisplay 
             attributes={property.attributes}
             userRole={userRole}

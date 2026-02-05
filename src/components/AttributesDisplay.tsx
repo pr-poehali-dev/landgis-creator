@@ -83,25 +83,27 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
   if (isConfigMode) {
     return (
-      <AttributeConfigMode
-        configs={configs}
-        isAddDialogOpen={isAddDialogOpen}
-        setIsAddDialogOpen={setIsAddDialogOpen}
-        onCancel={() => {
-          loadConfigs();
-          setIsConfigMode(false);
-        }}
-        onSave={async () => {
-          await saveConfigs(onAttributesUpdate);
-          setIsConfigMode(false);
-        }}
-        onCleanup={cleanupObsoleteAttributes}
-        onConfigChange={handleConfigChange}
-        onMoveConfig={moveConfig}
-        onToggleEnabled={toggleConfigEnabled}
-        onDelete={deleteConfig}
-        onAdd={addConfig}
-      />
+      <div className="flex flex-col h-full overflow-hidden">
+        <AttributeConfigMode
+          configs={configs}
+          isAddDialogOpen={isAddDialogOpen}
+          setIsAddDialogOpen={setIsAddDialogOpen}
+          onCancel={() => {
+            loadConfigs();
+            setIsConfigMode(false);
+          }}
+          onSave={async () => {
+            await saveConfigs(onAttributesUpdate);
+            setIsConfigMode(false);
+          }}
+          onCleanup={cleanupObsoleteAttributes}
+          onConfigChange={handleConfigChange}
+          onMoveConfig={moveConfig}
+          onToggleEnabled={toggleConfigEnabled}
+          onDelete={deleteConfig}
+          onAdd={addConfig}
+        />
+      </div>
     );
   }
 

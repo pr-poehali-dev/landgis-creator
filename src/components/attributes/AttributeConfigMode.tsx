@@ -42,8 +42,8 @@ const AttributeConfigMode = ({
   };
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-4 pb-2 border-b">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex justify-between items-center mb-3 pb-3 border-b flex-shrink-0">
         <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
         <div className="flex gap-2">
           <Button
@@ -83,7 +83,7 @@ const AttributeConfigMode = ({
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {configs.map((config, index) => (
           <AttributeConfigItem
             key={config.id}
@@ -114,7 +114,7 @@ const AttributeConfigMode = ({
           onAdd={onAdd}
         />
       </div>
-    </>
+    </div>
   );
 };
 
