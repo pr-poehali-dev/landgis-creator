@@ -244,7 +244,8 @@ const YandexMap = ({
       mapInstanceRef.current.setBounds(bounds, {
         checkZoomRange: true,
         zoomMargin: 50,
-        duration: 1500
+        duration: 2000,
+        timingFunction: 'ease-in-out'
       }).then(() => {
         isAnimatingRef.current = false;
       });

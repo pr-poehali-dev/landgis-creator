@@ -78,8 +78,8 @@ export const useMapZoom = ({
         map.setBounds(bounds, {
           checkZoomRange: true,
           zoomMargin: [100, 450, 100, 360],
-          duration: 1500,
-          flying: true
+          duration: 2000,
+          timingFunction: 'ease-in-out'
         });
         
         const handler = () => {
@@ -209,11 +209,12 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Простая плавная анимация с отступами для панели атрибутов
+        // Плавная анимация с режимом полёта
         map.setBounds(bounds, {
           checkZoomRange: true,
           zoomMargin: [100, 450, 100, 360],
-          duration: 1500
+          duration: 2000,
+          timingFunction: 'ease-in-out'
         }).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
