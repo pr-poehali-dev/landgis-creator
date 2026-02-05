@@ -51,19 +51,16 @@ const TopNavigation = ({
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex items-center justify-center lg:hidden">
           {logoExists ? (
             <img 
               src={appSettings.logo} 
               alt="Logo" 
-              className="h-8 max-w-[200px] object-contain flex-shrink-0"
+              className="h-8 max-w-[180px] object-contain"
             />
           ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Icon name="Map" className="text-primary" size={18} />
-              </div>
-              <h1 className="text-lg font-bold truncate">{appSettings?.title || 'LandGis'}</h1>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Icon name="Map" className="text-primary" size={18} />
             </div>
           )}
         </div>
