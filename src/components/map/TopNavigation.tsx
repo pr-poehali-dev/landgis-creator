@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
@@ -43,7 +43,16 @@ const TopNavigation = ({
     navigate('/login');
   };
 
-  // Временная отладка
+  // Расширенная отладка для мобильных
+  useEffect(() => {
+    const rawSettings = localStorage.getItem('app_design_settings');
+    console.log('🔍 TopNavigation Debug:');
+    console.log('localStorage raw:', rawSettings?.substring(0, 100));
+    console.log('appSettings prop:', appSettings);
+    console.log('logo exists:', !!appSettings?.logo);
+    console.log('logo length:', appSettings?.logo?.length);
+  }, [appSettings]);
+
   const logoExists = !!(appSettings?.logo && appSettings.logo.trim() !== '');
   
   return (
