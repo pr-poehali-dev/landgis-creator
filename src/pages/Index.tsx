@@ -254,6 +254,7 @@ const Index = () => {
           onFilterPanelToggle={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
           filterCount={filterCount}
           onAddProperty={() => setIsAddDialogOpen(true)}
+          onOpenPropertiesList={() => setIsMobileSidebarOpen(true)}
         />
 
         <div className="flex-1 relative bg-muted/20">

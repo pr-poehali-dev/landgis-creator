@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AttributesDisplay from '@/components/AttributesDisplay';
+import { cn } from '@/lib/utils';
 
 interface Property {
   id: number;
@@ -32,56 +33,116 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
   if (!property.attributes) return null;
 
   return (
-    <Card className="absolute top-0 right-0 h-full w-full sm:w-[450px] shadow-2xl animate-fade-in overflow-hidden flex flex-col z-50">
-      <CardHeader className="pb-3 border-b border-border flex-shrink-0">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-xl font-bold mb-3">
-              {property.title}
-            </CardTitle>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 -mt-1"
-            onClick={onClose}
-          >
-            <Icon name="X" size={20} />
-          </Button>
+    <>
+      {/* Мобильная версия - снизу */}
+      <Card className={cn(
+        "sm:hidden absolute bottom-0 left-0 right-0 h-[50vh] max-h-[85vh] shadow-2xl animate-slide-up overflow-hidden flex flex-col z-50 rounded-t-2xl rounded-b-none"
+      )}>
+        {/* Drag handle */}
+        <div className="flex justify-center py-3 border-b border-border cursor-grab active:cursor-grabbing touch-none">
+          <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between gap-2">
+        
+        <CardHeader className="pb-3 border-b border-border flex-shrink-0 pt-2">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg font-bold">
+                {property.title}
+              </CardTitle>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 -mt-1"
+              onClick={onClose}
+            >
+              <Icon name="X" size={18} />
+            </Button>
+          </div>
+          <div className="flex gap-2 mt-2">
             <Button
               onClick={onReturnToOverview || onClose}
               variant="outline"
               size="sm"
-              className="h-7 px-3 gap-1.5"
+              className="h-8 px-2 gap-1.5 text-xs flex-1"
             >
               <Icon name="MapPin" size={14} />
-              Вернуться к обзору
+              <span className="hidden xs:inline">К обзору</span>
             </Button>
             {onGeneratePDF && (
               <Button
                 onClick={onGeneratePDF}
                 size="sm"
-                className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
+                className="h-8 px-2 gap-1.5 text-xs bg-primary hover:bg-primary/90 flex-1"
               >
                 <Icon name="FileText" size={14} />
-                Скачать PDF
+                <span className="hidden xs:inline">PDF</span>
               </Button>
             )}
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
-        <AttributesDisplay 
-          attributes={property.attributes}
-          userRole={userRole}
-          featureId={property.id}
-          onAttributesUpdate={onAttributesUpdate}
-        />
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="p-3 space-y-2 overflow-y-auto flex-1">
+          <AttributesDisplay 
+            attributes={property.attributes}
+            userRole={userRole}
+            featureId={property.id}
+            onAttributesUpdate={onAttributesUpdate}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Десктопная версия - справа */}
+      <Card className="hidden sm:flex absolute top-0 right-0 h-full w-[450px] shadow-2xl animate-fade-in overflow-hidden flex-col z-50">
+        <CardHeader className="pb-3 border-b border-border flex-shrink-0">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-xl font-bold mb-3">
+                {property.title}
+              </CardTitle>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 -mt-1"
+              onClick={onClose}
+            >
+              <Icon name="X" size={20} />
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between gap-2">
+              <Button
+                onClick={onReturnToOverview || onClose}
+                variant="outline"
+                size="sm"
+                className="h-7 px-3 gap-1.5"
+              >
+                <Icon name="MapPin" size={14} />
+                Вернуться к обзору
+              </Button>
+              {onGeneratePDF && (
+                <Button
+                  onClick={onGeneratePDF}
+                  size="sm"
+                  className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
+                >
+                  <Icon name="FileText" size={14} />
+                  Скачать PDF
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 space-y-3 overflow-y-auto flex-1">
+          <AttributesDisplay 
+            attributes={property.attributes}
+            userRole={userRole}
+            featureId={property.id}
+            onAttributesUpdate={onAttributesUpdate}
+          />
+        </CardContent>
+      </Card>
+    </>
   );
 };
 
