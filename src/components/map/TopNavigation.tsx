@@ -43,29 +43,27 @@ const TopNavigation = ({
     navigate('/login');
   };
 
-  const [logoError, setLogoError] = useState(false);
-  const hasLogo = appSettings?.logo && appSettings.logo.length > 0 && !logoError;
-
+  // Временная отладка
+  const logoExists = !!(appSettings?.logo && appSettings.logo.trim() !== '');
+  
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 lg:hidden">
-          {hasLogo ? (
+          {logoExists ? (
             <img 
               src={appSettings.logo} 
               alt="Logo" 
-              className="w-8 h-8 rounded-lg object-cover"
-              onError={() => {
-                console.error('Logo failed to load');
-                setLogoError(true);
-              }}
+              className="w-8 h-8 rounded-lg object-cover flex-shrink-0 bg-red-500"
             />
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Icon name="Map" className="text-primary" size={18} />
             </div>
           )}
-          <h1 className="text-lg font-bold">{appSettings?.title || 'LandGis'}</h1>
+          <h1 className="text-lg font-bold truncate">{appSettings?.title || 'LandGis'}</h1>
+          {/* Отладка - удалить потом */}
+          <span className="text-[8px] text-red-500">{logoExists ? 'L+' : 'L-'}</span>
         </div>
         <div className="hidden lg:flex items-center gap-2 ml-4">
           <CompanySwitcher />
