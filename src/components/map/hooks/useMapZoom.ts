@@ -162,7 +162,7 @@ export const useMapZoom = ({
   // Зумирование к выбранному объекту
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !mapRef.current) return;
+    if (!map) return;
 
     // Сброс выбора
     if (!selectedProperty) {
@@ -192,10 +192,51 @@ export const useMapZoom = ({
     previousSelectedRef.current = selectedProperty;
     map.balloon.close();
 
-    // Зумируем к участку с небольшой задержкой, чтобы убедиться что полигоны отрисованы
-    setTimeout(() => {
-      zoomToProperty(selectedProperty);
-    }, 100);
+    console.log('📍 Начинаем зум к участку:', selectedProperty.title);
+    
+    // Зумируем к участку напрямую
+    if (!selectedProperty.boundary || selectedProperty.boundary.length < 3) {
+      console.log('❌ Нет границ у участка');
+      return;
+    }
+
+    const existingPolygon = polygonsRef.current.find((polygon: any) => {
+      try {
+        const coords = polygon.geometry?.getCoordinates()?.[0];
+        if (!coords || coords.length !== selectedProperty.boundary?.length) return false;
+        return coords.every((coord: [number, number], idx: number) => 
+          coord[0] === selectedProperty.boundary?.[idx]?.[0] && 
+          coord[1] === selectedProperty.boundary?.[idx]?.[1]
+        );
+      } catch {
+        return false;
+      }
+    });
+    
+    if (existingPolygon) {
+      const bounds = existingPolygon.geometry?.getBounds();
+      console.log('✅ Полигон найден, bounds:', bounds);
+      if (bounds) {
+        isAnimatingRef.current = true;
+        
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: [100, 450, 100, 360],
+          duration: 1500,
+          flying: true
+        });
+        
+        const handler = () => {
+          console.log('✅ Анимация завершена');
+          isAnimatingRef.current = false;
+          map.events.remove('actionend', handler);
+        };
+        
+        map.events.add('actionend', handler);
+      }
+    } else {
+      console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
+    }
   }, [selectedProperty]);
 
   return { zoomToProperty };
