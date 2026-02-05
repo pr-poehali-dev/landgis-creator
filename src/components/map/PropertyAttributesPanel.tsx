@@ -55,22 +55,11 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
           </Badge>
           <div className="flex flex-wrap gap-2">
-            {property.boundary && property.boundary.length >= 3 && onZoomToProperty && (
-              <Button
-                onClick={onZoomToProperty}
-                size="sm"
-                className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
-              >
-                <Icon name="ZoomIn" size={14} />
-                Приблизить участок
-              </Button>
-            )}
             {onGeneratePDF && (
               <Button
                 onClick={onGeneratePDF}
                 size="sm"
-                variant="outline"
-                className="h-7 px-3 gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
               >
                 <Icon name="FileText" size={14} />
                 Скачать PDF
