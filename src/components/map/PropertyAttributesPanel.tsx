@@ -29,7 +29,6 @@ interface PropertyAttributesPanelProps {
 }
 
 const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview }: PropertyAttributesPanelProps) => {
-  console.log('🏠 PropertyAttributesPanel received userRole:', userRole);
   if (!property.attributes) return null;
 
   return (

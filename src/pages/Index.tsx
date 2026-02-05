@@ -28,10 +28,6 @@ const Index = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
-  
-  useEffect(() => {
-    console.log('📍 Index.tsx currentUserRole changed to:', currentUserRole);
-  }, [currentUserRole]);
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
   const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -273,7 +269,7 @@ const Index = () => {
           />
           
           {/* Баннер режима просмотра для админа */}
-          {(authService.getUser()?.role === 'admin' || authService.getUser()?.role === 'vip') && currentUserRole !== 'admin' && (
+          {authService.getUser()?.role === 'admin' && currentUserRole !== 'admin' && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 max-w-md">
               <div className="bg-amber-500/95 text-white px-4 py-3 rounded-lg shadow-lg backdrop-blur">
                 <div className="flex items-center gap-2 mb-1">
@@ -290,7 +286,6 @@ const Index = () => {
             </div>
           )}
           
-          {console.log('🎯 Index.tsx передает в YandexMap userRole:', currentUserRole)}
           <YandexMap
             properties={baseFilteredProperties}
             selectedProperty={selectedProperty}

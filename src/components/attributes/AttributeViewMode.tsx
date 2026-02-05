@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { DisplayConfig } from '@/services/displayConfigService';
 import AttributeEditField, { formatValue } from './AttributeEditField';
+import { authService } from '@/services/authService';
 
 interface AttributeViewModeProps {
   configs: DisplayConfig[];
@@ -59,14 +60,15 @@ const AttributeViewMode = ({
     return normalizeValue(parentValue) === normalizeValue(showWhen);
   };
 
-  console.log('🔑 AttributeViewMode userRole:', userRole, 'isAdmin:', userRole === 'admin');
+  const realUserRole = authService.getUser()?.role;
+  const isRealAdmin = realUserRole === 'admin';
   
   return (
     <>
       <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
         {!isEditing ? (
           <>
-            {userRole === 'admin' && (
+            {isRealAdmin && (
               <>
                 <Button
                   variant="outline"
