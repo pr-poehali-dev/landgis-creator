@@ -73,9 +73,8 @@ export const useMapZoom = ({
         // Устанавливаем отступы: слева больше (учитывая сайдбар 320px), справа больше (учитывая панель атрибутов ~400px)
         map.setBounds(bounds, {
           checkZoomRange: true,
-          zoomMargin: [80, 420, 80, 340], // [top, right, bottom, left] в пикселях
-          duration: 1200,
-          useMapMargin: false
+          zoomMargin: [100, 450, 100, 360], // [top, right, bottom, left] в пикселях
+          duration: 1500
         });
         
         const finalHandler = () => {
@@ -166,7 +165,7 @@ export const useMapZoom = ({
         
         map.setZoom(targetZoom, {
           checkZoomRange: true,
-          duration: 1000
+          duration: 1500
         });
         
         const finalHandler = () => {
