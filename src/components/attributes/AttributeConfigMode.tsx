@@ -44,32 +44,14 @@ const AttributeConfigMode = ({
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="flex justify-between items-center mb-3 pb-3 border-b flex-shrink-0">
-        <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
+        <h3 className="text-sm font-semibold whitespace-nowrap">Настройка атрибутов</h3>
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleResetStorage}
-            title="Удалить все настройки и начать с чистого листа"
-          >
-            <Icon name="RotateCcw" size={16} className="mr-2" />
-            Сброс
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCleanup}
-            title="Очистить атрибуты, которых больше нет в базе"
-          >
-            <Icon name="Trash2" size={16} className="mr-2" />
-            Очистка
-          </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={onCancel}
           >
-            <Icon name="X" size={16} className="mr-2" />
+            <Icon name="X" size={16} className="mr-1" />
             Отмена
           </Button>
           <Button
@@ -77,7 +59,7 @@ const AttributeConfigMode = ({
             size="sm"
             onClick={onSave}
           >
-            <Icon name="Check" size={16} className="mr-2" />
+            <Icon name="Check" size={16} className="mr-1" />
             Сохранить
           </Button>
         </div>
