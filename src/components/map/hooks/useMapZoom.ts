@@ -209,74 +209,17 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-        const centerLat = (minLat + maxLat) / 2;
-        const centerLng = (minLng + maxLng) / 2;
-        
-        // Вычисляем оптимальный зум для участка
-        const latDiff = maxLat - minLat;
-        const lngDiff = maxLng - minLng;
-        const targetZoom = Math.min(
-          Math.floor(Math.log2(360 / lngDiff / 2.5)),
-          Math.floor(Math.log2(180 / latDiff / 2.5)),
-          16
-        );
-        
-        const currentZoom = map.getZoom();
-        const currentCenter = map.getCenter();
-        
-        // Вычисляем расстояние между точками
-        const distance = Math.sqrt(
-          Math.pow(currentCenter[0] - centerLat, 2) + 
-          Math.pow(currentCenter[1] - centerLng, 2)
-        );
-        
-        console.log('🎯 Текущий зум:', currentZoom, 'Целевой зум:', targetZoom, 'Дистанция:', distance);
-        
-        // Если далеко - трёхэтапная анимация: отдалить -> переместить -> приблизить
-        if (distance > 0.05 || Math.abs(currentZoom - targetZoom) > 3) {
-          console.log('🚀 Далёкий переход - используем 3 этапа');
-          
-          // Этап 1: Отдаляемся до зума 11
-          map.setZoom(11, {
-            duration: 800
-          }).then(() => {
-            console.log('✅ Этап 1: Отдалились');
-            
-            // Этап 2: Перемещаемся к центру участка
-            return map.panTo([centerLat, centerLng], {
-              duration: 1000
-            });
-          }).then(() => {
-            console.log('✅ Этап 2: Переместились');
-            
-            // Этап 3: Приближаемся к участку
-            return map.setZoom(targetZoom, {
-              duration: 800
-            });
-          }).then(() => {
-            console.log('✅ Анимация завершена');
-            isAnimatingRef.current = false;
-          }).catch(() => {
-            isAnimatingRef.current = false;
-          });
-        } else {
-          // Если близко - двухэтапная анимация
-          console.log('🎯 Близкий переход - используем 2 этапа');
-          
-          map.panTo([centerLat, centerLng], {
-            duration: 1000
-          }).then(() => {
-            return map.setZoom(targetZoom, {
-              duration: 800
-            });
-          }).then(() => {
-            console.log('✅ Анимация завершена');
-            isAnimatingRef.current = false;
-          }).catch(() => {
-            isAnimatingRef.current = false;
-          });
-        }
+        // Простая плавная анимация с отступами для панели атрибутов
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: [100, 450, 100, 360],
+          duration: 1500
+        }).then(() => {
+          console.log('✅ Анимация завершена');
+          isAnimatingRef.current = false;
+        }).catch(() => {
+          isAnimatingRef.current = false;
+        });
       }
     } else {
       console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');

@@ -173,63 +173,21 @@ export const useMapObjects = ({
           [maxLat, maxLng]
         ];
 
-        // Плавная трёхэтапная анимация к отфильтрованным участкам
+        // Плавная анимация к отфильтрованным участкам
         setTimeout(() => {
-          const centerLat = (minLat + maxLat) / 2;
-          const centerLng = (minLng + maxLng) / 2;
-          
-          const latDiff = maxLat - minLat;
-          const lngDiff = maxLng - minLng;
-          const targetZoom = Math.min(
-            Math.floor(Math.log2(360 / lngDiff / 1.2)),
-            Math.floor(Math.log2(180 / latDiff / 1.2)),
-            14
-          );
-          
-          const currentZoom = map.getZoom();
-          const currentCenter = map.getCenter();
-          const distance = Math.sqrt(
-            Math.pow(currentCenter[0] - centerLat, 2) + 
-            Math.pow(currentCenter[1] - centerLng, 2)
-          );
-          
-          // Если далеко - используем трёхэтапную анимацию
-          if (distance > 0.05 || Math.abs(currentZoom - targetZoom) > 3) {
-            isAnimatingRef.current = true;
-            
-            map.setZoom(11, {
-              duration: 800
-            }).then(() => {
-              return map.panTo([centerLat, centerLng], {
-                duration: 1000
-              });
-            }).then(() => {
-              return map.setZoom(targetZoom, {
-                duration: 800
-              });
-            }).then(() => {
-              const center = map.getCenter();
-              const zoom = map.getZoom();
-              initialViewRef.current = { center: [center[0], center[1]], zoom };
-              isAnimatingRef.current = false;
-            });
-          } else {
-            // Если близко - двухэтапная анимация
-            isAnimatingRef.current = true;
-            
-            map.panTo([centerLat, centerLng], {
-              duration: 1000
-            }).then(() => {
-              return map.setZoom(targetZoom, {
-                duration: 800
-              });
-            }).then(() => {
-              const center = map.getCenter();
-              const zoom = map.getZoom();
-              initialViewRef.current = { center: [center[0], center[1]], zoom };
-              isAnimatingRef.current = false;
-            });
-          }
+          map.setBounds(bounds, {
+            checkZoomRange: true,
+            zoomMargin: 50,
+            duration: 1500
+          });
+
+          const finalHandler = () => {
+            const center = map.getCenter();
+            const zoom = map.getZoom();
+            initialViewRef.current = { center: [center[0], center[1]], zoom };
+            map.events.remove('actionend', finalHandler);
+          };
+          map.events.add('actionend', finalHandler);
         }, 100);
       }
     }

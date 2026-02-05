@@ -240,54 +240,14 @@ const YandexMap = ({
     }, null as [[number, number], [number, number]] | null);
 
     if (bounds) {
-      const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-      const centerLat = (minLat + maxLat) / 2;
-      const centerLng = (minLng + maxLng) / 2;
-      
-      const latDiff = maxLat - minLat;
-      const lngDiff = maxLng - minLng;
-      const targetZoom = Math.min(
-        Math.floor(Math.log2(360 / lngDiff / 1.2)),
-        Math.floor(Math.log2(180 / latDiff / 1.2)),
-        14
-      );
-      
-      const currentZoom = mapInstanceRef.current.getZoom();
-      const currentCenter = mapInstanceRef.current.getCenter();
-      const distance = Math.sqrt(
-        Math.pow(currentCenter[0] - centerLat, 2) + 
-        Math.pow(currentCenter[1] - centerLng, 2)
-      );
-      
       isAnimatingRef.current = true;
-      
-      // Трёхэтапная плавная анимация для дальних переходов
-      if (distance > 0.05 || Math.abs(currentZoom - targetZoom) > 3) {
-        mapInstanceRef.current.setZoom(11, {
-          duration: 800
-        }).then(() => {
-          return mapInstanceRef.current.panTo([centerLat, centerLng], {
-            duration: 1000
-          });
-        }).then(() => {
-          return mapInstanceRef.current.setZoom(targetZoom, {
-            duration: 800
-          });
-        }).then(() => {
-          isAnimatingRef.current = false;
-        });
-      } else {
-        // Двухэтапная анимация для близких переходов
-        mapInstanceRef.current.panTo([centerLat, centerLng], {
-          duration: 1000
-        }).then(() => {
-          return mapInstanceRef.current.setZoom(targetZoom, {
-            duration: 800
-          });
-        }).then(() => {
-          isAnimatingRef.current = false;
-        });
-      }
+      mapInstanceRef.current.setBounds(bounds, {
+        checkZoomRange: true,
+        zoomMargin: 50,
+        duration: 1500
+      }).then(() => {
+        isAnimatingRef.current = false;
+      });
     }
   };
 
