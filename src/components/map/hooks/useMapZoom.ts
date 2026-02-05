@@ -219,23 +219,30 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Используем более плавную анимацию через panTo + setZoom
+        // Вычисляем целевой зум и центр с учетом отступов панелей
         const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+        
+        // Смещаем центр влево, чтобы компенсировать правую панель атрибутов
         const centerLat = (minLat + maxLat) / 2;
         const centerLng = (minLng + maxLng) / 2;
         
-        // Сначала плавно перемещаемся к центру
+        // Вычисляем оптимальный зум для границ
+        const latDiff = maxLat - minLat;
+        const lngDiff = maxLng - minLng;
+        const targetZoom = Math.min(
+          Math.floor(Math.log2(360 / lngDiff / 1.5)),
+          Math.floor(Math.log2(180 / latDiff / 1.5)),
+          16
+        );
+        
+        // Двухэтапная анимация: сначала движение, потом зум
         map.panTo([centerLat, centerLng], {
-          flying: false,
-          duration: 800
+          duration: 1000
         });
         
-        // Затем подбираем зум с учетом отступов
         setTimeout(() => {
-          map.setBounds(bounds, {
-            checkZoomRange: true,
-            zoomMargin: [100, 450, 100, 360],
-            duration: 700
+          map.setZoom(targetZoom, {
+            duration: 800
           });
           
           const handler = () => {
@@ -245,7 +252,7 @@ export const useMapZoom = ({
           };
           
           map.events.add('actionend', handler);
-        }, 800);
+        }, 1000);
       }
     } else {
       console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
