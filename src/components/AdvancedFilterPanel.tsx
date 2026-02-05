@@ -305,24 +305,24 @@ const AdvancedFilterPanel = ({
               size="lg"
               variant="ghost"
               className={cn(
-                "gap-3 px-8 py-4 text-lg font-semibold rounded-md transition-all",
+                "gap-2 sm:gap-3 px-3 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-md transition-all",
                 mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
-              <Icon name="Map" size={22} />
-              Схема
+              <Icon name="Map" size={20} className="sm:w-[22px] sm:h-[22px]" />
+              <span className="hidden sm:inline">Схема</span>
             </Button>
             <Button
               onClick={() => onMapTypeChange('hybrid')}
               size="lg"
               variant="ghost"
               className={cn(
-                "gap-3 px-8 py-4 text-lg font-semibold rounded-md transition-all",
+                "gap-2 sm:gap-3 px-3 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-md transition-all",
                 mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
-              <Icon name="Satellite" size={22} />
-              Гибрид
+              <Icon name="Satellite" size={20} className="sm:w-[22px] sm:h-[22px]" />
+              <span className="hidden sm:inline">Гибрид</span>
             </Button>
           </div>
         </div>
@@ -335,10 +335,10 @@ const AdvancedFilterPanel = ({
             onClick={onLayersClick}
             size="lg"
             variant="outline"
-            className="shadow-lg gap-3 px-8 py-6 text-lg font-semibold hover:opacity-90"
+            className="shadow-lg gap-2 sm:gap-3 px-3 sm:px-8 py-3 sm:py-6 text-base sm:text-lg font-semibold hover:opacity-90"
           >
-            <Icon name="Layers" size={22} />
-            Слои
+            <Icon name="Layers" size={20} className="sm:w-[22px] sm:h-[22px]" />
+            <span className="hidden sm:inline">Слои</span>
           </Button>
         </div>
       )}
@@ -349,12 +349,12 @@ const AdvancedFilterPanel = ({
         size="lg"
         variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
         className={cn(
-          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-3 px-12 py-6 text-lg font-semibold min-w-[280px] hover:opacity-90",
+          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-2 sm:gap-3 px-4 sm:px-12 py-3 sm:py-6 text-base sm:text-lg font-semibold min-w-0 sm:min-w-[280px] hover:opacity-90",
           (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
         )}
       >
-        <Icon name="Filter" size={22} />
-        Фильтры
+        <Icon name="Filter" size={20} className="sm:w-[22px] sm:h-[22px]" />
+        <span className="hidden sm:inline">Фильтры</span>
         {activeCount > 0 && (
           <Badge variant="secondary" className="ml-1 bg-white text-foreground">
             {activeCount}
