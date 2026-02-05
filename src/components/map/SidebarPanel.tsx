@@ -65,39 +65,12 @@ const SidebarPanel = ({
 
         <Button 
           variant="outline" 
-          className="w-full mb-3 h-9 text-sm gap-2"
+          className="w-full h-9 text-sm gap-2"
           onClick={onOpenDataTable}
         >
           <Icon name="Table" size={16} />
           Таблица данных
         </Button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <Select value={filterType} onValueChange={onFilterTypeChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Тип" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все типы</SelectItem>
-              <SelectItem value="land">Земля</SelectItem>
-              <SelectItem value="commercial">Коммерция</SelectItem>
-              <SelectItem value="residential">Жильё</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={filterSegment} onValueChange={onFilterSegmentChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Сегмент" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все сегменты</SelectItem>
-              <SelectItem value="МПТ">МПТ</SelectItem>
-              <SelectItem value="Жилищное строительство">Жилищное строительство</SelectItem>
-              <SelectItem value="Коммерческая недвижимость">Коммерческая недвижимость</SelectItem>
-              <SelectItem value="Инфраструктура">Инфраструктура</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {(totalFilteredCount !== undefined && totalFilteredCount > 0) && (
