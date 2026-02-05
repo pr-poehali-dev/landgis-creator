@@ -241,11 +241,25 @@ export const useMapObjects = ({
     selectedCentroid.centroid.options.set('iconImageSize', [45, 45]);
     selectedCentroid.centroid.options.set('iconImageOffset', [-22.5, -22.5]);
     selectedCentroid.centroid.options.set('zIndex', 2000);
-    selectedCentroid.centroid.options.set('visible', true); // Выбранный центроид всегда виден
+    
+    // Скрываем центроид если зум слишком близкий
+    const map = mapInstanceRef.current;
+    const currentZoom = map ? map.getZoom() : 10;
+    selectedCentroid.centroid.options.set('visible', currentZoom < 14);
+    
+    // Подписываемся на изменение зума для выбранного центроида
+    const handleSelectedZoomChange = () => {
+      const zoom = map.getZoom();
+      selectedCentroid.centroid.options.set('visible', zoom < 14);
+    };
+    
+    map.events.add('boundschange', handleSelectedZoomChange);
 
     // Возвращаем cleanup для сброса при снятии выделения
     return () => {
-      if (selectedCentroid?.centroid) {
+      if (map && selectedCentroid?.centroid) {
+        map.events.remove('boundschange', handleSelectedZoomChange);
+        
         const normalStyleKey = `${style.fillColor}-${style.fillOpacity}-${style.strokeColor}-${style.strokeWidth}`;
         const normalSvgDataUrl = svgCacheRef.current.get(normalStyleKey);
         
@@ -255,8 +269,8 @@ export const useMapObjects = ({
           selectedCentroid.centroid.options.set('iconImageOffset', [-15, -15]);
           selectedCentroid.centroid.options.set('zIndex', 100);
           // Восстанавливаем видимость в зависимости от зума
-          const shouldBeVisible = currentZoom < 14;
-          selectedCentroid.centroid.options.set('visible', shouldBeVisible);
+          const zoom = map.getZoom();
+          selectedCentroid.centroid.options.set('visible', zoom < 14);
         }
       }
     };
