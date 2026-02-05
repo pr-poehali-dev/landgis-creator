@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import YandexMap from '@/components/YandexMap';
 import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDialog';
 import { propertyService, Property } from '@/services/propertyService';
+import { visibilityService } from '@/services/visibilityService';
 import { UserRole } from '@/types/userRoles';
 import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
 import { useAppSettings } from '@/hooks/useAppSettings';
@@ -82,9 +83,14 @@ const Index = () => {
     }
   };
 
+  // Применяем фильтрацию по ролям видимости
+  const visibleByRoleProperties = useMemo(() => {
+    return visibilityService.filterPropertiesByRole(properties, currentUserRole);
+  }, [properties, currentUserRole]);
+
   // Базовая фильтрация без учёта видимости на карте
   const baseFilteredProperties = useMemo(() => {
-    return properties.filter(property => {
+    return visibleByRoleProperties.filter(property => {
       const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            property.location.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = filterType === 'all' || property.type === filterType;

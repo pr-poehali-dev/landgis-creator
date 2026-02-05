@@ -14,6 +14,7 @@ const AdminNavigation = () => {
     { path: '/admin/companies', icon: 'Building2', label: 'Компании' },
     { path: '/admin/users', icon: 'Users', label: 'Пользователи' },
     { path: '/admin/filter-settings', icon: 'Filter', label: 'Фильтры' },
+    { path: '/admin/visibility', icon: 'Eye', label: 'Видимость' },
   ];
 
   return (
