@@ -58,49 +58,27 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
   const enabledConfigs = configs.filter(c => {
-    // Сначала проверяем новую систему видимости (приоритет)
+    // Проверяем новую систему видимости (ПОЛНЫЙ приоритет)
     const attributePath = `attributes.${c.originalKey || c.configKey}`;
     const hasNewSystemAccess = visibilityService.isAttributeVisible(attributePath, userRole as UserRole);
     
-    console.log(`🔍 Атрибут ${c.configKey}:`, {
-      attributePath,
-      userRole,
-      hasNewSystemAccess,
-      enabled: c.enabled,
-      visibleRoles: c.visibleRoles,
-      visibleRolesContent: JSON.stringify(c.visibleRoles),
-      includesUserRole: c.visibleRoles?.includes(userRole),
-      originalKey: c.originalKey
-    });
-    
     // Если новая система запретила — скрываем сразу
     if (!hasNewSystemAccess) {
-      console.log(`❌ Скрыт новой системой: ${c.configKey}`);
       return false;
     }
     
-    // Если новая система разрешила, проверяем старую систему (конфиги атрибутов)
-    const hasOldSystemAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
-    
-    if (!hasOldSystemAccess) {
-      console.log(`❌ Скрыт старой системой: ${c.configKey}`, { enabled: c.enabled, visibleRoles: c.visibleRoles });
+    // Если новая система разрешила — проверяем только enabled и наличие данных
+    // Игнорируем visibleRoles из старой системы, так как новая система имеет приоритет
+    if (!c.enabled) {
+      return false;
     }
     
     if (isEditing && c.configType === 'attribute') {
-      return hasOldSystemAccess;
+      return true; // Новая система уже проверила доступ
     }
+    
     const hasData = attributes && (attributes[c.originalKey || c.configKey] !== undefined);
-    
-    if (!hasData) {
-      console.log(`❌ Нет данных для: ${c.configKey}`);
-    }
-    
-    const result = hasOldSystemAccess && hasData;
-    if (result) {
-      console.log(`✅ Показываем: ${c.configKey}`);
-    }
-    
-    return result;
+    return hasData;
   });
 
   if (isConfigMode) {
