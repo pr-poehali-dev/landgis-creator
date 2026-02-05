@@ -20,6 +20,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
   const {
     configs,
+    isLoading,
     loadConfigs,
     saveConfigs,
     cleanupObsoleteAttributes,
@@ -38,6 +39,10 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     handleAttributeChange,
     initializeEditMode
   } = useAttributeEditing(attributes, featureId, onAttributesUpdate);
+
+  if (isLoading) {
+    return <div className="text-sm text-muted-foreground">Загрузка...</div>;
+  }
 
   if (!attributes || Object.keys(attributes).length === 0) {
     return <div className="text-sm text-muted-foreground">Нет атрибутов</div>;

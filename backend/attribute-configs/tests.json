@@ -1,0 +1,43 @@
+{
+  "tests": [
+    {
+      "name": "Get attribute configs (empty DB)",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Save attribute configs",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "configs": {
+          "region": {
+            "id": 1,
+            "configType": "attribute",
+            "configKey": "region",
+            "displayName": "Регион",
+            "displayOrder": 0,
+            "formatType": "select"
+          },
+          "segment": {
+            "id": 2,
+            "configType": "attribute",
+            "configKey": "segment",
+            "displayName": "Сегмент",
+            "displayOrder": 1,
+            "formatType": "text"
+          }
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "message": "Configs saved",
+        "count": 2
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
