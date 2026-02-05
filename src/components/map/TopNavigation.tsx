@@ -51,17 +51,6 @@ const TopNavigation = ({
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-3">
-        {logoExists ? (
-          <img 
-            src={appSettings.logo} 
-            alt="Logo" 
-            className="h-8 max-w-[200px] object-contain"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Icon name="Map" className="text-primary" size={18} />
-          </div>
-        )}
         <div className="hidden lg:flex items-center gap-2">
           <CompanySwitcher />
         </div>
