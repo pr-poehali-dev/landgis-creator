@@ -6,6 +6,8 @@ import CompanySwitcher from '@/components/admin/CompanySwitcher';
 import { UserRole } from '@/types/userRoles';
 import { authService } from '@/services/authService';
 import { useNavigate } from 'react-router-dom';
+import { forceResetAttributeConfigs } from '@/utils/migrateAttributeConfigs';
+import { toast } from 'sonner';
 
 interface TopNavigationProps {
   mapType: 'scheme' | 'hybrid';
@@ -36,6 +38,12 @@ const TopNavigation = ({
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
+  };
+
+  const handleResetConfigs = () => {
+    if (confirm('Сбросить настройки атрибутов и перезагрузить страницу?')) {
+      forceResetAttributeConfigs();
+    }
   };
 
   return (
@@ -69,6 +77,17 @@ const TopNavigation = ({
           <Icon name="Plus" size={14} />
           <span className="hidden md:inline">Добавить объект</span>
         </Button>
+        {user?.role === 'admin' && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 text-xs px-2.5 gap-1.5" 
+            onClick={handleResetConfigs}
+            title="Сбросить настройки атрибутов"
+          >
+            <Icon name="RefreshCw" size={14} />
+          </Button>
+        )}
         <Button variant="outline" size="sm" className="h-8 text-xs px-2.5 gap-1.5" onClick={handleLogout}>
           <Icon name="LogOut" size={14} />
           <span className="hidden lg:inline">Выйти</span>
