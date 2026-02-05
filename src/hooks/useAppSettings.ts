@@ -34,15 +34,22 @@ export const useAppSettings = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        setSettings({ ...defaultSettings, ...parsed });
-        setIsLoading(false);
-        return;
+        // Проверяем, что логотип валидный (не тестовый)
+        if (parsed.logo && parsed.logo.length > 100) {
+          setSettings({ ...defaultSettings, ...parsed });
+          setIsLoading(false);
+          return;
+        }
       }
 
-      // Если localStorage пустой, загружаем из API
+      // Если localStorage пустой или логотип невалидный, загружаем из API
       const response = await fetch(SETTINGS_API);
       if (response.ok) {
         const apiSettings = await response.json();
+        // Фильтруем тестовые данные из API
+        if (apiSettings.logo && apiSettings.logo.length < 100) {
+          delete apiSettings.logo;
+        }
         const merged = { ...defaultSettings, ...apiSettings };
         setSettings(merged);
         // Сохраняем в localStorage для следующего раза
