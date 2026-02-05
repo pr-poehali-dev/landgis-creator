@@ -32,6 +32,7 @@ const TopNavigation = ({
 }: TopNavigationProps) => {
   const navigate = useNavigate();
   const user = authService.getUser();
+  console.log('👤 TopNavigation user:', user);
 
   const handleLogout = () => {
     authService.logout();
