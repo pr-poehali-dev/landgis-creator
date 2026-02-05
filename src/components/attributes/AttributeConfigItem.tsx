@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
 import { DisplayConfig } from '@/services/displayConfigService';
+import { propertyService } from '@/services/propertyService';
 
 interface AttributeConfigItemProps {
   config: DisplayConfig;
@@ -26,6 +28,39 @@ const AttributeConfigItem = ({
   onToggleEnabled,
   onDelete
 }: AttributeConfigItemProps) => {
+  const [availableValues, setAvailableValues] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadValuesForDependency = async () => {
+      if (!config.conditionalDisplay?.dependsOn) {
+        setAvailableValues([]);
+        return;
+      }
+
+      try {
+        const properties = await propertyService.getProperties();
+        const valuesSet = new Set<string>();
+        
+        properties.forEach(prop => {
+          const value = prop.attributes?.[config.conditionalDisplay!.dependsOn!];
+          if (value !== undefined && value !== null && value !== '') {
+            if (typeof value === 'string') {
+              valuesSet.add(value);
+            } else if (typeof value === 'number' || typeof value === 'boolean') {
+              valuesSet.add(String(value));
+            }
+          }
+        });
+
+        setAvailableValues(Array.from(valuesSet).sort());
+      } catch (error) {
+        console.error('Error loading values for conditional display:', error);
+        setAvailableValues([]);
+      }
+    };
+
+    loadValuesForDependency();
+  }, [config.conditionalDisplay?.dependsOn]);
   return (
     <div className="border rounded-lg p-3 space-y-3 bg-card">
       <div className="flex items-center justify-between gap-2">
@@ -400,6 +435,42 @@ const AttributeConfigItem = ({
                   );
                 }
                 
+                const selectedValues = Array.isArray(config.conditionalDisplay.showWhen) 
+                  ? config.conditionalDisplay.showWhen 
+                  : config.conditionalDisplay.showWhen 
+                    ? [String(config.conditionalDisplay.showWhen)]
+                    : [];
+
+                if (availableValues.length > 0) {
+                  return (
+                    <div>
+                      <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда значение равно (найдено {availableValues.length} значений)</label>
+                      <div className="border border-border rounded text-xs p-1.5 max-h-32 overflow-y-auto space-y-1">
+                        {availableValues.map((val: string) => (
+                          <label key={val} className="flex items-center gap-1.5 px-1 py-0.5 hover:bg-accent rounded cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedValues.includes(val)}
+                              onChange={(e) => {
+                                const newValues = e.target.checked
+                                  ? [...selectedValues, val]
+                                  : selectedValues.filter(v => v !== val);
+                                
+                                onConfigChange(index, 'conditionalDisplay', {
+                                  ...config.conditionalDisplay,
+                                  showWhen: newValues.length === 1 ? newValues[0] : newValues
+                                });
+                              }}
+                              className="rounded h-3 w-3"
+                            />
+                            <span className="text-xs">{val}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div>
                     <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда значение равно</label>
@@ -421,7 +492,7 @@ const AttributeConfigItem = ({
                       className="text-xs h-7"
                       placeholder="Значение или несколько через запятую"
                     />
-                    <p className="text-[9px] text-muted-foreground mt-0.5">Можно указать несколько значений через запятую</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Нет значений в объектах. Можно ввести вручную через запятую</p>
                   </div>
                 );
               })()}
