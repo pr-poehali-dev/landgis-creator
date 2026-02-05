@@ -36,10 +36,9 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
       <CardHeader className="pb-3 border-b border-border flex-shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-base mb-2">Атрибуты объекта</CardTitle>
-            <CardDescription className="text-xs">
+            <CardTitle className="text-xl font-bold mb-3">
               {property.title}
-            </CardDescription>
+            </CardTitle>
           </div>
           <Button
             variant="ghost"
@@ -50,10 +49,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             <Icon name="X" size={20} />
           </Button>
         </div>
-        <div className="flex flex-col gap-2 mt-2">
-          <Badge variant="secondary" className="w-fit">
-            Всего: {Object.keys(property.attributes).filter(k => k !== 'geometry_name').length} атрибутов
-          </Badge>
+        <div className="flex flex-col gap-2">
           <div className="flex justify-between gap-2">
             <Button
               onClick={onReturnToOverview || onClose}
