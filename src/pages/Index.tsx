@@ -290,6 +290,7 @@ const Index = () => {
             </div>
           )}
           
+          {console.log('🎯 Index.tsx передает в YandexMap userRole:', currentUserRole)}
           <YandexMap
             properties={baseFilteredProperties}
             selectedProperty={selectedProperty}
