@@ -62,19 +62,43 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
     const attributePath = `attributes.${c.originalKey || c.configKey}`;
     const hasNewSystemAccess = visibilityService.isAttributeVisible(attributePath, userRole as UserRole);
     
+    console.log(`🔍 Атрибут ${c.configKey}:`, {
+      attributePath,
+      userRole,
+      hasNewSystemAccess,
+      enabled: c.enabled,
+      visibleRoles: c.visibleRoles,
+      originalKey: c.originalKey
+    });
+    
     // Если новая система запретила — скрываем сразу
     if (!hasNewSystemAccess) {
+      console.log(`❌ Скрыт новой системой: ${c.configKey}`);
       return false;
     }
     
     // Если новая система разрешила, проверяем старую систему (конфиги атрибутов)
     const hasOldSystemAccess = c.enabled && canAccessAttribute(userRole as UserRole, c.visibleRoles);
     
+    if (!hasOldSystemAccess) {
+      console.log(`❌ Скрыт старой системой: ${c.configKey}`, { enabled: c.enabled, visibleRoles: c.visibleRoles });
+    }
+    
     if (isEditing && c.configType === 'attribute') {
       return hasOldSystemAccess;
     }
     const hasData = attributes && (attributes[c.originalKey || c.configKey] !== undefined);
-    return hasOldSystemAccess && hasData;
+    
+    if (!hasData) {
+      console.log(`❌ Нет данных для: ${c.configKey}`);
+    }
+    
+    const result = hasOldSystemAccess && hasData;
+    if (result) {
+      console.log(`✅ Показываем: ${c.configKey}`);
+    }
+    
+    return result;
   });
 
   if (isConfigMode) {
