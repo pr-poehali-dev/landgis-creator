@@ -75,24 +75,10 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-        const centerLat = (minLat + maxLat) / 2;
-        const centerLng = (minLng + maxLng) / 2;
-        
-        const latDiff = maxLat - minLat;
-        const lngDiff = maxLng - minLng;
-        const targetZoom = Math.min(
-          Math.floor(Math.log2(360 / lngDiff / 2.5)),
-          Math.floor(Math.log2(180 / latDiff / 2.5)),
-          16
-        );
-        
-        map.panTo([centerLat, centerLng], {
-          duration: 1200
-        }).then(() => {
-          return map.setZoom(targetZoom, {
-            duration: 800
-          });
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          useMapMargin: true,
+          duration: 2000
         }).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
@@ -219,26 +205,11 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-        const centerLat = (minLat + maxLat) / 2;
-        const centerLng = (minLng + maxLng) / 2;
-        
-        // Вычисляем целевой зум
-        const latDiff = maxLat - minLat;
-        const lngDiff = maxLng - minLng;
-        const targetZoom = Math.min(
-          Math.floor(Math.log2(360 / lngDiff / 2.5)),
-          Math.floor(Math.log2(180 / latDiff / 2.5)),
-          16
-        );
-        
-        // Двухэтапная анимация: сначала panTo, потом setZoom
-        map.panTo([centerLat, centerLng], {
-          duration: 1200
-        }).then(() => {
-          return map.setZoom(targetZoom, {
-            duration: 800
-          });
+        // Простая анимация с правильными параметрами
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          useMapMargin: true,
+          duration: 2000
         }).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;

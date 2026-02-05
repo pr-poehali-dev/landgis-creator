@@ -240,25 +240,11 @@ const YandexMap = ({
     }, null as [[number, number], [number, number]] | null);
 
     if (bounds) {
-      const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-      const centerLat = (minLat + maxLat) / 2;
-      const centerLng = (minLng + maxLng) / 2;
-      
-      const latDiff = maxLat - minLat;
-      const lngDiff = maxLng - minLng;
-      const targetZoom = Math.min(
-        Math.floor(Math.log2(360 / lngDiff / 1.2)),
-        Math.floor(Math.log2(180 / latDiff / 1.2)),
-        14
-      );
-      
       isAnimatingRef.current = true;
-      mapInstanceRef.current.panTo([centerLat, centerLng], {
-        duration: 1200
-      }).then(() => {
-        return mapInstanceRef.current.setZoom(targetZoom, {
-          duration: 800
-        });
+      mapInstanceRef.current.setBounds(bounds, {
+        checkZoomRange: true,
+        useMapMargin: true,
+        duration: 2000
       }).then(() => {
         isAnimatingRef.current = false;
       });
