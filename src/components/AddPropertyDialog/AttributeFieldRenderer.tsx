@@ -26,18 +26,22 @@ export const AttributeFieldRenderer = ({
     if (!config.conditionalDisplay) return true;
     const dependsOnKey = config.conditionalDisplay.dependsOn;
     const showWhen = config.conditionalDisplay.showWhen;
-    const dependValue = formData.attributes?.[dependsOnKey];
-    
-    console.log('[AttributeFieldRenderer] shouldShow check:', {
-      configKey: config.configKey,
-      dependsOnKey,
-      dependValue,
-      showWhen,
-      formDataAttributes: formData.attributes
-    });
+    let dependValue = formData.attributes?.[dependsOnKey];
     
     if (dependValue === undefined || dependValue === null || dependValue === '') {
       return false;
+    }
+    
+    // Если dependValue - это JSON-массив в виде строки, распарсим его
+    if (typeof dependValue === 'string' && dependValue.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(dependValue);
+        if (Array.isArray(parsed)) {
+          dependValue = parsed;
+        }
+      } catch (e) {
+        // Если не распарсилось - оставляем как есть
+      }
     }
     
     const normalizeValue = (val: any): string => {
@@ -46,19 +50,22 @@ export const AttributeFieldRenderer = ({
       return String(val).toLowerCase().trim();
     };
     
-    if (Array.isArray(showWhen)) {
-      const result = showWhen.some(when => normalizeValue(dependValue) === normalizeValue(when));
-      console.log('[AttributeFieldRenderer] Array check result:', result);
-      return result;
+    // Если зависимое значение - массив, проверяем вхождение любого элемента
+    if (Array.isArray(dependValue)) {
+      if (Array.isArray(showWhen)) {
+        return dependValue.some(dv => 
+          showWhen.some(when => normalizeValue(dv) === normalizeValue(when))
+        );
+      }
+      return dependValue.some(dv => normalizeValue(dv) === normalizeValue(showWhen));
     }
     
-    const result = normalizeValue(dependValue) === normalizeValue(showWhen);
-    console.log('[AttributeFieldRenderer] Single value check:', {
-      normalized_dependValue: normalizeValue(dependValue),
-      normalized_showWhen: normalizeValue(showWhen),
-      result
-    });
-    return result;
+    // Если showWhen - массив, проверяем вхождение
+    if (Array.isArray(showWhen)) {
+      return showWhen.some(when => normalizeValue(dependValue) === normalizeValue(when));
+    }
+    
+    return normalizeValue(dependValue) === normalizeValue(showWhen);
   };
 
   if (!shouldShow()) return null;
