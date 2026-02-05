@@ -32,7 +32,8 @@ const TopNavigation = ({
 }: TopNavigationProps) => {
   const navigate = useNavigate();
   const user = authService.getUser();
-  console.log('👤 TopNavigation user:', user);
+  const isAdmin = user?.role === 'admin' || user?.role === 'vip';
+  console.log('👤 TopNavigation user:', user, 'isAdmin:', isAdmin);
 
   const handleLogout = () => {
     authService.logout();
@@ -51,13 +52,13 @@ const TopNavigation = ({
         <div className="hidden lg:flex items-center gap-2 ml-4">
           <CompanySwitcher />
         </div>
-        {user?.role === 'admin' && (
+        {isAdmin && (
           <RoleSwitcher currentRole={currentUserRole} onRoleChange={onRoleChange} />
         )}
       </div>
 
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        {user?.role === 'admin' && (
+        {isAdmin && (
           <Button variant="outline" size="sm" className="hidden lg:flex h-8 text-xs px-2.5 gap-1.5" onClick={onNavigateAdmin}>
             <Icon name="Database" size={14} />
             Админка

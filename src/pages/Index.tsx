@@ -273,7 +273,7 @@ const Index = () => {
           />
           
           {/* Баннер режима просмотра для админа */}
-          {authService.getUser()?.role === 'admin' && currentUserRole !== 'admin' && (
+          {(authService.getUser()?.role === 'admin' || authService.getUser()?.role === 'vip') && currentUserRole !== 'admin' && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 max-w-md">
               <div className="bg-amber-500/95 text-white px-4 py-3 rounded-lg shadow-lg backdrop-blur">
                 <div className="flex items-center gap-2 mb-1">
