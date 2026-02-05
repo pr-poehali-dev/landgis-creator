@@ -241,11 +241,13 @@ const YandexMap = ({
 
     if (bounds) {
       isAnimatingRef.current = true;
-      mapInstanceRef.current.setBounds(bounds, {
+      const options: any = {
         checkZoomRange: true,
-        useMapMargin: true,
+        zoomMargin: 100,
         duration: 2000
-      }).then(() => {
+      };
+      
+      mapInstanceRef.current.setBounds(bounds, options).then(() => {
         isAnimatingRef.current = false;
       });
     }

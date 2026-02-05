@@ -75,11 +75,13 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        map.setBounds(bounds, {
+        const options: any = {
           checkZoomRange: true,
-          useMapMargin: true,
+          zoomMargin: [100, 450, 100, 360],
           duration: 2000
-        }).then(() => {
+        };
+        
+        map.setBounds(bounds, options).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
         }).catch(() => {
@@ -205,12 +207,14 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Простая анимация с правильными параметрами
-        map.setBounds(bounds, {
+        // Плавная анимация
+        const options: any = {
           checkZoomRange: true,
-          useMapMargin: true,
+          zoomMargin: [100, 450, 100, 360],
           duration: 2000
-        }).then(() => {
+        };
+        
+        map.setBounds(bounds, options).then(() => {
           console.log('✅ Анимация завершена');
           isAnimatingRef.current = false;
         }).catch(() => {

@@ -173,13 +173,15 @@ export const useMapObjects = ({
           [maxLat, maxLng]
         ];
 
-        // Плавная анимация к отфильтрованным участкам
+        // Плавная анимация к отфильтрованным участкам с увеличенными отступами
         setTimeout(() => {
-          map.setBounds(bounds, {
+          const options: any = {
             checkZoomRange: true,
-            useMapMargin: true,
+            zoomMargin: 100,
             duration: 2000
-          });
+          };
+          
+          map.setBounds(bounds, options);
 
           const finalHandler = () => {
             const center = map.getCenter();
