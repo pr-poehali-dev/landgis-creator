@@ -364,7 +364,7 @@ const AdvancedFilterPanel = ({
 
       {/* Filter Panel */}
       <div className={cn(
-        "absolute top-20 left-4 right-4 z-30 bg-card border border-border rounded-lg shadow-xl transition-all duration-300",
+        "absolute top-20 left-4 right-4 z-30 bg-card border border-border rounded-2xl shadow-xl transition-all duration-300 overflow-hidden",
         isOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
       )}>
 
@@ -446,7 +446,7 @@ const AdvancedFilterPanel = ({
                               onClick={() => toggleFilter(column.id, option.value)}
                               className={cn(
                                 "w-full text-left px-2 py-1.5 rounded text-xs transition-all hover:bg-accent",
-                                isActive && "bg-primary/10 text-primary font-medium"
+                                isActive && "bg-accent text-accent-foreground font-medium"
                               )}
                             >
                               <div className="flex items-center justify-between gap-2">
