@@ -184,7 +184,7 @@ const Index = () => {
       
       return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
     }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
-  }, [properties, searchQuery, filterType, filterSegment, advancedFilters]);
+  }, [visibleByRoleProperties, searchQuery, filterType, filterSegment, advancedFilters]);
 
   // Финальная фильтрация с учётом видимости на карте
   const filteredProperties = useMemo(() => {
