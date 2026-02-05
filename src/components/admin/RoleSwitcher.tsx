@@ -9,6 +9,7 @@ interface RoleSwitcherProps {
 }
 
 const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
+  console.log('🔄 RoleSwitcher currentRole:', currentRole);
   const roleInfo = USER_ROLES[currentRole];
   const isViewMode = currentRole !== 'admin';
 
@@ -23,7 +24,10 @@ const RoleSwitcher = ({ currentRole, onRoleChange }: RoleSwitcherProps) => {
         {isViewMode && (
           <span className="text-xs font-medium">Режим просмотра:</span>
         )}
-        <Select value={currentRole} onValueChange={(value: UserRole) => onRoleChange(value)}>
+        <Select value={currentRole} onValueChange={(value: UserRole) => {
+          console.log('🔀 RoleSwitcher onValueChange:', value);
+          onRoleChange(value);
+        }}>
           <SelectTrigger className={`border-0 h-7 px-2 ${isViewMode ? 'font-semibold' : ''}`}>
             <SelectValue>
               <div className="flex items-center gap-1.5">
