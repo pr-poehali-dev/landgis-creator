@@ -3,7 +3,6 @@ import Icon from '@/components/ui/icon';
 import { DisplayConfig } from '@/services/displayConfigService';
 import AttributeConfigItem from '@/components/attributes/AttributeConfigItem';
 import AddElementDialog from '@/components/AddElementDialog';
-import MigrateAttributeConfigsButton from '@/components/admin/MigrateAttributeConfigsButton';
 
 interface AttributeConfigModeProps {
   configs: DisplayConfig[];
@@ -37,7 +36,6 @@ const AttributeConfigMode = ({
       <div className="flex justify-between items-center mb-4 pb-2 border-b">
         <h3 className="text-sm font-semibold">Настройка атрибутов</h3>
         <div className="flex gap-2">
-          <MigrateAttributeConfigsButton />
           <Button
             variant="ghost"
             size="sm"
