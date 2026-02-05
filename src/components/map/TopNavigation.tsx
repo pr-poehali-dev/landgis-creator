@@ -42,6 +42,8 @@ const TopNavigation = ({
     navigate('/login');
   };
 
+  console.log('TopNavigation appSettings:', appSettings);
+
   return (
     <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
       <div className="flex items-center gap-2">
