@@ -58,7 +58,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <TableHeader
             searchQuery={searchQuery}
