@@ -95,7 +95,8 @@ export const useMapObjects = ({
             strokeWidth: style.strokeWidth,
             strokeStyle: 'solid',
             fillOpacity: style.fillOpacity,
-            strokeOpacity: 1
+            strokeOpacity: 1,
+            cursor: 'pointer'
           }
         );
 
@@ -103,6 +104,16 @@ export const useMapObjects = ({
           if (isAnimatingRef.current) return;
           onSelectProperty(property);
           if (onAttributesPanelChange) onAttributesPanelChange(true);
+        });
+
+        polygon.events.add('mouseenter', () => {
+          polygon.options.set('strokeWidth', style.strokeWidth + 2);
+          polygon.options.set('fillOpacity', Math.min(style.fillOpacity + 0.2, 1));
+        });
+
+        polygon.events.add('mouseleave', () => {
+          polygon.options.set('strokeWidth', style.strokeWidth);
+          polygon.options.set('fillOpacity', style.fillOpacity);
         });
 
         map.geoObjects.add(polygon);
@@ -131,7 +142,8 @@ export const useMapObjects = ({
             iconLayout: 'default#image',
             iconImageHref: svgDataUrl,
             iconImageSize: [30, 30],
-            iconImageOffset: [-15, -15]
+            iconImageOffset: [-15, -15],
+            cursor: 'pointer'
           }
         );
 
@@ -139,6 +151,16 @@ export const useMapObjects = ({
           if (isAnimatingRef.current) return;
           onSelectProperty(property);
           if (onAttributesPanelChange) onAttributesPanelChange(true);
+        });
+
+        centroid.events.add('mouseenter', () => {
+          centroid.options.set('iconImageSize', [36, 36]);
+          centroid.options.set('iconImageOffset', [-18, -18]);
+        });
+
+        centroid.events.add('mouseleave', () => {
+          centroid.options.set('iconImageSize', [30, 30]);
+          centroid.options.set('iconImageOffset', [-15, -15]);
         });
 
         map.geoObjects.add(centroid);
