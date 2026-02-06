@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
+import MapTypeSwitcher from '@/components/filter/MapTypeSwitcher';
+import FilterControls from '@/components/filter/FilterControls';
+import FilterPanelContent from '@/components/filter/FilterPanelContent';
 
 interface FilterColumnSettings {
   id: string;
@@ -57,7 +57,6 @@ const AdvancedFilterPanel = ({
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Сначала пытаемся загрузить с сервера (синхронизация между устройствами)
         const response = await fetch('https://functions.poehali.dev/d55d58af-9be6-493a-a89d-45634d648637');
         
         if (response.ok) {
@@ -66,7 +65,6 @@ const AdvancedFilterPanel = ({
             console.log('📱 Настройки загружены с сервера:', data.config);
             setFilterSettings(data.config);
             
-            // Синхронизируем localStorage
             localStorage.setItem('filterSettings', JSON.stringify(data.config));
             
             const defaultFilters: Record<string, string[]> = {};
@@ -84,7 +82,6 @@ const AdvancedFilterPanel = ({
           }
         }
         
-        // Если на сервере нет данных, пытаемся загрузить из localStorage
         const saved = localStorage.getItem('filterSettings');
         if (saved) {
           const settings = JSON.parse(saved);
@@ -105,7 +102,6 @@ const AdvancedFilterPanel = ({
       } catch (error) {
         console.error('❌ Ошибка загрузки настроек:', error);
         
-        // Fallback на localStorage при ошибке сети
         const saved = localStorage.getItem('filterSettings');
         if (saved) {
           const settings = JSON.parse(saved);
@@ -295,7 +291,6 @@ const AdvancedFilterPanel = ({
         : [...current, value];
       const newFilters = { ...prev, [columnId]: updated };
       
-      // Применяем фильтры сразу
       onFiltersChange(newFilters);
       return newFilters;
     });
@@ -336,173 +331,34 @@ const AdvancedFilterPanel = ({
 
   return (
     <>
-      {/* Map Type Switcher - верхний левый угол */}
       {onMapTypeChange && (
-        <div className="absolute top-4 left-4 z-40">
-          <div className="inline-flex rounded-lg border border-border bg-muted/50 shadow-lg backdrop-blur h-12 p-0.5">
-            <Button
-              onClick={() => onMapTypeChange('scheme')}
-              variant="ghost"
-              className={cn(
-                "gap-2 px-4 h-full text-base font-semibold rounded-md transition-all",
-                mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
-              )}
-            >
-              <Icon name="Map" size={20} className="flex-shrink-0" />
-              <span className="hidden md:inline">Схема</span>
-            </Button>
-            <Button
-              onClick={() => onMapTypeChange('hybrid')}
-              variant="ghost"
-              className={cn(
-                "gap-2 px-4 h-full text-base font-semibold rounded-md transition-all",
-                mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
-              )}
-            >
-              <Icon name="Satellite" size={20} className="flex-shrink-0" />
-              <span className="hidden md:inline">Гибрид</span>
-            </Button>
-          </div>
-        </div>
+        <MapTypeSwitcher 
+          mapType={mapType} 
+          onMapTypeChange={onMapTypeChange} 
+        />
       )}
 
-      {/* Filter and Layers Buttons - верхний правый угол */}
-      <div className="absolute top-4 right-4 z-40 flex gap-2">
-        <Button
-          onClick={onToggle}
-          variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
-          className={cn(
-            "shadow-lg gap-2 h-12 text-base font-semibold hover:opacity-90",
-            "px-3 md:px-6 md:w-[140px]",
-            (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
-          )}
-        >
-          <Icon name="Filter" size={20} className="flex-shrink-0" />
-          <span className="hidden md:inline">Фильтры</span>
-          {activeCount > 0 && (
-            <Badge variant="secondary" className="ml-1 bg-white text-foreground">
-              {activeCount}
-            </Badge>
-          )}
-        </Button>
-        
-        {onLayersClick && (
-          <Button
-            onClick={onLayersClick}
-            variant="outline"
-            className="shadow-lg gap-2 h-12 text-base font-semibold hover:opacity-90 px-3 md:px-6 md:w-[140px]"
-          >
-            <Icon name="Layers" size={20} className="flex-shrink-0" />
-            <span className="hidden md:inline">Слои</span>
-          </Button>
-        )}
-      </div>
+      <FilterControls
+        isOpen={isOpen}
+        activeCount={activeCount}
+        onToggle={onToggle}
+        onLayersClick={onLayersClick}
+      />
 
-      {/* Filter Panel */}
       <div className={cn(
         "absolute top-20 left-4 right-4 z-30 bg-card border border-border rounded-2xl shadow-xl transition-all duration-300 overflow-hidden",
         isOpen ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
       )}>
-
-      {/* Выпадающая панель */}
-      {isOpen && (
-        <div className="p-6 space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-          {/* Активные фильтры с кнопками */}
-          <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border items-center relative pr-[200px]">
-            {/* Кнопки справа */}
-            <div className="absolute right-0 top-0 flex gap-2">
-              <button
-                className={cn(
-                  "h-8 px-3 text-xs rounded-md border transition-all",
-                  activeCount > 0 
-                    ? "border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent" 
-                    : "border-transparent bg-transparent text-muted-foreground opacity-50 cursor-not-allowed"
-                )}
-                onClick={(e) => {
-                  if (activeCount > 0) {
-                    clearFilters();
-                    (e.currentTarget as HTMLButtonElement).blur();
-                  }
-                }}
-              >
-                Сбросить всё
-              </button>
-              <Button
-                size="sm"
-                className="h-8 text-xs"
-                onClick={onToggle}
-              >
-                Закрыть
-              </Button>
-            </div>
-            {activeFilters.length > 0 ? (
-              <>
-                {activeFilters.map((filter, idx) => (
-                  <Badge
-                    key={`${filter.column}-${filter.value}-${idx}`}
-                    variant="secondary"
-                    className="h-7 px-3 gap-2 cursor-pointer hover:bg-destructive/20"
-                    onClick={() => toggleFilter(
-                      columns.find(c => c.label === filter.column)?.id || '',
-                      filter.value
-                    )}
-                  >
-                    <span className="text-xs text-muted-foreground">{filter.column}:</span>
-                    <span className="text-xs font-medium">{filter.label}</span>
-                    <Icon name="X" size={12} />
-                  </Badge>
-                ))}
-              </>
-            ) : (
-              <span className="text-xs text-muted-foreground flex items-center">Фильтры не выбраны</span>
-            )}
-          </div>
-
-          {/* Адаптивная сетка фильтров */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {columns.map((column) => (
-              <div key={column.id}>
-                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
-                  {column.label}
-                </h3>
-                <div className="space-y-1.5">
-                  {column.options.map((option) => {
-                    const isSelected = localFilters[column.id]?.includes(option.value);
-                    return (
-                      <button
-                        key={option.value}
-                        onClick={() => toggleFilter(column.id, option.value)}
-                        className={cn(
-                          "w-full px-3 py-2.5 text-left rounded-lg transition-all border",
-                          "hover:border-accent/50 group",
-                          isSelected
-                            ? "bg-accent/10 border-accent text-foreground font-medium shadow-sm"
-                            : "bg-card/50 border-border text-muted-foreground hover:bg-card/80"
-                        )}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm">{option.label}</span>
-                          <Badge 
-                            variant={isSelected ? "default" : "secondary"}
-                            className={cn(
-                              "text-xs min-w-[28px] justify-center",
-                              isSelected ? "bg-accent text-accent-foreground" : ""
-                            )}
-                          >
-                            {option.count}
-                          </Badge>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-
-        </div>
-      )}
+        <FilterPanelContent
+          isOpen={isOpen}
+          activeFilters={activeFilters}
+          activeCount={activeCount}
+          columns={columns}
+          localFilters={localFilters}
+          onToggle={onToggle}
+          clearFilters={clearFilters}
+          toggleFilter={toggleFilter}
+        />
       </div>
     </>
   );
