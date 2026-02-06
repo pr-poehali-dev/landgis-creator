@@ -84,6 +84,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
+              autoFocus={false}
             />
           </div>
         </div>
