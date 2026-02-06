@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Property } from '@/services/propertyService';
 import Icon from '@/components/ui/icon';
 import * as XLSX from 'xlsx';
@@ -20,6 +21,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [showFiltered, setShowFiltered] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Получаем настроенную конфигурацию атрибутов
   const displayProperties = showFiltered ? properties : (allProperties || properties);
@@ -115,10 +117,34 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
     }
   };
 
-  const sortedProperties = useMemo(() => {
-    if (!sortColumn || !sortDirection) return displayProperties;
+  const filteredBySearch = useMemo(() => {
+    if (!searchQuery.trim()) return displayProperties;
 
-    return [...displayProperties].sort((a, b) => {
+    const query = searchQuery.toLowerCase();
+    return displayProperties.filter(property => {
+      // Поиск по названию
+      if (property.title?.toLowerCase().includes(query)) return true;
+      
+      // Поиск по всем атрибутам
+      if (property.attributes) {
+        return Object.values(property.attributes).some(value => {
+          if (typeof value === 'string') {
+            return value.toLowerCase().includes(query);
+          }
+          if (Array.isArray(value)) {
+            return value.some(v => String(v).toLowerCase().includes(query));
+          }
+          return String(value).toLowerCase().includes(query);
+        });
+      }
+      return false;
+    });
+  }, [displayProperties, searchQuery]);
+
+  const sortedProperties = useMemo(() => {
+    if (!sortColumn || !sortDirection) return filteredBySearch;
+
+    return [...filteredBySearch].sort((a, b) => {
       const aValue = getCellValue(a, sortColumn);
       const bValue = getCellValue(b, sortColumn);
 
@@ -131,7 +157,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
         return bStr.localeCompare(aStr, 'ru', { numeric: true });
       }
     });
-  }, [displayProperties, sortColumn, sortDirection]);
+  }, [filteredBySearch, sortColumn, sortDirection]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -141,7 +167,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
             <div>
               <DialogTitle>Таблица данных</DialogTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Показано объектов: {displayProperties.length}
+                {searchQuery ? `Найдено: ${sortedProperties.length} из ${displayProperties.length}` : `Показано объектов: ${displayProperties.length}`}
               </p>
             </div>
             <Button onClick={handleExportToExcel} size="sm" className="gap-2">
@@ -150,6 +176,18 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
             </Button>
           </div>
         </DialogHeader>
+
+        <div className="px-1">
+          <div className="relative">
+            <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Поиск по таблице..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
+        </div>
 
         {allProperties && allProperties.length !== properties.length && (
           <div className="flex justify-center pb-2">
@@ -176,9 +214,9 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
 
         <div className="flex-1 overflow-auto border rounded-lg relative">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 shadow-sm">
+            <thead className="sticky top-0 z-20 shadow-sm">
               <tr>
-                <th className="sticky left-0 z-20 px-2 py-3 bg-accent/30 border-r border-border">
+                <th className="sticky left-0 z-30 px-2 py-3 bg-accent/30 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.1)]">
                   <Icon name="Map" size={16} className="text-muted-foreground" />
                 </th>
                 {headers.map((header, idx) => (
@@ -186,7 +224,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
                     key={idx} 
                     onClick={() => handleSort(header.key)}
                     className={`px-3 py-3 text-left font-semibold border-r border-border whitespace-nowrap bg-accent/30 hover:bg-accent/50 cursor-pointer transition-colors select-none ${
-                      idx === 0 ? 'sticky left-10 z-20' : ''
+                      idx === 0 ? 'sticky left-10 z-30 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : ''
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -206,7 +244,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
             <tbody>
               {sortedProperties.map((property, rowIdx) => (
                 <tr key={property.id} className={rowIdx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
-                  <td className="sticky left-0 z-10 px-2 py-2 bg-inherit border-r border-border">
+                  <td className="sticky left-0 z-20 px-2 py-2 bg-inherit border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.05)]">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -221,7 +259,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
                     <td 
                       key={colIdx} 
                       className={`px-3 py-2 border-r border-border whitespace-nowrap ${
-                        colIdx === 0 ? 'sticky left-10 z-10 bg-inherit font-medium' : ''
+                        colIdx === 0 ? 'sticky left-10 z-20 bg-inherit font-medium shadow-[2px_0_4px_rgba(0,0,0,0.05)]' : ''
                       }`}
                     >
                       {getCellValue(property, header.key)}
