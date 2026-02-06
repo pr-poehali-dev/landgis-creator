@@ -123,7 +123,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
         ref={panelRef}
         className={cn(
           "sm:hidden absolute bottom-0 left-0 right-0 shadow-2xl animate-slide-up overflow-hidden flex flex-col z-50 rounded-t-2xl rounded-b-none transition-all duration-300",
-          isExpanded ? "h-[calc(100vh-70px)]" : "h-[70vh]"
+          isExpanded ? "h-[calc(100vh-140px)]" : "h-[50vh]"
         )}
         style={{
           transform: `translateY(${currentTranslate}px)`,
