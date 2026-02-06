@@ -56,9 +56,11 @@ const AdvancedFilterPanel = ({
 
   useEffect(() => {
     const saved = localStorage.getItem('filterSettings');
+    console.log('📱 Загрузка настроек фильтра, isOpen:', isOpen, 'saved:', saved);
     if (saved) {
       try {
         const settings = JSON.parse(saved);
+        console.log('✅ Настройки фильтра загружены:', settings);
         setFilterSettings(settings);
         
         const defaultFilters: Record<string, string[]> = {};
@@ -69,11 +71,14 @@ const AdvancedFilterPanel = ({
         });
         
         if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+          console.log('🔄 Применяем дефолтные фильтры:', defaultFilters);
           onFiltersChange(defaultFilters);
         }
       } catch (error) {
-        console.error('Error loading filter settings:', error);
+        console.error('❌ Ошибка загрузки настроек фильтра:', error);
       }
+    } else {
+      console.log('⚠️ Настройки фильтра не найдены в localStorage');
     }
   }, [isOpen]);
 
@@ -262,6 +267,7 @@ const AdvancedFilterPanel = ({
   };
 
   const clearFilters = () => {
+    console.log('🧹 Очистка фильтров, activeCount:', activeCount);
     const emptyFilters = {};
     setLocalFilters(emptyFilters);
     onFiltersChange(emptyFilters);
@@ -293,6 +299,8 @@ const AdvancedFilterPanel = ({
 
   const activeFilters = getActiveFilters();
   const activeCount = getActiveFiltersCount();
+
+  console.log('🔢 Активные фильтры:', activeCount, 'фильтры:', localFilters);
 
   return (
     <>
