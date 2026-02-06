@@ -332,7 +332,8 @@ const AdvancedFilterPanel = ({
           onClick={onToggle}
           variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
           className={cn(
-            "shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90 w-[140px]",
+            "shadow-lg gap-2 h-12 text-base font-semibold hover:opacity-90",
+            "px-3 md:px-6 md:w-[140px]",
             (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
           )}
         >
@@ -349,7 +350,7 @@ const AdvancedFilterPanel = ({
           <Button
             onClick={onLayersClick}
             variant="outline"
-            className="shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90 w-[140px]"
+            className="shadow-lg gap-2 h-12 text-base font-semibold hover:opacity-90 px-3 md:px-6 md:w-[140px]"
           >
             <Icon name="Layers" size={20} className="flex-shrink-0" />
             <span className="hidden md:inline">Слои</span>
