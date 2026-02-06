@@ -299,12 +299,12 @@ const AdvancedFilterPanel = ({
       {/* Map Type Switcher - верхний левый угол */}
       {onMapTypeChange && (
         <div className="absolute top-4 left-4 z-40">
-          <div className="inline-flex rounded-lg border border-border bg-muted/50 p-1 shadow-lg backdrop-blur">
+          <div className="inline-flex rounded-lg border border-border bg-muted/50 shadow-lg backdrop-blur h-12 p-0.5">
             <Button
               onClick={() => onMapTypeChange('scheme')}
               variant="ghost"
               className={cn(
-                "gap-2 px-4 h-12 text-base font-semibold rounded-md transition-all",
+                "gap-2 px-4 h-full text-base font-semibold rounded-md transition-all",
                 mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
@@ -315,7 +315,7 @@ const AdvancedFilterPanel = ({
               onClick={() => onMapTypeChange('hybrid')}
               variant="ghost"
               className={cn(
-                "gap-2 px-4 h-12 text-base font-semibold rounded-md transition-all",
+                "gap-2 px-4 h-full text-base font-semibold rounded-md transition-all",
                 mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
