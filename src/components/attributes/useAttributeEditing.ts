@@ -101,6 +101,17 @@ export const useAttributeEditing = (
     configs.forEach(config => {
       if (config.configType === 'attribute') {
         const key = config.originalKey || config.configKey;
+        
+        // Нормализация значений toggle: "да"/"нет" → "true"/"false"
+        if (config.formatType === 'toggle' && initialEdited[key] !== undefined) {
+          const value = String(initialEdited[key]).toLowerCase();
+          if (value === 'да' || value === 'true') {
+            initialEdited[key] = 'true';
+          } else {
+            initialEdited[key] = 'false';
+          }
+        }
+        
         if (initialEdited[key] === undefined) {
           initialEdited[key] = config.formatType === 'toggle' ? 'false' : '';
         }

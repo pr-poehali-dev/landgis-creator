@@ -29,10 +29,14 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
     case 'boolean':
       return value ? 'Да' : 'Нет';
     case 'toggle':
-      const isTrue = value === 'true' || value === true || value === 'Да';
-      const isFalseValue = value === 'false' || value === false || value === 'Нет' || value === '' || value === null || value === undefined;
-      const actualValue = isFalseValue ? false : isTrue;
-      return actualValue ? (formatOptions?.trueLabel || 'Да') : (formatOptions?.falseLabel || 'Нет');
+      // Проверяем все возможные варианты "истины"
+      const isTrueToggle = value === 'true' || value === true || 
+                           value === 'Да' || value === 'да' || 
+                           String(value).toLowerCase() === 'да' ||
+                           String(value).toLowerCase() === (formatOptions?.trueLabel || 'да').toLowerCase();
+      
+      // Если не истина - то ложь
+      return isTrueToggle ? (formatOptions?.trueLabel || 'Да') : (formatOptions?.falseLabel || 'Нет');
     case 'date':
       return new Date(value).toLocaleDateString('ru-RU');
     case 'multiselect':
@@ -238,8 +242,8 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
               value="true"
               checked={toggleCheckedValue === 'true'}
               onChange={() => {
-                console.log('Toggle onChange TRUE:', config?.configKey, 'saving as:', trueLabel.toLowerCase());
-                onValueChange(trueLabel.toLowerCase());
+                console.log('Toggle onChange TRUE:', config?.configKey, 'saving as: true');
+                onValueChange('true');
               }}
               className="w-4 h-4 cursor-pointer"
             />
@@ -252,8 +256,8 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
               value="false"
               checked={toggleCheckedValue === 'false'}
               onChange={() => {
-                console.log('Toggle onChange FALSE:', config?.configKey, 'saving as:', falseLabel.toLowerCase());
-                onValueChange(falseLabel.toLowerCase());
+                console.log('Toggle onChange FALSE:', config?.configKey, 'saving as: false');
+                onValueChange('false');
               }}
               className="w-4 h-4 cursor-pointer"
             />
