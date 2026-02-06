@@ -49,24 +49,16 @@ const MobileSidebar = ({
               )}
             </div>
 
-            <div className="relative mb-4">
+            <div className="relative">
               <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
                 placeholder="Поиск объектов..."
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
+                autoFocus={false}
               />
             </div>
-
-            <Button 
-              variant="outline" 
-              className="w-full gap-2"
-              onClick={onOpenDataTable}
-            >
-              <Icon name="Table" size={16} />
-              Таблица данных
-            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
