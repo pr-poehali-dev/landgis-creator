@@ -41,18 +41,18 @@ const TableBody = ({
   return (
     <div className="border rounded-lg overflow-hidden">
       <div className="overflow-auto max-h-[calc(90vh-280px)]">
-        <table className="w-full">
+        <table className="w-auto">
           <thead className="bg-muted/50 sticky top-0 z-10">
             <tr>
               {onShowOnMap && (
-                <th className="text-left p-3 font-semibold text-sm border-b w-12 sticky left-0 bg-muted/50 z-20">
+                <th className="text-left px-2 py-1.5 font-semibold text-sm border-b w-10 sticky left-0 bg-muted/50 z-20 whitespace-nowrap">
                 </th>
               )}
               {headers.map((header, index) => (
                 <th 
                   key={header.key}
-                  className={`text-left p-3 font-semibold text-sm border-b cursor-pointer hover:bg-muted/80 transition-colors select-none ${
-                    index === 0 && header.key === 'title' ? 'sticky left-12 bg-muted/50 z-20 min-w-[200px]' : ''
+                  className={`text-left px-3 py-1.5 font-semibold text-sm border-b cursor-pointer hover:bg-muted/80 transition-colors select-none whitespace-nowrap ${
+                    index === 0 && header.key === 'title' ? 'sticky left-10 bg-muted/50 z-20' : ''
                   }`}
                   onClick={() => onSort(header.key)}
                 >
@@ -71,22 +71,22 @@ const TableBody = ({
                 className="border-b hover:bg-muted/30 transition-colors"
               >
                 {onShowOnMap && (
-                  <td className="p-3 sticky left-0 bg-background z-10 w-12">
+                  <td className="px-2 py-1.5 sticky left-0 bg-background z-10 w-10">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onShowOnMap(property)}
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 p-0"
                     >
-                      <Icon name="MapPin" size={16} />
+                      <Icon name="MapPin" size={14} />
                     </Button>
                   </td>
                 )}
                 {headers.map((header, index) => (
                   <td 
                     key={header.key} 
-                    className={`p-3 text-sm ${
-                      index === 0 && header.key === 'title' ? 'sticky left-12 bg-background z-10 min-w-[200px]' : ''
+                    className={`px-3 py-1.5 text-sm whitespace-nowrap ${
+                      index === 0 && header.key === 'title' ? 'sticky left-10 bg-background z-10' : ''
                     }`}
                   >
                     {getCellValue(property, header.key)}
