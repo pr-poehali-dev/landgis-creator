@@ -67,6 +67,12 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
 
   // Получаем заголовки таблицы в правильном порядке из конфигурации
   const getTableHeaders = () => {
+    // Добавляем title как первый столбец
+    const titleHeader = {
+      key: 'title',
+      label: 'Название'
+    };
+
     const allHeaders = configs
       .filter(config => config.enabled)
       .map(config => ({
@@ -74,24 +80,17 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
         label: config.displayName
       }));
 
-    // Ищем столбец с названием/наименованием
-    const nameIndex = allHeaders.findIndex(h => 
-      h.label.toLowerCase().includes('название') || 
-      h.label.toLowerCase().includes('наименование')
-    );
-
-    if (nameIndex > 0) {
-      const nameHeader = allHeaders[nameIndex];
-      allHeaders.splice(nameIndex, 1);
-      allHeaders.unshift(nameHeader);
-    }
-
-    return allHeaders;
+    return [titleHeader, ...allHeaders];
   };
 
   const headers = getTableHeaders();
 
   const getCellValue = (property: Property, headerKey: string) => {
+    // Если это title, берём напрямую из property
+    if (headerKey === 'title') {
+      return property.title || '';
+    }
+    
     const value = property.attributes?.[headerKey];
     if (Array.isArray(value)) {
       return value.join(', ');
