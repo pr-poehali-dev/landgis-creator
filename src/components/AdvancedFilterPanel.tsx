@@ -125,9 +125,16 @@ const AdvancedFilterPanel = ({
     residential: 'Жильё'
   };
 
+  const toggleLabels: Record<string, string> = {
+    'true': 'Да',
+    'false': 'Нет'
+  };
+
   const getOptionLabel = (columnId: string, value: string) => {
     if (columnId === 'status') return statusLabels[value] || value;
     if (columnId === 'type') return typeLabels[value] || value;
+    // Для всех toggle полей (status_mpt, oks, soinvest и т.д.)
+    if (value === 'true' || value === 'false') return toggleLabels[value] || value;
     return value;
   };
 
@@ -251,7 +258,7 @@ const AdvancedFilterPanel = ({
               label: setting.label,
               options: Array.from(values).sort().map(v => ({
                 value: v,
-                label: v,
+                label: getOptionLabel(setting.id, v),
                 count: properties.filter(p => {
                   const value = getValueFromPath(p, setting.attributePath);
                   return value === v;
