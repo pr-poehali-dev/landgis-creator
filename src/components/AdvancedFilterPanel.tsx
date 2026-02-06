@@ -299,30 +299,28 @@ const AdvancedFilterPanel = ({
       {/* Map Type Switcher - верхний левый угол */}
       {onMapTypeChange && (
         <div className="absolute top-4 left-4 z-40">
-          <div className="inline-flex rounded-lg border border-border bg-muted/50 p-1 shadow-lg backdrop-blur w-[280px] max-w-[calc(50vw-2rem)]">
+          <div className="inline-flex rounded-lg border border-border bg-muted/50 p-1 shadow-lg backdrop-blur">
             <Button
               onClick={() => onMapTypeChange('scheme')}
-              size="lg"
               variant="ghost"
               className={cn(
-                "gap-2 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-md transition-all flex-1",
+                "gap-2 px-4 h-12 text-base font-semibold rounded-md transition-all",
                 mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
-              <Icon name="Map" size={20} className="sm:w-[22px] sm:h-[22px] flex-shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Схема</span>
+              <Icon name="Map" size={20} className="flex-shrink-0" />
+              <span className="hidden md:inline">Схема</span>
             </Button>
             <Button
               onClick={() => onMapTypeChange('hybrid')}
-              size="lg"
               variant="ghost"
               className={cn(
-                "gap-2 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-md transition-all flex-1",
+                "gap-2 px-4 h-12 text-base font-semibold rounded-md transition-all",
                 mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
               )}
             >
-              <Icon name="Satellite" size={20} className="sm:w-[22px] sm:h-[22px] flex-shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Гибрид</span>
+              <Icon name="Satellite" size={20} className="flex-shrink-0" />
+              <span className="hidden md:inline">Гибрид</span>
             </Button>
           </div>
         </div>
@@ -333,12 +331,11 @@ const AdvancedFilterPanel = ({
         <div className="absolute top-4 right-4 z-40">
           <Button
             onClick={onLayersClick}
-            size="lg"
             variant="outline"
-            className="shadow-lg gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold hover:opacity-90 w-[280px] max-w-[calc(50vw-2rem)] justify-center"
+            className="shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90"
           >
-            <Icon name="Layers" size={20} className="sm:w-[22px] sm:h-[22px] flex-shrink-0" />
-            <span className="hidden sm:inline whitespace-nowrap">Слои</span>
+            <Icon name="Layers" size={20} className="flex-shrink-0" />
+            <span className="hidden md:inline">Слои</span>
           </Button>
         </div>
       )}
@@ -346,17 +343,16 @@ const AdvancedFilterPanel = ({
       {/* Floating Filter Button - всегда видна */}
       <Button
         onClick={onToggle}
-        size="lg"
         variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
         className={cn(
-          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold w-[280px] max-w-[calc(100vw-2rem)] hover:opacity-90 justify-center",
+          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90",
           (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
         )}
       >
-        <Icon name="Filter" size={20} className="sm:w-[22px] sm:h-[22px] flex-shrink-0" />
-        <span className="hidden sm:inline whitespace-nowrap">Фильтры</span>
+        <Icon name="Filter" size={20} className="flex-shrink-0" />
+        <span className="hidden md:inline">Фильтры</span>
         {activeCount > 0 && (
-          <Badge variant="secondary" className="ml-1 bg-white text-foreground flex-shrink-0">
+          <Badge variant="secondary" className="ml-1 bg-white text-foreground">
             {activeCount}
           </Badge>
         )}
