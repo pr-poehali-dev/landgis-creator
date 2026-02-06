@@ -267,7 +267,7 @@ const AdvancedFilterPanel = ({
 
         if (!defaultCol) return null;
 
-        const orderedOptions = setting.options.length > 0
+        const orderedOptions = setting.options && setting.options.length > 0
           ? setting.options
               .map(optionValue => {
                 const found = defaultCol!.options.find(o => o.value === optionValue);
