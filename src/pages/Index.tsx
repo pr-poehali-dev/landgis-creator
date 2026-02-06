@@ -267,6 +267,7 @@ const Index = () => {
             properties={properties}
             mapType={mapType}
             onMapTypeChange={setMapType}
+            onLayersClick={() => toast.info('Функция "Слои" в разработке')}
           />
           
           {/* Баннер режима просмотра для админа */}

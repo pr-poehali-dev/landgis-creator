@@ -80,16 +80,6 @@ const TopNavigation = ({
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
-        {onOpenPropertiesList && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="lg:hidden h-8 text-xs px-2.5 gap-1.5"
-            onClick={onOpenPropertiesList}
-          >
-            <Icon name="List" size={14} />
-          </Button>
-        )}
         <Button size="sm" className="bg-primary hover:bg-primary/90 h-8 text-xs px-2.5 gap-1.5" onClick={onAddProperty}>
           <Icon name="Plus" size={14} />
           <span className="hidden md:inline">Добавить объект</span>

@@ -328,9 +328,9 @@ const AdvancedFilterPanel = ({
         </div>
       )}
 
-      {/* Layers Button - скрыта на мобильных */}
+      {/* Layers Button - верхний правый угол */}
       {onLayersClick && (
-        <div className="absolute top-4 right-4 z-40 hidden lg:block">
+        <div className="absolute top-4 right-4 z-40">
           <Button
             onClick={onLayersClick}
             size="lg"
