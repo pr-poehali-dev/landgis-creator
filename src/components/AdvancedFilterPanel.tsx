@@ -326,37 +326,36 @@ const AdvancedFilterPanel = ({
         </div>
       )}
 
-      {/* Layers Button - верхний правый угол */}
-      {onLayersClick && (
-        <div className="absolute top-4 right-4 z-40">
+      {/* Filter and Layers Buttons - верхний правый угол */}
+      <div className="absolute top-4 right-4 z-40 flex gap-2">
+        <Button
+          onClick={onToggle}
+          variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
+          className={cn(
+            "shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90 w-[140px]",
+            (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
+          )}
+        >
+          <Icon name="Filter" size={20} className="flex-shrink-0" />
+          <span className="hidden md:inline">Фильтры</span>
+          {activeCount > 0 && (
+            <Badge variant="secondary" className="ml-1 bg-white text-foreground">
+              {activeCount}
+            </Badge>
+          )}
+        </Button>
+        
+        {onLayersClick && (
           <Button
             onClick={onLayersClick}
             variant="outline"
-            className="shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90"
+            className="shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90 w-[140px]"
           >
             <Icon name="Layers" size={20} className="flex-shrink-0" />
             <span className="hidden md:inline">Слои</span>
           </Button>
-        </div>
-      )}
-
-      {/* Floating Filter Button - всегда видна */}
-      <Button
-        onClick={onToggle}
-        variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
-        className={cn(
-          "absolute top-4 left-1/2 -translate-x-1/2 z-40 shadow-lg gap-2 px-6 h-12 text-base font-semibold hover:opacity-90",
-          (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
         )}
-      >
-        <Icon name="Filter" size={20} className="flex-shrink-0" />
-        <span className="hidden md:inline">Фильтры</span>
-        {activeCount > 0 && (
-          <Badge variant="secondary" className="ml-1 bg-white text-foreground">
-            {activeCount}
-          </Badge>
-        )}
-      </Button>
+      </div>
 
       {/* Filter Panel */}
       <div className={cn(
