@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AttributesDisplay from '@/components/AttributesDisplay';
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
 
 interface Property {
   id: number;
@@ -30,6 +31,15 @@ interface PropertyAttributesPanelProps {
 }
 
 const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview }: PropertyAttributesPanelProps) => {
+  useEffect(() => {
+    const handlePropertyDeleted = () => {
+      onClose();
+    };
+    
+    window.addEventListener('property-deleted', handlePropertyDeleted);
+    return () => window.removeEventListener('property-deleted', handlePropertyDeleted);
+  }, [onClose]);
+
   if (!property.attributes) return null;
 
   return (

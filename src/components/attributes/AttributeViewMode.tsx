@@ -3,6 +3,9 @@ import Icon from '@/components/ui/icon';
 import { DisplayConfig } from '@/services/displayConfigService';
 import AttributeEditField, { formatValue } from './AttributeEditField';
 import { authService } from '@/services/authService';
+import { propertyService } from '@/services/propertyService';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 interface AttributeViewModeProps {
   configs: DisplayConfig[];
@@ -10,6 +13,7 @@ interface AttributeViewModeProps {
   isEditing: boolean;
   editedAttributes?: Record<string, any>;
   userRole?: string;
+  featureId?: number;
   onEdit: () => void;
   onConfigure: () => void;
   onSave: () => void;
@@ -23,12 +27,35 @@ const AttributeViewMode = ({
   isEditing,
   editedAttributes,
   userRole = 'user1',
+  featureId,
   onEdit,
   onConfigure,
   onSave,
   onCancel,
   renderEditField
 }: AttributeViewModeProps) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!featureId) return;
+    
+    if (!confirm('Вы уверены, что хотите удалить этот объект? Это действие необратимо.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await propertyService.deleteProperty(featureId);
+      toast.success('Объект успешно удалён');
+      // Закрываем панель
+      window.dispatchEvent(new CustomEvent('property-deleted'));
+    } catch (error) {
+      toast.error('Не удалось удалить объект');
+      console.error('Delete error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   const shouldShowField = (config: DisplayConfig): boolean => {
     if (!config.conditionalDisplay) return true;
     
@@ -65,50 +92,64 @@ const AttributeViewMode = ({
   
   return (
     <>
-      <div className="flex justify-end gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
-        {!isEditing ? (
-          <>
-            {isRealAdmin && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onConfigure}
-                >
-                  <Icon name="Settings" size={16} className="mr-2" />
-                  Настроить
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onEdit}
-                >
-                  <Icon name="Pencil" size={16} className="mr-2" />
-                  Редактировать
-                </Button>
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onCancel}
+      <div className="flex justify-between gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">
+        <div>
+          {isEditing && isRealAdmin && featureId && (
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="text-red-500 hover:text-red-600 disabled:opacity-50 transition-colors p-1"
+              title="Удалить объект"
             >
-              <Icon name="X" size={16} className="mr-2" />
-              Отмена
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onSave}
-            >
-              <Icon name="Check" size={16} className="mr-2" />
-              Сохранить
-            </Button>
-          </>
-        )}
+              <Icon name={isDeleting ? "Loader2" : "Trash2"} size={20} className={isDeleting ? "animate-spin" : ""} />
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {!isEditing ? (
+            <>
+              {isRealAdmin && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onConfigure}
+                  >
+                    <Icon name="Settings" size={16} className="mr-2" />
+                    Настроить
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onEdit}
+                  >
+                    <Icon name="Pencil" size={16} className="mr-2" />
+                    Редактировать
+                  </Button>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onCancel}
+              >
+                <Icon name="X" size={16} className="mr-2" />
+                Отмена
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={onSave}
+              >
+                <Icon name="Check" size={16} className="mr-2" />
+                Сохранить
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {configs.map((config) => {

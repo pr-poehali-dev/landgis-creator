@@ -114,6 +114,7 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
       editedAttributes={editedAttributes}
       isEditing={isEditing}
       userRole={userRole}
+      featureId={featureId}
       onEdit={() => initializeEditMode(configs, attributes)}
       onConfigure={() => setIsConfigMode(true)}
       onSave={handleSave}
