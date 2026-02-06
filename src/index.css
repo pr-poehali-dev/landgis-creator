@@ -52,23 +52,29 @@
     @apply border-border;
   }
 
-  html,
+  html {
+    height: 100%;
+    height: -webkit-fill-available;
+  }
+
   body,
   #root {
     @apply h-full;
-    height: 100dvh;
     height: 100vh;
-    height: 100svh;
+    height: -webkit-fill-available;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
     font-size: 14px;
-    height: 100dvh;
-    height: 100vh;
-    height: 100svh;
     overflow: hidden;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
   }
 
   h1,
