@@ -56,11 +56,11 @@ const FilterColumnItem = ({
         </Badge>
         <div className="font-medium truncate">{column.label}</div>
         <Badge variant="secondary" className="text-xs shrink-0">
-          {column.options.length} {column.options.length === 1 ? 'опция' : 'опций'}
+          {column.options?.length || 0} {(column.options?.length || 0) === 1 ? 'опция' : 'опций'}
         </Badge>
-        {column.defaultValues.length > 0 && (
+        {(column.defaultValues?.length || 0) > 0 && (
           <Badge variant="default" className="text-xs shrink-0">
-            По умолчанию: {column.defaultValues.length}
+            По умолчанию: {column.defaultValues?.length || 0}
           </Badge>
         )}
       </div>
