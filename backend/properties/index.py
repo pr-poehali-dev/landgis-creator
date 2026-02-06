@@ -77,8 +77,8 @@ def get_properties(conn):
             if isinstance(attrs, dict):
                 cleaned_attrs = {}
                 for k, v in attrs.items():
-                    # Если значение это строка "\"\"", заменить на пустую строку
-                    if v == '""':
+                    # Если значение это строка с двойными кавычками, заменить на пустую строку
+                    if isinstance(v, str) and v in ('""', '"\\"\\""', '\\"\\""'):
                         cleaned_attrs[k] = ''
                     else:
                         cleaned_attrs[k] = v
