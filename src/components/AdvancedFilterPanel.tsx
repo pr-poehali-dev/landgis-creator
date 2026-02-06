@@ -409,60 +409,46 @@ const AdvancedFilterPanel = ({
             )}
           </div>
 
-          {/* Таблица фильтров */}
-          <div className="overflow-x-auto border border-border rounded-lg">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  {columns.map(column => (
-                    <th
-                      key={column.id}
-                      className="text-left text-sm font-semibold text-muted-foreground px-4 py-3 border-b border-border bg-muted/30 align-middle"
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {/* Определяем максимальное количество строк */}
-                {Array.from({ 
-                  length: Math.max(...columns.map(c => c.options.length)) 
-                }).map((_, rowIndex) => (
-                  <tr key={rowIndex} className="border-b border-border/50">
-                    {columns.map(column => {
-                      const option = column.options[rowIndex];
-                      const isActive = localFilters[column.id]?.includes(option?.value);
-                      
-                      return (
-                        <td key={column.id} className="px-3 py-1.5">
-                          {option ? (
-                            <button
-                              onClick={() => toggleFilter(column.id, option.value)}
-                              className={cn(
-                                "w-full text-left px-2 py-1.5 rounded text-xs transition-all hover:bg-accent",
-                                isActive && "bg-accent text-accent-foreground font-medium"
-                              )}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="truncate">{option.label}</span>
-                                {option.count !== undefined && (
-                                  <span className="text-[10px] text-muted-foreground shrink-0">
-                                    {option.count}
-                                  </span>
-                                )}
-                              </div>
-                            </button>
-                          ) : (
-                            <div className="h-8" />
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Адаптивная сетка фильтров */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {columns.map((column) => (
+              <div key={column.id}>
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+                  {column.label}
+                </h3>
+                <div className="space-y-1.5">
+                  {column.options.map((option) => {
+                    const isSelected = localFilters[column.id]?.includes(option.value);
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => toggleFilter(column.id, option.value)}
+                        className={cn(
+                          "w-full px-3 py-2.5 text-left rounded-lg transition-all border",
+                          "hover:border-accent/50 group",
+                          isSelected
+                            ? "bg-accent/10 border-accent text-foreground font-medium shadow-sm"
+                            : "bg-card/50 border-border text-muted-foreground hover:bg-card/80"
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">{option.label}</span>
+                          <Badge 
+                            variant={isSelected ? "default" : "secondary"}
+                            className={cn(
+                              "text-xs min-w-[28px] justify-center",
+                              isSelected ? "bg-accent text-accent-foreground" : ""
+                            )}
+                          >
+                            {option.count}
+                          </Badge>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
 
