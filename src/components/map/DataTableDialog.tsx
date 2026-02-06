@@ -1,6 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Property } from '@/services/propertyService';
 import Icon from '@/components/ui/icon';
 import * as XLSX from 'xlsx';
@@ -22,6 +24,7 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [showFiltered, setShowFiltered] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
 
   // Получаем настроенную конфигурацию атрибутов
   const displayProperties = showFiltered ? properties : (allProperties || properties);
@@ -85,7 +88,20 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
     return [titleHeader, ...allHeaders];
   };
 
-  const headers = getTableHeaders();
+  const allHeaders = getTableHeaders();
+  const headers = allHeaders.filter(h => !hiddenColumns.has(h.key));
+
+  const toggleColumn = (key: string) => {
+    setHiddenColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
 
   const getCellValue = (property: Property, headerKey: string) => {
     // Если это title, берём напрямую из property
@@ -170,26 +186,57 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
                 {searchQuery ? `Найдено: ${sortedProperties.length} из ${displayProperties.length}` : `Показано объектов: ${displayProperties.length}`}
               </p>
             </div>
-            <Button onClick={handleExportToExcel} size="sm" className="gap-2">
-              <Icon name="FileDown" size={16} />
-              Экспорт в Excel
-            </Button>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Icon name="Columns3" size={16} />
+                    Столбцы
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64">
+                  <div className="space-y-2">
+                    <div className="font-semibold text-sm mb-3">Показать столбцы</div>
+                    {allHeaders.map(header => (
+                      <div key={header.key} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`col-${header.key}`}
+                          checked={!hiddenColumns.has(header.key)}
+                          onCheckedChange={() => toggleColumn(header.key)}
+                        />
+                        <label
+                          htmlFor={`col-${header.key}`}
+                          className="text-sm cursor-pointer select-none flex-1"
+                        >
+                          {header.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button onClick={handleExportToExcel} size="sm" className="gap-2">
+                <Icon name="FileDown" size={16} />
+                Экспорт в Excel
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
-        <div className="px-1">
-          <div className="relative">
-            <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Поиск по таблице..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9"
-            />
+        <div className="space-y-2">
+          <div className="px-1">
+            <div className="relative">
+              <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Поиск по таблице..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
           </div>
-        </div>
 
-        {allProperties && allProperties.length !== properties.length && (
+          {allProperties && allProperties.length !== properties.length && (
           <div className="flex justify-center pb-2">
             <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
               <Button
@@ -210,20 +257,21 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
               </Button>
             </div>
           </div>
-        )}
+          )}
+        </div>
 
         <div className="flex-1 overflow-auto border rounded-lg relative">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-20 shadow-sm">
               <tr>
-                <th className="sticky left-0 z-30 px-2 py-3 bg-accent/30 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.1)]">
+                <th className="sticky left-0 z-30 px-2 py-3 bg-background border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.1)]">
                   <Icon name="Map" size={16} className="text-muted-foreground" />
                 </th>
                 {headers.map((header, idx) => (
                   <th 
                     key={idx} 
                     onClick={() => handleSort(header.key)}
-                    className={`px-3 py-3 text-left font-semibold border-r border-border whitespace-nowrap bg-accent/30 hover:bg-accent/50 cursor-pointer transition-colors select-none ${
+                    className={`px-3 py-3 text-left font-semibold border-r border-border whitespace-nowrap bg-background hover:bg-accent/50 cursor-pointer transition-colors select-none ${
                       idx === 0 ? 'sticky left-10 z-30 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : ''
                     }`}
                   >
@@ -242,31 +290,34 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
               </tr>
             </thead>
             <tbody>
-              {sortedProperties.map((property, rowIdx) => (
-                <tr key={property.id} className={rowIdx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
-                  <td className="sticky left-0 z-20 px-2 py-2 bg-inherit border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.05)]">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => onShowOnMap?.(property)}
-                      title="Показать на карте"
-                    >
-                      <Icon name="MapPin" size={14} />
-                    </Button>
-                  </td>
-                  {headers.map((header, colIdx) => (
-                    <td 
-                      key={colIdx} 
-                      className={`px-3 py-2 border-r border-border whitespace-nowrap ${
-                        colIdx === 0 ? 'sticky left-10 z-20 bg-inherit font-medium shadow-[2px_0_4px_rgba(0,0,0,0.05)]' : ''
-                      }`}
-                    >
-                      {getCellValue(property, header.key)}
+              {sortedProperties.map((property, rowIdx) => {
+                const rowBg = rowIdx % 2 === 0 ? 'bg-background' : 'bg-muted/20';
+                return (
+                  <tr key={property.id} className={rowBg}>
+                    <td className={`sticky left-0 z-20 px-2 py-2 border-r border-border shadow-[2px_0_4px_rgba(0,0,0,0.05)] ${rowBg}`}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => onShowOnMap?.(property)}
+                        title="Показать на карте"
+                      >
+                        <Icon name="MapPin" size={14} />
+                      </Button>
                     </td>
-                  ))}
-                </tr>
-              ))}
+                    {headers.map((header, colIdx) => (
+                      <td 
+                        key={colIdx} 
+                        className={`px-3 py-2 border-r border-border whitespace-nowrap ${
+                          colIdx === 0 ? `sticky left-10 z-20 font-medium shadow-[2px_0_4px_rgba(0,0,0,0.05)] ${rowBg}` : ''
+                        }`}
+                      >
+                        {getCellValue(property, header.key)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
