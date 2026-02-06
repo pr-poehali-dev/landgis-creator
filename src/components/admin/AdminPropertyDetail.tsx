@@ -6,17 +6,44 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Property } from '@/services/propertyService';
+import { propertyService } from '@/services/propertyService';
+import { toast } from 'sonner';
+import { useState } from 'react';
 import AttributesDisplay from '@/components/AttributesDisplay';
 
 interface AdminPropertyDetailProps {
   property: Property | null;
   isOpen: boolean;
   onClose: () => void;
+  onDelete?: () => void;
 }
 
-const AdminPropertyDetail = ({ property, isOpen, onClose }: AdminPropertyDetailProps) => {
+const AdminPropertyDetail = ({ property, isOpen, onClose, onDelete }: AdminPropertyDetailProps) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!property) return;
+    
+    if (!confirm(`Вы уверены, что хотите удалить объект "${property.title}"? Это действие необратимо.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await propertyService.deleteProperty(property.id);
+      toast.success('Объект успешно удалён');
+      onDelete?.();
+      onClose();
+    } catch (error) {
+      toast.error('Не удалось удалить объект');
+      console.error('Delete error:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
@@ -172,6 +199,30 @@ const AdminPropertyDetail = ({ property, isOpen, onClose }: AdminPropertyDetailP
           <div className="space-y-1 pt-4 border-t border-border">
             <p className="text-xs text-muted-foreground">Дата создания</p>
             <p className="text-sm">{formatDate(property.created_at)}</p>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <Button variant="outline" onClick={onClose}>
+              Закрыть
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="gap-2"
+            >
+              {isDeleting ? (
+                <>
+                  <Icon name="Loader2" className="animate-spin" size={16} />
+                  Удаление...
+                </>
+              ) : (
+                <>
+                  <Icon name="Trash2" size={16} />
+                  Удалить объект
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </DialogContent>

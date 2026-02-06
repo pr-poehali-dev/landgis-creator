@@ -193,6 +193,7 @@ const Admin = () => {
         property={selectedProperty}
         isOpen={isDetailDialogOpen}
         onClose={() => setIsDetailDialogOpen(false)}
+        onDelete={loadProperties}
       />
 
       <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
