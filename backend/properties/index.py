@@ -72,6 +72,18 @@ def get_properties(conn):
         
         result = []
         for prop in properties:
+            # Очистка attributes от двойных JSON строк
+            attrs = prop['attributes'] if prop['attributes'] else {}
+            if isinstance(attrs, dict):
+                cleaned_attrs = {}
+                for k, v in attrs.items():
+                    # Если значение это строка "\"\"", заменить на пустую строку
+                    if v == '""':
+                        cleaned_attrs[k] = ''
+                    else:
+                        cleaned_attrs[k] = v
+                attrs = cleaned_attrs
+            
             result.append({
                 'id': prop['id'],
                 'title': prop['title'],
@@ -83,7 +95,7 @@ def get_properties(conn):
                 'segment': prop['segment'],
                 'status': prop['status'],
                 'boundary': prop['boundary'] if prop['boundary'] else None,
-                'attributes': prop['attributes'] if prop['attributes'] else {},
+                'attributes': attrs,
                 'created_at': prop['created_at'].isoformat() if prop['created_at'] else None,
                 'updated_at': prop['updated_at'].isoformat() if prop['updated_at'] else None
             })

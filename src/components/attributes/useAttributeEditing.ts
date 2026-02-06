@@ -71,10 +71,20 @@ export const useAttributeEditing = (
 
   const handleAttributeChange = (key: string, value: string) => {
     console.log('handleAttributeChange:', { key, value, type: typeof value });
+    // Если value это строка с JSON ("\"\""), распарсим её
+    let processedValue = value;
+    if (typeof value === 'string' && value.startsWith('"\\"') && value.endsWith('\\""')) {
+      try {
+        processedValue = JSON.parse(value);
+      } catch {
+        processedValue = value;
+      }
+    }
+    
     setEditedAttributes(prev => {
       const updated = {
         ...prev,
-        [key]: value
+        [key]: processedValue
       };
       console.log('Updated editedAttributes:', updated);
       return updated;
