@@ -111,21 +111,7 @@ const SidebarPanel = ({
       </div>
 
       <div className="p-3 border-t border-border bg-card/80 backdrop-blur">
-        <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-          <div>
-            <div className="font-bold text-base text-primary">{properties.length}</div>
-          </div>
-          <div>
-            <div className="font-bold text-base text-green-400">
-              {properties.filter(p => p.status === 'available').length}
-            </div>
-          </div>
-          <div>
-            <div className="font-bold text-base text-secondary">
-              {formatPrice(properties.reduce((sum, p) => sum + p.price, 0) / properties.length).replace(/\s₽/, '')}
-            </div>
-          </div>
-        </div>
+        <div className="h-8"></div>
       </div>
     </div>
   );
