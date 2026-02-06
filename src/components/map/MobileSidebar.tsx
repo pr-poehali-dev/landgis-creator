@@ -61,10 +61,10 @@ const MobileSidebar = ({
 
             <Button 
               variant="outline" 
-              className="w-full gap-2 h-12 text-base"
+              className="w-full gap-2"
               onClick={onOpenDataTable}
             >
-              <Icon name="Table" size={18} />
+              <Icon name="Table" size={16} />
               Таблица данных
             </Button>
           </div>
