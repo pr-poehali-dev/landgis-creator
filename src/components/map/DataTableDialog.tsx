@@ -4,6 +4,7 @@ import { Property } from '@/services/propertyService';
 import Icon from '@/components/ui/icon';
 import * as XLSX from 'xlsx';
 import { useAttributeConfigs } from '@/components/attributes/useAttributeConfigs';
+import { useState, useMemo } from 'react';
 
 interface DataTableDialogProps {
   open: boolean;
@@ -11,7 +12,12 @@ interface DataTableDialogProps {
   properties: Property[];
 }
 
+type SortDirection = 'asc' | 'desc' | null;
+
 const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProps) => {
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
   // Получаем настроенную конфигурацию атрибутов
   const sampleAttributes = properties.length > 0 ? properties[0].attributes : undefined;
   const { configs } = useAttributeConfigs(sampleAttributes);
@@ -79,6 +85,38 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
     return value !== undefined && value !== null ? String(value) : '';
   };
 
+  const handleSort = (headerKey: string) => {
+    if (sortColumn === headerKey) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortColumn(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortColumn(headerKey);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedProperties = useMemo(() => {
+    if (!sortColumn || !sortDirection) return properties;
+
+    return [...properties].sort((a, b) => {
+      const aValue = getCellValue(a, sortColumn);
+      const bValue = getCellValue(b, sortColumn);
+
+      const aStr = String(aValue).toLowerCase();
+      const bStr = String(bValue).toLowerCase();
+
+      if (sortDirection === 'asc') {
+        return aStr.localeCompare(bStr, 'ru', { numeric: true });
+      } else {
+        return bStr.localeCompare(aStr, 'ru', { numeric: true });
+      }
+    });
+  }, [properties, sortColumn, sortDirection]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] max-h-[90vh] flex flex-col">
@@ -99,17 +137,30 @@ const DataTableDialog = ({ open, onOpenChange, properties }: DataTableDialogProp
 
         <div className="flex-1 overflow-auto border rounded-lg relative">
           <table className="w-full text-sm">
-            <thead className="bg-card sticky top-0 z-10 shadow-sm">
+            <thead className="sticky top-0 z-10 shadow-sm">
               <tr>
                 {headers.map((header, idx) => (
-                  <th key={idx} className="px-3 py-2 text-left font-medium border-r border-border whitespace-nowrap bg-card">
-                    {header.label}
+                  <th 
+                    key={idx} 
+                    onClick={() => handleSort(header.key)}
+                    className="px-3 py-3 text-left font-semibold border-r border-border whitespace-nowrap bg-accent/30 hover:bg-accent/50 cursor-pointer transition-colors select-none"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{header.label}</span>
+                      {sortColumn === header.key && (
+                        <Icon 
+                          name={sortDirection === 'asc' ? 'ChevronUp' : 'ChevronDown'} 
+                          size={16}
+                          className="text-accent-foreground"
+                        />
+                      )}
+                    </div>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {properties.map((property, rowIdx) => (
+              {sortedProperties.map((property, rowIdx) => (
                 <tr key={property.id} className={rowIdx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                   {headers.map((header, colIdx) => (
                     <td key={colIdx} className="px-3 py-2 border-r border-border whitespace-nowrap">
