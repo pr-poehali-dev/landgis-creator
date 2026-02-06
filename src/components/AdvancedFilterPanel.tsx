@@ -267,7 +267,6 @@ const AdvancedFilterPanel = ({
   };
 
   const clearFilters = () => {
-    console.log('🧹 Очистка фильтров, activeCount:', activeCount);
     const emptyFilters = {};
     setLocalFilters(emptyFilters);
     onFiltersChange(emptyFilters);
@@ -299,8 +298,6 @@ const AdvancedFilterPanel = ({
 
   const activeFilters = getActiveFilters();
   const activeCount = getActiveFiltersCount();
-
-  console.log('🔢 Активные фильтры:', activeCount, 'фильтры:', localFilters);
 
   return (
     <>
@@ -382,9 +379,15 @@ const AdvancedFilterPanel = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs hover:bg-accent"
-                onClick={clearFilters}
-                disabled={activeCount === 0}
+                className={cn(
+                  "h-8 text-xs",
+                  activeCount > 0 ? "hover:bg-accent cursor-pointer" : "opacity-50 cursor-not-allowed"
+                )}
+                onClick={() => {
+                  if (activeCount > 0) {
+                    clearFilters();
+                  }
+                }}
               >
                 Сбросить всё
               </Button>
