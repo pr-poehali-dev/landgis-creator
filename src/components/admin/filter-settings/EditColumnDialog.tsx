@@ -80,8 +80,8 @@ const EditColumnDialog = ({
           <div className="space-y-2">
             <Label>Порядок опций</Label>
             <div className="border border-border rounded-lg divide-y divide-border max-h-[300px] overflow-y-auto">
-              {column.options.map((option, index) => {
-                const isDefault = column.defaultValues.includes(option);
+              {(column.options || []).map((option, index) => {
+                const isDefault = column.defaultValues?.includes(option) || false;
                 return (
                   <div
                     key={`${option}-${index}`}
@@ -105,7 +105,7 @@ const EditColumnDialog = ({
                         size="sm"
                         className="h-6 w-6 p-0"
                         onClick={() => onMoveOption(index, 'down')}
-                        disabled={index === column.options.length - 1}
+                        disabled={index === (column.options?.length || 0) - 1}
                       >
                         <Icon name="ChevronDown" size={14} />
                       </Button>
