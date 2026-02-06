@@ -290,6 +290,118 @@ const AdvancedFilterPanel = ({
       .filter(Boolean) as FilterColumn[];
   }, [properties, filterSettings]);
 
+  // Динамический пересчёт количества с учётом активных фильтров
+  const columnsWithDynamicCounts = useMemo(() => {
+    // Функция проверки, подходит ли объект под фильтры (исключая текущую колонку)
+    const matchesFilters = (property: any, excludeColumnId?: string) => {
+      return Object.entries(localFilters).every(([columnId, selectedValues]) => {
+        // Пропускаем колонку, для которой считаем
+        if (columnId === excludeColumnId) return true;
+        
+        if (!selectedValues || selectedValues.length === 0) return true;
+
+        const column = columns.find(c => c.id === columnId);
+        if (!column) return true;
+
+        const setting = filterSettings.find(s => s.id === columnId);
+        
+        // Для region
+        if (columnId === 'region') {
+          return selectedValues.includes(property.attributes?.region);
+        }
+        
+        // Для segment
+        if (columnId === 'segment') {
+          const seg = property.attributes?.segment;
+          if (Array.isArray(seg)) {
+            return selectedValues.some(sv => seg.includes(sv));
+          }
+          if (typeof seg === 'string') {
+            try {
+              const parsed = JSON.parse(seg);
+              if (Array.isArray(parsed)) {
+                return selectedValues.some(sv => parsed.includes(sv));
+              }
+            } catch {}
+            const segValues = seg.split(',').map(x => x.trim());
+            return selectedValues.some(sv => segValues.includes(sv));
+          }
+          return selectedValues.includes(property.segment);
+        }
+        
+        // Для status и type
+        if (columnId === 'status') {
+          return selectedValues.includes(property.status);
+        }
+        if (columnId === 'type') {
+          return selectedValues.includes(property.type);
+        }
+        
+        // Для attributes.*
+        if (setting?.attributePath) {
+          const value = getValueFromPath(property, setting.attributePath);
+          return selectedValues.includes(value);
+        }
+        
+        return true;
+      });
+    };
+
+    // Пересчитываем counts для каждой колонки
+    return columns.map(column => {
+      const setting = filterSettings.find(s => s.id === column.id);
+      
+      const updatedOptions = column.options.map(option => {
+        let count = 0;
+        
+        if (column.id === 'region') {
+          count = properties.filter(p => 
+            p.attributes?.region === option.value && matchesFilters(p, column.id)
+          ).length;
+        } else if (column.id === 'segment') {
+          count = properties.filter(p => {
+            const seg = p.attributes?.segment;
+            let matches = false;
+            if (Array.isArray(seg)) {
+              matches = seg.includes(option.value);
+            } else if (typeof seg === 'string') {
+              try {
+                const parsed = JSON.parse(seg);
+                if (Array.isArray(parsed)) {
+                  matches = parsed.includes(option.value);
+                } else {
+                  matches = seg.split(',').map(x => x.trim()).includes(option.value);
+                }
+              } catch {
+                matches = seg.split(',').map(x => x.trim()).includes(option.value);
+              }
+            } else {
+              matches = p.segment === option.value;
+            }
+            return matches && matchesFilters(p, column.id);
+          }).length;
+        } else if (column.id === 'status') {
+          count = properties.filter(p => 
+            p.status === option.value && matchesFilters(p, column.id)
+          ).length;
+        } else if (column.id === 'type') {
+          count = properties.filter(p => 
+            p.type === option.value && matchesFilters(p, column.id)
+          ).length;
+        } else if (setting?.attributePath) {
+          count = properties.filter(p => {
+            const value = getValueFromPath(p, setting.attributePath);
+            return value === option.value && matchesFilters(p, column.id);
+          }).length;
+        }
+        
+        return { ...option, count };
+      });
+      
+      return { ...column, options: updatedOptions };
+    });
+  }, [columns, localFilters, properties, filterSettings]);
+
   const toggleFilter = (columnId: string, value: string) => {
     setLocalFilters(prev => {
       const current = prev[columnId] || [];
@@ -360,7 +472,7 @@ const AdvancedFilterPanel = ({
           isOpen={isOpen}
           activeFilters={activeFilters}
           activeCount={activeCount}
-          columns={columns}
+          columns={columnsWithDynamicCounts}
           localFilters={localFilters}
           onToggle={onToggle}
           clearFilters={clearFilters}
