@@ -316,6 +316,12 @@ const Index = () => {
         open={isDataTableOpen}
         onOpenChange={setIsDataTableOpen}
         properties={filteredProperties}
+        allProperties={properties}
+        onShowOnMap={(property) => {
+          setSelectedProperty(property);
+          setShowAttributesPanel(true);
+          setIsDataTableOpen(false);
+        }}
       />
 
       <MobileSidebar
