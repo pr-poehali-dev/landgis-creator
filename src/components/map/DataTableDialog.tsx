@@ -186,27 +186,29 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
                 {searchQuery ? `Найдено: ${sortedProperties.length} из ${displayProperties.length}` : `Показано объектов: ${displayProperties.length}`}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {allProperties && allProperties.length !== properties.length && (
-                <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
-                  <Button
-                    onClick={() => setShowFiltered(true)}
-                    variant="ghost"
-                    size="sm"
-                    className={showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
-                  >
-                    С учётом фильтрации
-                  </Button>
-                  <Button
-                    onClick={() => setShowFiltered(false)}
-                    variant="ghost"
-                    size="sm"
-                    className={!showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
-                  >
-                    Все участки
-                  </Button>
-                </div>
-              )}
+            
+            {allProperties && allProperties.length !== properties.length && (
+              <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
+                <Button
+                  onClick={() => setShowFiltered(true)}
+                  variant="ghost"
+                  size="sm"
+                  className={showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
+                >
+                  С учётом фильтрации
+                </Button>
+                <Button
+                  onClick={() => setShowFiltered(false)}
+                  variant="ghost"
+                  size="sm"
+                  className={!showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
+                >
+                  Все участки
+                </Button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
