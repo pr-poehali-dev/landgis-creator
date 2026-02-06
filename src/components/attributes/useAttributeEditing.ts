@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { DisplayConfig } from '@/services/displayConfigService';
 import { toast } from 'sonner';
 import func2url from '../../../backend/func2url.json';
+import { propertyService } from '@/services/propertyService';
 
 export const useAttributeEditing = (
   attributes?: Record<string, any>,
@@ -47,6 +48,9 @@ export const useAttributeEditing = (
 
       const result = await response.json();
       console.log('Save result:', result);
+
+      // Обновляем кэш propertyService
+      await propertyService.getProperties(true);
 
       toast.success('Атрибуты сохранены');
       setIsEditing(false);

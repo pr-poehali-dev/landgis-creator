@@ -263,7 +263,11 @@ const YandexMap = ({
           onClose={handleClosePanel}
           userRole={userRole}
           onZoomToProperty={() => zoomToProperty(selectedProperty)}
-          onAttributesUpdate={() => {}}
+          onAttributesUpdate={(updatedAttributes) => {
+            // Обновляем selectedProperty с новыми атрибутами
+            const updatedProperty = { ...selectedProperty, attributes: updatedAttributes };
+            onSelectProperty(updatedProperty);
+          }}
           onGeneratePDF={handleGeneratePDF}
           onReturnToOverview={handleReturnToOverview}
         />
