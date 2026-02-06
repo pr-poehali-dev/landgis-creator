@@ -6,21 +6,25 @@ interface StatisticsBarProps {
 }
 
 const StatisticsBar = ({ properties }: StatisticsBarProps) => {
+  const availableCount = properties.filter(p => p.attributes?.status_publ === 'Доступно').length;
+  const reservedCount = properties.filter(p => p.attributes?.status_publ === 'Резерв').length;
+  const soldCount = properties.filter(p => p.attributes?.status_publ === 'Продано').length;
+
   return (
     <div className="hidden sm:flex h-14 border-t border-border bg-card/30 backdrop-blur px-3 lg:px-4 items-center justify-between">
       <div className="flex gap-2 lg:gap-4 text-[11px]">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
-          <span className="text-muted-foreground"><span className="hidden md:inline">Доступно: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'available').length}</span></span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-          <span className="text-muted-foreground"><span className="hidden md:inline">Резерв: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'reserved').length}</span></span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-gray-500"></div>
-          <span className="text-muted-foreground"><span className="hidden md:inline">Продано: </span><span className="font-semibold text-foreground">{properties.filter(p => p.status === 'sold').length}</span></span>
-        </div>
+        <span className="text-muted-foreground">
+          <span className="hidden md:inline">Доступно: </span>
+          <span className="font-semibold text-foreground">{availableCount}</span>
+        </span>
+        <span className="text-muted-foreground">
+          <span className="hidden md:inline">Резерв: </span>
+          <span className="font-semibold text-foreground">{reservedCount}</span>
+        </span>
+        <span className="text-muted-foreground">
+          <span className="hidden md:inline">Продано: </span>
+          <span className="font-semibold text-foreground">{soldCount}</span>
+        </span>
       </div>
 
       <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-muted-foreground">
