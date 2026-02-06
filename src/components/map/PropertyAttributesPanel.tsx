@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AttributesDisplay from '@/components/AttributesDisplay';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Property {
   id: number;
@@ -31,6 +31,13 @@ interface PropertyAttributesPanelProps {
 }
 
 const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview }: PropertyAttributesPanelProps) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [currentTranslate, setCurrentTranslate] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
   useEffect(() => {
     const handlePropertyDeleted = () => {
       onClose();
@@ -40,16 +47,94 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
     return () => window.removeEventListener('property-deleted', handlePropertyDeleted);
   }, [onClose]);
 
+  useEffect(() => {
+    const dragHandle = dragHandleRef.current;
+    if (!dragHandle) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      setDragStartY(e.touches[0].clientY);
+      setIsDragging(true);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - dragStartY;
+      
+      // Позволяем тянуть только вниз (закрытие) или вверх (расширение)
+      if (isExpanded && diff > 0) {
+        // Если панель развёрнута, разрешаем тянуть вниз
+        setCurrentTranslate(Math.max(0, diff));
+      } else if (!isExpanded && diff < 0) {
+        // Если панель свёрнута, разрешаем тянуть вверх
+        setCurrentTranslate(Math.min(0, diff));
+      } else if (!isExpanded && diff > 0) {
+        // Если свёрнута и тянем вниз = закрытие
+        setCurrentTranslate(Math.max(0, diff));
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!isDragging) return;
+      setIsDragging(false);
+
+      const threshold = 80; // Порог для срабатывания жеста
+      
+      if (isExpanded) {
+        // Если развёрнута
+        if (currentTranslate > threshold) {
+          // Тянули вниз достаточно сильно - сворачиваем
+          setIsExpanded(false);
+        } else if (currentTranslate > threshold * 2) {
+          // Тянули вниз очень сильно - закрываем
+          onClose();
+        }
+      } else {
+        // Если свёрнута
+        if (currentTranslate < -threshold) {
+          // Тянули вверх - разворачиваем
+          setIsExpanded(true);
+        } else if (currentTranslate > threshold) {
+          // Тянули вниз - закрываем
+          onClose();
+        }
+      }
+      
+      setCurrentTranslate(0);
+    };
+
+    dragHandle.addEventListener('touchstart', handleTouchStart);
+    dragHandle.addEventListener('touchmove', handleTouchMove);
+    dragHandle.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      dragHandle.removeEventListener('touchstart', handleTouchStart);
+      dragHandle.removeEventListener('touchmove', handleTouchMove);
+      dragHandle.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, dragStartY, currentTranslate, isExpanded, onClose]);
+
   if (!property.attributes) return null;
 
   return (
     <>
       {/* Мобильная версия - снизу */}
-      <Card className={cn(
-        "sm:hidden absolute bottom-0 left-0 right-0 h-[50vh] max-h-[85vh] shadow-2xl animate-slide-up overflow-hidden flex flex-col z-50 rounded-t-2xl rounded-b-none"
-      )}>
+      <Card 
+        ref={panelRef}
+        className={cn(
+          "sm:hidden absolute bottom-0 left-0 right-0 shadow-2xl animate-slide-up overflow-hidden flex flex-col z-50 rounded-t-2xl rounded-b-none transition-all duration-300",
+          isExpanded ? "h-[calc(100vh-80px)] top-[80px]" : "h-[50vh] max-h-[85vh]"
+        )}
+        style={{
+          transform: `translateY(${currentTranslate}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+        }}
+      >
         {/* Drag handle */}
-        <div className="flex justify-center py-3 border-b border-border cursor-grab active:cursor-grabbing touch-none">
+        <div 
+          ref={dragHandleRef}
+          className="flex justify-center py-3 border-b border-border cursor-grab active:cursor-grabbing touch-none"
+        >
           <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
         </div>
         
