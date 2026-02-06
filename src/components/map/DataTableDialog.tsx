@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Property } from '@/services/propertyService';
 import Icon from '@/components/ui/icon';
@@ -18,13 +18,14 @@ interface DataTableDialogProps {
 
 const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShowOnMap }: DataTableDialogProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const displayPropertiesForConfig = properties.length > 0 ? properties : (allProperties || []);
   const sampleAttributes = displayPropertiesForConfig.length > 0 ? displayPropertiesForConfig[0].attributes : undefined;
   const { configs } = useAttributeConfigs(sampleAttributes);
 
   useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.blur();
+    if (!open) {
+      setIsSearchActive(false);
     }
   }, [open]);
 
@@ -93,8 +94,11 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
-              autoFocus={false}
-              onFocus={(e) => e.target.blur()}
+              readOnly={!isSearchActive}
+              onClick={() => {
+                setIsSearchActive(true);
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }}
             />
           </div>
         </div>
