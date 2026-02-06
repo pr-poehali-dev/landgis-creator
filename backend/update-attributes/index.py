@@ -36,6 +36,14 @@ def handler(event: dict, context) -> dict:
             else:
                 return error_response('Method not allowed', 405)
         
+        # Handle adding new attribute to all objects
+        if query_params.get('action') == 'add_attribute':
+            if method == 'POST':
+                body = json.loads(event.get('body', '{}'))
+                return add_attribute_to_all(conn, body)
+            else:
+                return error_response('Method not allowed', 405)
+        
         # Handle attribute config requests
         if query_params.get('type') == 'config':
             if method == 'GET':
@@ -213,6 +221,41 @@ def rename_attribute_key(conn, data):
     return success_response({
         'success': True,
         'message': f'Renamed {old_key} to {new_key}',
+        'affectedRows': affected_rows
+    })
+
+def add_attribute_to_all(conn, data):
+    '''Добавление нового атрибута во все объекты с дефолтным значением'''
+    attr_key = data.get('key')
+    format_type = data.get('formatType', 'text')
+    
+    if not attr_key:
+        return error_response('key is required', 400)
+    
+    # Определяем дефолтное значение по типу
+    default_value = ''
+    if format_type in ['toggle', 'boolean']:
+        default_value = False
+    elif format_type in ['number', 'money']:
+        default_value = 0
+    elif format_type == 'multiselect':
+        default_value = []
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        # Добавляем ключ во все объекты, где его ещё нет
+        cur.execute('''
+            UPDATE t_p78972315_landgis_creator.properties
+            SET attributes = attributes || jsonb_build_object(%s, %s),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE NOT (attributes ? %s)
+        ''', (attr_key, json.dumps(default_value), attr_key))
+        
+        affected_rows = cur.rowcount
+        conn.commit()
+    
+    return success_response({
+        'success': True,
+        'message': f'Added attribute {attr_key} to all objects',
         'affectedRows': affected_rows
     })
 

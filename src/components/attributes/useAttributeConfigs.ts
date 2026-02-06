@@ -302,6 +302,33 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     configs.forEach(c => {
       configsMap[c.configKey] = c;
     });
+    
+    // Определяем новые атрибуты (те, у которых нет originalKey)
+    const newAttributes = configs.filter(c => !c.originalKey || c.originalKey === c.configKey);
+    
+    // Добавляем новые атрибуты во все объекты в БД
+    for (const config of newAttributes) {
+      try {
+        const response = await fetch(`${func2url['update-attributes']}?action=add_attribute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: config.configKey,
+            formatType: config.formatType || 'text'
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.affectedRows > 0) {
+            toast.success(`Атрибут "${config.displayName}" добавлен в ${result.affectedRows} объектов`);
+          }
+        }
+      } catch (error) {
+        console.error('Error adding attribute:', error);
+      }
+    }
+    
     localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(configsMap));
     
     const renamedKeys = configs.filter(c => c.originalKey && c.originalKey !== c.configKey);
