@@ -42,13 +42,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 relative overflow-hidden">
-      <div className="relative z-10 bg-white p-10 rounded-xl shadow-lg w-full max-w-md">
-        {/* Иконка замка */}
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
-            <Icon name="Lock" size={32} className="text-indigo-600" />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 relative overflow-hidden">
+      {/* Декоративные элементы */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-orange-400/5 rounded-full blur-2xl animate-pulse"></div>
+      </div>
+
+      <div className="relative z-10 bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
+        {/* Логотип ZemBook */}
+        <div className="flex flex-col items-center mb-6">
+          <svg width="160" height="60" viewBox="0 0 260 80" className="drop-shadow-lg mb-3">
+            <text x="20" y="50" fontFamily="Arial, sans-serif" fontSize="42" fontWeight="bold" fill="#F97316">
+              Zem
+            </text>
+            <text x="125" y="50" fontFamily="Arial, sans-serif" fontSize="42" fontWeight="bold" fill="#1E293B">
+              Book
+            </text>
+            <path d="M 35 62 Q 130 57 225 62" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round"/>
+          </svg>
+          <p className="text-slate-600 text-sm font-medium tracking-wide text-center">
+            Агрегатор земельного рынка России
+          </p>
         </div>
 
         <h1 className="text-2xl font-bold text-center mb-8 text-slate-900">
