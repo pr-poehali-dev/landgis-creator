@@ -55,9 +55,10 @@ export const AttributeFieldRenderer = ({
     }
     
     const normalizeValue = (val: any): string => {
-      if (val === true || val === 'true') return 'да';
-      if (val === false || val === 'false') return 'нет';
-      return String(val).toLowerCase().trim();
+      const strVal = String(val).toLowerCase().trim();
+      if (val === true || strVal === 'true' || strVal === 'да') return 'да';
+      if (val === false || strVal === 'false' || strVal === 'нет') return 'нет';
+      return strVal;
     };
     
     // Если зависимое значение - массив, проверяем вхождение любого элемента
