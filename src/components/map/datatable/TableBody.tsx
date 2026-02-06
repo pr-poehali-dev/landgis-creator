@@ -44,10 +44,16 @@ const TableBody = ({
         <table className="w-full">
           <thead className="bg-muted/50 sticky top-0 z-10">
             <tr>
-              {headers.map((header) => (
+              {onShowOnMap && (
+                <th className="text-left p-3 font-semibold text-sm border-b w-12 sticky left-0 bg-muted/50 z-20">
+                </th>
+              )}
+              {headers.map((header, index) => (
                 <th 
                   key={header.key}
-                  className="text-left p-3 font-semibold text-sm border-b cursor-pointer hover:bg-muted/80 transition-colors select-none"
+                  className={`text-left p-3 font-semibold text-sm border-b cursor-pointer hover:bg-muted/80 transition-colors select-none ${
+                    index === 0 && header.key === 'title' ? 'sticky left-12 bg-muted/50 z-20 min-w-[200px]' : ''
+                  }`}
                   onClick={() => onSort(header.key)}
                 >
                   <div className="flex items-center gap-2">
@@ -56,11 +62,6 @@ const TableBody = ({
                   </div>
                 </th>
               ))}
-              {onShowOnMap && (
-                <th className="text-left p-3 font-semibold text-sm border-b w-32">
-                  Действия
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
@@ -69,24 +70,28 @@ const TableBody = ({
                 key={property.id || idx}
                 className="border-b hover:bg-muted/30 transition-colors"
               >
-                {headers.map((header) => (
-                  <td key={header.key} className="p-3 text-sm">
-                    {getCellValue(property, header.key)}
-                  </td>
-                ))}
                 {onShowOnMap && (
-                  <td className="p-3">
+                  <td className="p-3 sticky left-0 bg-background z-10 w-12">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => onShowOnMap(property)}
-                      className="gap-2"
+                      className="h-8 w-8 p-0"
                     >
-                      <Icon name="MapPin" size={14} />
-                      На карте
+                      <Icon name="MapPin" size={16} />
                     </Button>
                   </td>
                 )}
+                {headers.map((header, index) => (
+                  <td 
+                    key={header.key} 
+                    className={`p-3 text-sm ${
+                      index === 0 && header.key === 'title' ? 'sticky left-12 bg-background z-10 min-w-[200px]' : ''
+                    }`}
+                  >
+                    {getCellValue(property, header.key)}
+                  </td>
+                ))}
               </tr>
             ))}
           </tbody>
