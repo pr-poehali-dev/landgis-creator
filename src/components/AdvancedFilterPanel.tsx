@@ -55,26 +55,39 @@ const AdvancedFilterPanel = ({
   }, [filters]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('filterSettings');
-    if (saved) {
-      try {
-        const settings = JSON.parse(saved);
-        setFilterSettings(settings);
-        
-        const defaultFilters: Record<string, string[]> = {};
-        settings.forEach((setting: FilterColumnSettings) => {
-          if (setting.defaultValues.length > 0) {
-            defaultFilters[setting.id] = setting.defaultValues;
+    const loadSettings = () => {
+      const saved = localStorage.getItem('filterSettings');
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          setFilterSettings(settings);
+          
+          const defaultFilters: Record<string, string[]> = {};
+          settings.forEach((setting: FilterColumnSettings) => {
+            if (setting.defaultValues.length > 0) {
+              defaultFilters[setting.id] = setting.defaultValues;
+            }
+          });
+          
+          if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+            onFiltersChange(defaultFilters);
           }
-        });
-        
-        if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
-          onFiltersChange(defaultFilters);
+        } catch (error) {
+          console.error('Error loading filter settings:', error);
         }
-      } catch (error) {
-        console.error('Error loading filter settings:', error);
       }
-    }
+    };
+
+    loadSettings();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'filterSettings') {
+        loadSettings();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const statusLabels: Record<string, string> = {
@@ -374,7 +387,10 @@ const AdvancedFilterPanel = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs"
+                className={cn(
+                  "h-8 text-xs",
+                  activeCount === 0 ? "" : "hover:bg-accent"
+                )}
                 onClick={clearFilters}
               >
                 Сбросить всё
