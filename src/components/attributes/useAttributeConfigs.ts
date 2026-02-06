@@ -5,6 +5,7 @@ import func2url from '../../../backend/func2url.json';
 
 // Возвращаемся к локальному ключу - у админа там правильный порядок
 const GLOBAL_STORAGE_KEY = 'attributeConfigs';
+const DELETED_ATTRIBUTES_KEY = 'deletedAttributes';
 
 // Правильный порядок атрибутов по умолчанию
 const DEFAULT_ATTRIBUTE_ORDER = [
@@ -121,8 +122,12 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       const existingConfigKeys = new Set(savedConfigsArray.map(c => c.configKey));
       const existingOriginalKeys = new Set(savedConfigsArray.map(c => c.originalKey).filter(Boolean));
       
+      // Получаем список удалённых навсегда атрибутов
+      const deletedAttributesStr = localStorage.getItem(DELETED_ATTRIBUTES_KEY);
+      const deletedAttributes = deletedAttributesStr ? new Set(JSON.parse(deletedAttributesStr)) : new Set<string>();
+      
       const newAttributeKeys = attributeKeys.filter(key => 
-        !existingConfigKeys.has(key) && !existingOriginalKeys.has(key)
+        !existingConfigKeys.has(key) && !existingOriginalKeys.has(key) && !deletedAttributes.has(key)
       );
       
       const displayNames: Record<string, string> = {
@@ -207,8 +212,15 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     } else {
       const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
       
+      // Получаем список удалённых навсегда атрибутов
+      const deletedAttributesStr = localStorage.getItem(DELETED_ATTRIBUTES_KEY);
+      const deletedAttributes = deletedAttributesStr ? new Set(JSON.parse(deletedAttributesStr)) : new Set<string>();
+      
+      // Фильтруем атрибуты, исключая удалённые
+      const filteredKeys = attributeKeys.filter(key => !deletedAttributes.has(key));
+      
       // Сортируем ключи по DEFAULT_ATTRIBUTE_ORDER
-      const sortedKeys = attributeKeys.sort((a, b) => {
+      const sortedKeys = filteredKeys.sort((a, b) => {
         const aIndex = DEFAULT_ATTRIBUTE_ORDER.indexOf(a);
         const bIndex = DEFAULT_ATTRIBUTE_ORDER.indexOf(b);
         
@@ -314,6 +326,14 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     // Определяем удалённые атрибуты (которые были, но теперь их нет)
     const currentConfigKeys = new Set(configs.map(c => c.originalKey || c.configKey));
     const deletedKeys = Array.from(previousConfigKeys).filter(key => !currentConfigKeys.has(key));
+    
+    // Сохраняем удалённые атрибуты в список "удалённых навсегда"
+    if (deletedKeys.length > 0) {
+      const deletedAttributesStr = localStorage.getItem(DELETED_ATTRIBUTES_KEY);
+      const deletedAttributes = deletedAttributesStr ? new Set(JSON.parse(deletedAttributesStr)) : new Set<string>();
+      deletedKeys.forEach(key => deletedAttributes.add(key));
+      localStorage.setItem(DELETED_ATTRIBUTES_KEY, JSON.stringify(Array.from(deletedAttributes)));
+    }
     
     // Удаляем атрибуты из всех объектов в БД
     for (const key of deletedKeys) {
