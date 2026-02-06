@@ -42,34 +42,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Декоративные элементы фона */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative z-10 bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
-        {/* Логотип */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="relative mb-4">
-            <svg width="120" height="50" viewBox="0 0 200 80" className="drop-shadow-lg">
-              <text x="10" y="50" fontFamily="Arial, sans-serif" fontSize="36" fontWeight="bold" fill="#F97316">
-                Zem
-              </text>
-              <text x="100" y="50" fontFamily="Arial, sans-serif" fontSize="36" fontWeight="bold" fill="#1E293B">
-                Book
-              </text>
-              <path d="M 30 60 Q 100 55 170 60" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round"/>
-            </svg>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50 relative overflow-hidden">
+      <div className="relative z-10 bg-white p-10 rounded-xl shadow-lg w-full max-w-md">
+        {/* Иконка замка */}
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center">
+            <Icon name="Lock" size={32} className="text-indigo-600" />
           </div>
-          <p className="text-slate-600 text-sm font-medium tracking-wide">
-            Агрегатор земельного рынка
-          </p>
         </div>
 
-        <h1 className="text-2xl font-bold text-center mb-8 text-slate-800">
+        <h1 className="text-2xl font-bold text-center mb-8 text-slate-900">
           Вход в систему
         </h1>
 
@@ -92,7 +74,7 @@ export default function LoginPage() {
               placeholder="Введите логин"
               required
               disabled={loading}
-              className="h-12 bg-slate-50 border-slate-300 focus:border-orange-500 focus:ring-orange-500/20"
+              className="h-12 bg-slate-900 text-white placeholder:text-slate-500 border-0 focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
@@ -107,13 +89,13 @@ export default function LoginPage() {
               placeholder="Введите пароль"
               required
               disabled={loading}
-              className="h-12 bg-slate-50 border-slate-300 focus:border-orange-500 focus:ring-orange-500/20"
+              className="h-12 bg-slate-900 text-white placeholder:text-slate-500 border-0 focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold shadow-lg shadow-orange-500/30 transition-all duration-200"
+            className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-semibold transition-all duration-200"
             disabled={loading}
           >
             {loading ? (
@@ -122,20 +104,10 @@ export default function LoginPage() {
                 Вход...
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <Icon name="LogIn" size={18} />
-                Войти
-              </div>
+              'Войти'
             )}
           </Button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-slate-200">
-          <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-            <Icon name="Shield" size={14} />
-            <span>Защищённое соединение</span>
-          </div>
-        </div>
       </div>
     </div>
   );
