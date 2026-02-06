@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Get filter config",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "config": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Save filter config",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "config": [
+          {
+            "id": "region",
+            "label": "Регион",
+            "enabled": true,
+            "order": 1
+          }
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      }
+    }
+  ]
+}

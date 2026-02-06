@@ -246,8 +246,21 @@ const AdminFilterSettings = () => {
   const handleSaveSettings = async () => {
     setIsSaving(true);
     try {
+      // Сохраняем в localStorage для обратной совместимости
       localStorage.setItem('filterSettings', JSON.stringify(filterColumns));
-      toast.success('Настройки фильтров сохранены');
+      
+      // Сохраняем на сервер для синхронизации между устройствами
+      const response = await fetch('https://functions.poehali.dev/d55d58af-9be6-493a-a89d-45634d648637', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: filterColumns })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Ошибка сохранения на сервер');
+      }
+      
+      toast.success('Настройки фильтров сохранены и синхронизированы');
     } catch (error) {
       console.error('Error saving settings:', error);
       toast.error('Не удалось сохранить настройки');

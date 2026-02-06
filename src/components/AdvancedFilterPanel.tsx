@@ -55,31 +55,66 @@ const AdvancedFilterPanel = ({
   }, [filters]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('filterSettings');
-    console.log('📱 Загрузка настроек фильтра, isOpen:', isOpen, 'saved:', saved);
-    if (saved) {
+    const loadSettings = async () => {
       try {
-        const settings = JSON.parse(saved);
-        console.log('✅ Настройки фильтра загружены:', settings);
-        setFilterSettings(settings);
+        // Сначала пытаемся загрузить с сервера (синхронизация между устройствами)
+        const response = await fetch('https://functions.poehali.dev/d55d58af-9be6-493a-a89d-45634d648637');
         
-        const defaultFilters: Record<string, string[]> = {};
-        settings.forEach((setting: FilterColumnSettings) => {
-          if (setting.defaultValues.length > 0) {
-            defaultFilters[setting.id] = setting.defaultValues;
+        if (response.ok) {
+          const data = await response.json();
+          if (data.config && data.config.length > 0) {
+            console.log('📱 Настройки загружены с сервера:', data.config);
+            setFilterSettings(data.config);
+            
+            // Синхронизируем localStorage
+            localStorage.setItem('filterSettings', JSON.stringify(data.config));
+            
+            const defaultFilters: Record<string, string[]> = {};
+            data.config.forEach((setting: FilterColumnSettings) => {
+              if (setting.defaultValues.length > 0) {
+                defaultFilters[setting.id] = setting.defaultValues;
+              }
+            });
+            
+            if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+              console.log('🔄 Применяем дефолтные фильтры:', defaultFilters);
+              onFiltersChange(defaultFilters);
+            }
+            return;
           }
-        });
+        }
         
-        if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
-          console.log('🔄 Применяем дефолтные фильтры:', defaultFilters);
-          onFiltersChange(defaultFilters);
+        // Если на сервере нет данных, пытаемся загрузить из localStorage
+        const saved = localStorage.getItem('filterSettings');
+        if (saved) {
+          const settings = JSON.parse(saved);
+          console.log('📱 Настройки загружены из localStorage:', settings);
+          setFilterSettings(settings);
+          
+          const defaultFilters: Record<string, string[]> = {};
+          settings.forEach((setting: FilterColumnSettings) => {
+            if (setting.defaultValues.length > 0) {
+              defaultFilters[setting.id] = setting.defaultValues;
+            }
+          });
+          
+          if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+            onFiltersChange(defaultFilters);
+          }
         }
       } catch (error) {
-        console.error('❌ Ошибка загрузки настроек фильтра:', error);
+        console.error('❌ Ошибка загрузки настроек:', error);
+        
+        // Fallback на localStorage при ошибке сети
+        const saved = localStorage.getItem('filterSettings');
+        if (saved) {
+          const settings = JSON.parse(saved);
+          setFilterSettings(settings);
+        }
       }
-    } else {
-      console.log('⚠️ Настройки фильтра не найдены в localStorage');
-    }
+    };
+    
+    loadSettings();
   }, [isOpen]);
 
   const statusLabels: Record<string, string> = {
