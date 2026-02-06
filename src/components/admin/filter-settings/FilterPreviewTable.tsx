@@ -48,14 +48,14 @@ const FilterPreviewTable = ({ columns, getOptionLabel }: FilterPreviewTableProps
             </thead>
             <tbody>
               {Array.from({ 
-                length: Math.max(...sortedColumns.filter(c => c.enabled).map(c => Math.min(c.options.length, 5)))
+                length: Math.max(...sortedColumns.filter(c => c.enabled).map(c => Math.min(c.options?.length || 0, 5)), 0)
               }).map((_, rowIndex) => (
                 <tr key={rowIndex} className="border-b border-border/50">
                   {sortedColumns
                     .filter(col => col.enabled)
                     .map(column => {
-                      const option = column.options[rowIndex];
-                      const isDefault = column.defaultValues.includes(option);
+                      const option = column.options?.[rowIndex];
+                      const isDefault = column.defaultValues?.includes(option) || false;
                       
                       return (
                         <td key={column.id} className="px-3 py-1.5">
