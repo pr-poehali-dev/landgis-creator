@@ -362,12 +362,14 @@ const AttributeConfigItem = ({
                 const parentConfig = allConfigs.find(c => c.configKey === config.conditionalDisplay?.dependsOn);
                 const parentOptions = parentConfig?.formatOptions?.options || [];
                 
-                if (parentConfig?.formatType === 'boolean') {
+                if (parentConfig?.formatType === 'boolean' || parentConfig?.formatType === 'toggle') {
                   return (
                     <div>
                       <label className="text-[10px] text-muted-foreground mb-0.5 block">Показывать когда</label>
                       <Select
-                        value={String(config.conditionalDisplay.showWhen)}
+                        value={Array.isArray(config.conditionalDisplay.showWhen) 
+                          ? config.conditionalDisplay.showWhen[0] 
+                          : String(config.conditionalDisplay.showWhen || '')}
                         onValueChange={(value) => {
                           onConfigChange(index, 'conditionalDisplay', {
                             ...config.conditionalDisplay,
@@ -379,8 +381,8 @@ const AttributeConfigItem = ({
                           <SelectValue placeholder="Выберите значение" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="true">Да</SelectItem>
-                          <SelectItem value="false">Нет</SelectItem>
+                          <SelectItem value="Да">Да</SelectItem>
+                          <SelectItem value="Нет">Нет</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
