@@ -123,7 +123,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
         ref={panelRef}
         className={cn(
           "sm:hidden absolute bottom-0 left-0 right-0 shadow-2xl animate-slide-up overflow-hidden flex flex-col z-50 rounded-t-2xl rounded-b-none transition-all duration-300",
-          isExpanded ? "h-[calc(100vh-80px)] top-[80px]" : "h-[50vh] max-h-[85vh]"
+          isExpanded ? "h-[calc(100vh-70px)]" : "h-[70vh]"
         )}
         style={{
           transform: `translateY(${currentTranslate}px)`,
@@ -176,13 +176,14 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-3 overflow-y-auto flex-1 flex flex-col">
+        <CardContent className="p-3 pb-6 overflow-y-auto flex-1 flex flex-col">
           <AttributesDisplay 
             attributes={property.attributes}
             userRole={userRole}
             featureId={property.id}
             onAttributesUpdate={onAttributesUpdate}
           />
+          <div className="h-16" />
         </CardContent>
       </Card>
 
