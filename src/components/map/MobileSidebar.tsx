@@ -71,16 +71,16 @@ const MobileSidebar = ({
               filteredProperties.map(property => (
                 <div
                   key={property.id}
-                  className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg border ${
+                  className={`cursor-pointer transition-all hover:bg-accent p-2 rounded-lg border ${
                     selectedProperty?.id === property.id ? 'bg-accent border-primary' : 'border-transparent'
                   }`}
                   onClick={() => onPropertySelect(property, true)}
                   onMouseEnter={() => onPropertyHover(property.id)}
                   onMouseLeave={() => onPropertyHover(null)}
                 >
-                  <div className="text-sm font-medium mb-1.5">{property.title}</div>
+                  <div className="text-sm font-medium mb-1">{property.title}</div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Icon name="MapPin" size={12} />
+                    <Icon name="MapPin" size={10} />
                     {property.attributes?.region && !property.attributes.region.startsWith('lyr_')
                       ? property.attributes.region
                       : 'Регион не указан'}
