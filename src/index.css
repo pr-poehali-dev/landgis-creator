@@ -56,6 +56,9 @@
   body,
   #root {
     @apply h-full;
+    height: 100dvh;
+    height: 100vh;
+    height: 100svh;
   }
 
   body {
@@ -63,6 +66,8 @@
     font-family: "Inter", sans-serif;
     font-size: 14px;
     height: 100dvh;
+    height: 100vh;
+    height: 100svh;
     overflow: hidden;
   }
 
