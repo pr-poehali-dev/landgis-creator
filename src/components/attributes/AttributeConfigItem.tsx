@@ -41,7 +41,7 @@ const AttributeConfigItem = ({
       return ['да', 'нет'];
     }
 
-    if (dependentConfig.formatType === 'select' && dependentConfig.formatOptions?.options) {
+    if ((dependentConfig.formatType === 'select' || dependentConfig.formatType === 'multiselect') && dependentConfig.formatOptions?.options) {
       return dependentConfig.formatOptions.options;
     }
 
