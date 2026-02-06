@@ -44,6 +44,14 @@ def handler(event: dict, context) -> dict:
             else:
                 return error_response('Method not allowed', 405)
         
+        # Handle deleting attribute from all objects
+        if query_params.get('action') == 'delete_attribute':
+            if method == 'POST':
+                body = json.loads(event.get('body', '{}'))
+                return delete_attribute_from_all(conn, body)
+            else:
+                return error_response('Method not allowed', 405)
+        
         # Handle attribute config requests
         if query_params.get('type') == 'config':
             if method == 'GET':
@@ -261,6 +269,30 @@ def add_attribute_to_all(conn, data):
     return success_response({
         'success': True,
         'message': f'Added attribute {attr_key} to all objects',
+        'affectedRows': affected_rows
+    })
+
+def delete_attribute_from_all(conn, data):
+    '''Удаление атрибута из всех объектов'''
+    key = data.get('key')
+    
+    if not key:
+        return error_response('key is required', 400)
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute('''
+            UPDATE t_p78972315_landgis_creator.properties
+            SET attributes = attributes - %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE attributes ? %s
+        ''', (key, key))
+        
+        affected_rows = cur.rowcount
+        conn.commit()
+    
+    return success_response({
+        'success': True,
+        'message': f'Deleted attribute {key}',
         'affectedRows': affected_rows
     })
 

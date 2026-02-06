@@ -16,6 +16,7 @@ const DEFAULT_ATTRIBUTE_ORDER = [
 
 export const useAttributeConfigs = (attributes?: Record<string, any>) => {
   const [configs, setConfigs] = useState<DisplayConfig[]>([]);
+  const [previousConfigKeys, setPreviousConfigKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadConfigs();
@@ -198,6 +199,10 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       });
       
       const mergedConfigs = [...savedConfigsArray, ...newConfigs];
+      
+      // Обновляем список ключей для отслеживания удалений
+      setPreviousConfigKeys(new Set(mergedConfigs.map(c => c.originalKey || c.configKey)));
+      
       setConfigs(mergedConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
     } else {
       const attributeKeys = Object.keys(attributes).filter(k => k !== 'geometry_name');
@@ -244,6 +249,9 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         'status_publ': 'Статус публикации',
         'insight': 'Инсайт'
       };
+      
+      // Сохраняем список ключей для отслеживания удалений
+      setPreviousConfigKeys(new Set(sortedKeys));
       
       const newConfigs: DisplayConfig[] = sortedKeys.map((key, index) => {
         const defaultConfig: DisplayConfig = {
@@ -303,6 +311,28 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       configsMap[c.configKey] = c;
     });
     
+    // Определяем удалённые атрибуты (которые были, но теперь их нет)
+    const currentConfigKeys = new Set(configs.map(c => c.originalKey || c.configKey));
+    const deletedKeys = Array.from(previousConfigKeys).filter(key => !currentConfigKeys.has(key));
+    
+    // Удаляем атрибуты из всех объектов в БД
+    for (const key of deletedKeys) {
+      try {
+        const response = await fetch(`${func2url['update-attributes']}?action=delete_attribute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          toast.success(`Атрибут "${key}" удалён из ${result.affectedRows} объектов`);
+        }
+      } catch (error) {
+        console.error('Error deleting attribute:', error);
+      }
+    }
+    
     // Определяем новые атрибуты (те, у которых нет originalKey)
     const newAttributes = configs.filter(c => !c.originalKey || c.originalKey === c.configKey);
     
@@ -360,9 +390,12 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       }
     }
     
+    // Обновляем список ключей для отслеживания удалений
+    setPreviousConfigKeys(new Set(configs.map(c => c.originalKey || c.configKey)));
+    
     toast.success('Настройки сохранены для всех объектов');
     
-    if (renamedKeys.length > 0 && onAttributesUpdate) {
+    if (renamedKeys.length > 0 || deletedKeys.length > 0) {
       window.location.reload();
     }
   };
