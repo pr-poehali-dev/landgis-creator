@@ -72,6 +72,9 @@ def handler(event: dict, context) -> dict:
         data = json.loads(event.get('body', '{}'))
         attributes = data.get('attributes', {})
         
+        print(f'📝 Updating property {property_id}')
+        print(f'📝 Received attributes: {json.dumps(attributes, ensure_ascii=False)[:500]}')
+        
         try:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute('''
@@ -85,6 +88,7 @@ def handler(event: dict, context) -> dict:
                 conn.commit()
                 
                 if not row:
+                    print(f'❌ Property {property_id} not found')
                     return {
                         'statusCode': 404,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
@@ -97,6 +101,7 @@ def handler(event: dict, context) -> dict:
                     'attributes': row['attributes']
                 }
                 
+                print(f'✅ Property {property_id} updated successfully')
                 return success_response(result)
         finally:
             conn.close()
