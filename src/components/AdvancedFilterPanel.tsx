@@ -55,40 +55,27 @@ const AdvancedFilterPanel = ({
   }, [filters]);
 
   useEffect(() => {
-    const loadSettings = () => {
-      const saved = localStorage.getItem('filterSettings');
-      if (saved) {
-        try {
-          const settings = JSON.parse(saved);
-          setFilterSettings(settings);
-          
-          const defaultFilters: Record<string, string[]> = {};
-          settings.forEach((setting: FilterColumnSettings) => {
-            if (setting.defaultValues.length > 0) {
-              defaultFilters[setting.id] = setting.defaultValues;
-            }
-          });
-          
-          if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
-            onFiltersChange(defaultFilters);
+    const saved = localStorage.getItem('filterSettings');
+    if (saved) {
+      try {
+        const settings = JSON.parse(saved);
+        setFilterSettings(settings);
+        
+        const defaultFilters: Record<string, string[]> = {};
+        settings.forEach((setting: FilterColumnSettings) => {
+          if (setting.defaultValues.length > 0) {
+            defaultFilters[setting.id] = setting.defaultValues;
           }
-        } catch (error) {
-          console.error('Error loading filter settings:', error);
+        });
+        
+        if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+          onFiltersChange(defaultFilters);
         }
+      } catch (error) {
+        console.error('Error loading filter settings:', error);
       }
-    };
-
-    loadSettings();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'filterSettings') {
-        loadSettings();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    }
+  }, [isOpen]);
 
   const statusLabels: Record<string, string> = {
     available: 'Доступно',
@@ -387,11 +374,9 @@ const AdvancedFilterPanel = ({
               <Button
                 variant="outline"
                 size="sm"
-                className={cn(
-                  "h-8 text-xs",
-                  activeCount === 0 ? "" : "hover:bg-accent"
-                )}
+                className="h-8 text-xs hover:bg-accent"
                 onClick={clearFilters}
+                disabled={activeCount === 0}
               >
                 Сбросить всё
               </Button>
