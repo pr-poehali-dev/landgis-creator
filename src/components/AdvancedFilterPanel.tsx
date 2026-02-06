@@ -377,17 +377,15 @@ const AdvancedFilterPanel = ({
             {/* Кнопки справа */}
             <div className="absolute right-0 top-0 flex gap-2">
               <Button
-                variant="outline"
+                variant={activeCount > 0 ? "outline" : "ghost"}
                 size="sm"
                 className={cn(
-                  "h-8 text-xs",
-                  activeCount > 0 ? "hover:bg-accent cursor-pointer" : "opacity-50 cursor-not-allowed"
+                  "h-8 text-xs transition-all",
+                  activeCount > 0 
+                    ? "hover:bg-accent" 
+                    : "opacity-50 cursor-not-allowed pointer-events-none"
                 )}
-                onClick={() => {
-                  if (activeCount > 0) {
-                    clearFilters();
-                  }
-                }}
+                onClick={clearFilters}
               >
                 Сбросить всё
               </Button>
