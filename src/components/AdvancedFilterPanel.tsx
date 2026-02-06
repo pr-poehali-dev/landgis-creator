@@ -382,10 +382,13 @@ const AdvancedFilterPanel = ({
                 className={cn(
                   "h-8 text-xs transition-all",
                   activeCount > 0 
-                    ? "hover:bg-accent" 
+                    ? "hover:bg-accent active:bg-accent" 
                     : "opacity-50 cursor-not-allowed pointer-events-none"
                 )}
-                onClick={clearFilters}
+                onClick={(e) => {
+                  clearFilters();
+                  (e.target as HTMLButtonElement).blur();
+                }}
               >
                 Сбросить всё
               </Button>
