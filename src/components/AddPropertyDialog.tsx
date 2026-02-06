@@ -45,7 +45,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
       try {
         const configsMap: Record<string, DisplayConfig> = JSON.parse(saved);
         const configsArray = Object.values(configsMap)
-          .filter(config => config.enabled)
+          .filter(config => config.enabled || config.conditionalDisplay)
           .sort((a, b) => a.displayOrder - b.displayOrder);
         setAttributeConfigs(configsArray);
         
