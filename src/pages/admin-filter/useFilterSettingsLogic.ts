@@ -131,7 +131,7 @@ export const useFilterSettingsLogic = () => {
         Array.from(attributeValues.entries()).map(([path, values]) => ({ path, values }))
       );
 
-      const updatedOptions: Record<string, string[]> = {
+      const freshOptions: Record<string, string[]> = {
         region: Array.from(regions).sort(),
         segment: Array.from(segments).sort()
       };
@@ -140,15 +140,23 @@ export const useFilterSettingsLogic = () => {
       if (saved) {
         const savedSettings = JSON.parse(saved);
         const merged = savedSettings.map((savedCol: FilterColumn) => {
-          const optionsToUse = updatedOptions[savedCol.id] || savedCol.options;
-          return { ...savedCol, options: optionsToUse };
+          if (savedCol.id === 'region' || savedCol.id === 'segment') {
+            const savedOptions = savedCol.options || [];
+            const freshValues = freshOptions[savedCol.id] || [];
+            
+            const orderedOptions = savedOptions.filter(opt => freshValues.includes(opt));
+            const newOptions = freshValues.filter(opt => !savedOptions.includes(opt));
+            
+            return { ...savedCol, options: [...orderedOptions, ...newOptions] };
+          }
+          return savedCol;
         });
         
         defaultColumns.forEach(col => {
           if (!savedSettings.find((s: FilterColumn) => s.id === col.id)) {
             merged.push({
               ...col,
-              options: updatedOptions[col.id] || col.options
+              options: freshOptions[col.id] || col.options
             });
           }
         });
@@ -157,7 +165,7 @@ export const useFilterSettingsLogic = () => {
       } else {
         setFilterColumns(defaultColumns.map(col => ({
           ...col,
-          options: updatedOptions[col.id] || col.options
+          options: freshOptions[col.id] || col.options
         })));
       }
     } catch (error) {
