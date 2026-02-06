@@ -376,22 +376,22 @@ const AdvancedFilterPanel = ({
           <div className="min-h-[44px] flex flex-wrap gap-2 pb-4 mb-2 border-b border-border items-center relative pr-[200px]">
             {/* Кнопки справа */}
             <div className="absolute right-0 top-0 flex gap-2">
-              <Button
-                variant={activeCount > 0 ? "outline" : "ghost"}
-                size="sm"
+              <button
                 className={cn(
-                  "h-8 text-xs transition-all",
+                  "h-8 px-3 text-xs rounded-md border transition-all",
                   activeCount > 0 
-                    ? "hover:bg-accent active:bg-accent" 
-                    : "opacity-50 cursor-not-allowed pointer-events-none"
+                    ? "border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent" 
+                    : "border-transparent bg-transparent text-muted-foreground opacity-50 cursor-not-allowed"
                 )}
                 onClick={(e) => {
-                  clearFilters();
-                  (e.target as HTMLButtonElement).blur();
+                  if (activeCount > 0) {
+                    clearFilters();
+                    (e.currentTarget as HTMLButtonElement).blur();
+                  }
                 }}
               >
                 Сбросить всё
-              </Button>
+              </button>
               <Button
                 size="sm"
                 className="h-8 text-xs"
