@@ -186,7 +186,27 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
                 {searchQuery ? `Найдено: ${sortedProperties.length} из ${displayProperties.length}` : `Показано объектов: ${displayProperties.length}`}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3">
+              {allProperties && allProperties.length !== properties.length && (
+                <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
+                  <Button
+                    onClick={() => setShowFiltered(true)}
+                    variant="ghost"
+                    size="sm"
+                    className={showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
+                  >
+                    С учётом фильтрации
+                  </Button>
+                  <Button
+                    onClick={() => setShowFiltered(false)}
+                    variant="ghost"
+                    size="sm"
+                    className={!showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
+                  >
+                    Все участки
+                  </Button>
+                </div>
+              )}
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
@@ -223,41 +243,16 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
           </div>
         </DialogHeader>
 
-        <div className="space-y-2">
-          <div className="px-1">
-            <div className="relative">
-              <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Поиск по таблице..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9"
-              />
-            </div>
+        <div className="px-1">
+          <div className="relative">
+            <Icon name="Search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Поиск по таблице..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9"
+            />
           </div>
-
-          {allProperties && allProperties.length !== properties.length && (
-          <div className="flex justify-center pb-2">
-            <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
-              <Button
-                onClick={() => setShowFiltered(true)}
-                variant="ghost"
-                size="sm"
-                className={showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
-              >
-                С учётом фильтрации
-              </Button>
-              <Button
-                onClick={() => setShowFiltered(false)}
-                variant="ghost"
-                size="sm"
-                className={!showFiltered ? "bg-accent text-accent-foreground shadow-sm" : ""}
-              >
-                Все участки
-              </Button>
-            </div>
-          </div>
-          )}
         </div>
 
         <div className="flex-1 overflow-auto border rounded-lg relative">
