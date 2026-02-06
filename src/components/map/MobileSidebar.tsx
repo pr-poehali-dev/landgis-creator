@@ -36,11 +36,6 @@ const MobileSidebar = ({
 }: MobileSidebarProps) => {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="lg:hidden h-8 w-8">
-          <Icon name="Menu" size={16} />
-        </Button>
-      </SheetTrigger>
       <SheetContent side="left" className="w-[85vw] sm:w-96 p-0">
         <div className="flex flex-col h-full bg-card/50 backdrop-blur">
           <div className="p-6 border-b border-border">
