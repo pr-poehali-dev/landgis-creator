@@ -26,6 +26,13 @@ const DataTableDialog = ({ open, onOpenChange, properties, allProperties, onShow
   useEffect(() => {
     if (!open) {
       setIsSearchActive(false);
+    } else {
+      // При открытии убираем фокус со всех input
+      setTimeout(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }, 0);
     }
   }, [open]);
 
