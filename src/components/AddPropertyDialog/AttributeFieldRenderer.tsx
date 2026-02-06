@@ -28,7 +28,16 @@ export const AttributeFieldRenderer = ({
     const showWhen = config.conditionalDisplay.showWhen;
     let dependValue = formData.attributes?.[dependsOnKey];
     
+    console.log('[Conditional Display Debug]', {
+      field: config.displayName,
+      dependsOn: dependsOnKey,
+      showWhen,
+      rawDependValue: dependValue,
+      dependValueType: typeof dependValue
+    });
+    
     if (dependValue === undefined || dependValue === null || dependValue === '') {
+      console.log('  → Hidden: dependValue is empty');
       return false;
     }
     
@@ -38,9 +47,10 @@ export const AttributeFieldRenderer = ({
         const parsed = JSON.parse(dependValue);
         if (Array.isArray(parsed)) {
           dependValue = parsed;
+          console.log('  → Parsed JSON array:', dependValue);
         }
       } catch (e) {
-        // Если не распарсилось - оставляем как есть
+        console.log('  → Failed to parse JSON array');
       }
     }
     
@@ -52,20 +62,42 @@ export const AttributeFieldRenderer = ({
     
     // Если зависимое значение - массив, проверяем вхождение любого элемента
     if (Array.isArray(dependValue)) {
+      console.log('  → dependValue is array:', dependValue);
       if (Array.isArray(showWhen)) {
-        return dependValue.some(dv => 
-          showWhen.some(when => normalizeValue(dv) === normalizeValue(when))
+        const result = dependValue.some(dv => 
+          showWhen.some(when => {
+            const match = normalizeValue(dv) === normalizeValue(when);
+            console.log(`    Comparing: "${dv}" vs "${when}" = ${match}`);
+            return match;
+          })
         );
+        console.log(`  → Result (array vs array): ${result}`);
+        return result;
       }
-      return dependValue.some(dv => normalizeValue(dv) === normalizeValue(showWhen));
+      const result = dependValue.some(dv => {
+        const match = normalizeValue(dv) === normalizeValue(showWhen);
+        console.log(`    Comparing: "${dv}" vs "${showWhen}" = ${match}`);
+        return match;
+      });
+      console.log(`  → Result (array vs single): ${result}`);
+      return result;
     }
     
     // Если showWhen - массив, проверяем вхождение
     if (Array.isArray(showWhen)) {
-      return showWhen.some(when => normalizeValue(dependValue) === normalizeValue(when));
+      console.log('  → showWhen is array:', showWhen);
+      const result = showWhen.some(when => {
+        const match = normalizeValue(dependValue) === normalizeValue(when);
+        console.log(`    Comparing: "${dependValue}" vs "${when}" = ${match}`);
+        return match;
+      });
+      console.log(`  → Result (single vs array): ${result}`);
+      return result;
     }
     
-    return normalizeValue(dependValue) === normalizeValue(showWhen);
+    const result = normalizeValue(dependValue) === normalizeValue(showWhen);
+    console.log(`  → Result (single vs single): "${dependValue}" vs "${showWhen}" = ${result}`);
+    return result;
   };
 
   if (!shouldShow()) return null;
