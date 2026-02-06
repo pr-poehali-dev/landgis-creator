@@ -132,6 +132,32 @@ const Admin = () => {
     setIsDetailDialogOpen(true);
   };
 
+  const handleDeleteTestProperties = async () => {
+    const testProps = properties.filter(p => p.title === 'Test Property' && (!p.attributes || Object.keys(p.attributes).length === 0));
+    
+    if (testProps.length === 0) {
+      toast.info('Тестовые объекты не найдены');
+      return;
+    }
+
+    if (!confirm(`Найдено ${testProps.length} тестовых объектов. Удалить?`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      for (const prop of testProps) {
+        await propertyService.deleteProperty(prop.id);
+      }
+      toast.success(`Удалено ${testProps.length} тестовых объектов`);
+    } catch (error) {
+      toast.error('Ошибка при удалении');
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AdminNavigation />
@@ -151,6 +177,16 @@ const Admin = () => {
           <Button onClick={loadProperties} variant="outline" size="sm">
             <Icon name="RefreshCw" size={16} className="mr-2" />
             Обновить
+          </Button>
+          <Button 
+            onClick={handleDeleteTestProperties} 
+            variant="outline" 
+            size="sm"
+            disabled={isDeleting}
+            className="text-red-500 hover:text-red-600"
+          >
+            <Icon name="Trash2" size={16} className="mr-2" />
+            Удалить тестовые
           </Button>
         </div>
 
