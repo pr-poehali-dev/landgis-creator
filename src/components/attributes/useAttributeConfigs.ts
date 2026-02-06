@@ -101,20 +101,7 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
           formatOptions: {
             trueLabel: 'Да',
             falseLabel: 'Нет'
-          },
-          conditionalDisplay: {
-            dependsOn: 'segment',
-            showWhen: ['Торговля и ритейл']
           }
-        };
-        localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(savedConfigs));
-      }
-      
-      // Автоматическое добавление условной видимости для status_mpt, если её нет
-      if (savedConfigs['status_mpt'] && !savedConfigs['status_mpt'].conditionalDisplay) {
-        savedConfigs['status_mpt'].conditionalDisplay = {
-          dependsOn: 'segment',
-          showWhen: ['Торговля и ритейл']
         };
         localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(savedConfigs));
       }
