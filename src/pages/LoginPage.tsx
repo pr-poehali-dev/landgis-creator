@@ -4,6 +4,7 @@ import { authService } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 export default function LoginPage() {
   const [login, setLogin] = useState('');
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { settings } = useAppSettings();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,7 +44,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: '#262626' }}>
       {/* Декоративные элементы */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
@@ -51,17 +53,25 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
-        {/* Логотип ZemBook */}
+        {/* Логотип из настроек */}
         <div className="flex flex-col items-center mb-6">
-          <svg width="160" height="60" viewBox="0 0 260 80" className="drop-shadow-lg mb-3">
-            <text x="20" y="50" fontFamily="Arial, sans-serif" fontSize="42" fontWeight="bold" fill="#F97316">
-              Zem
-            </text>
-            <text x="125" y="50" fontFamily="Arial, sans-serif" fontSize="42" fontWeight="bold" fill="#1E293B">
-              Book
-            </text>
-            <path d="M 35 62 Q 130 57 225 62" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round"/>
-          </svg>
+          {settings.logo ? (
+            <img 
+              src={settings.logo} 
+              alt="ZemBook" 
+              className="h-16 w-auto object-contain mb-3 drop-shadow-lg"
+            />
+          ) : (
+            <svg width="160" height="60" viewBox="0 0 260 80" className="drop-shadow-lg mb-3">
+              <text x="20" y="50" fontFamily="Arial, sans-serif" fontSize="42" fontWeight="bold" fill="#F97316">
+                Zem
+              </text>
+              <text x="125" y="50" fontFamily="Arial, sans-serif" fontSize="42" fontWeight="bold" fill="#1E293B">
+                Book
+              </text>
+              <path d="M 35 62 Q 130 57 225 62" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round"/>
+            </svg>
+          )}
           <p className="text-slate-600 text-sm font-medium tracking-wide text-center">
             Агрегатор земельного рынка России
           </p>
