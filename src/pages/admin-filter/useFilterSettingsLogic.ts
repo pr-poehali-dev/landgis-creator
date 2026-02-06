@@ -131,35 +131,34 @@ export const useFilterSettingsLogic = () => {
         Array.from(attributeValues.entries()).map(([path, values]) => ({ path, values }))
       );
 
-      setFilterColumns(prev => prev.map(col => {
-        if (col.id === 'region') {
-          return { ...col, options: Array.from(regions).sort() };
-        }
-        if (col.id === 'segment') {
-          return { ...col, options: Array.from(segments).sort() };
-        }
-        return col;
-      }));
+      const updatedOptions: Record<string, string[]> = {
+        region: Array.from(regions).sort(),
+        segment: Array.from(segments).sort()
+      };
 
       const saved = localStorage.getItem('filterSettings');
       if (saved) {
         const savedSettings = JSON.parse(saved);
-        setFilterColumns(prev => {
-          const merged = savedSettings.map((savedCol: FilterColumn) => {
-            const existing = prev.find(col => col.id === savedCol.id);
-            return existing 
-              ? { ...savedCol, options: existing.options }
-              : savedCol;
-          });
-          
-          prev.forEach(col => {
-            if (!savedSettings.find((s: FilterColumn) => s.id === col.id)) {
-              merged.push(col);
-            }
-          });
-          
-          return merged.sort((a, b) => a.order - b.order);
+        const merged = savedSettings.map((savedCol: FilterColumn) => {
+          const optionsToUse = updatedOptions[savedCol.id] || savedCol.options;
+          return { ...savedCol, options: optionsToUse };
         });
+        
+        defaultColumns.forEach(col => {
+          if (!savedSettings.find((s: FilterColumn) => s.id === col.id)) {
+            merged.push({
+              ...col,
+              options: updatedOptions[col.id] || col.options
+            });
+          }
+        });
+        
+        setFilterColumns(merged.sort((a, b) => a.order - b.order));
+      } else {
+        setFilterColumns(defaultColumns.map(col => ({
+          ...col,
+          options: updatedOptions[col.id] || col.options
+        })));
       }
     } catch (error) {
       console.error('Error loading filter settings:', error);
