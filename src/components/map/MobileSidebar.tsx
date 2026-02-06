@@ -79,20 +79,12 @@ const MobileSidebar = ({
                   onMouseLeave={() => onPropertyHover(null)}
                 >
                   <div className="text-sm font-medium mb-1.5">{property.title}</div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Icon name="MapPin" size={12} />
                     {property.attributes?.region && !property.attributes.region.startsWith('lyr_')
                       ? property.attributes.region
                       : 'Регион не указан'}
                   </div>
-                  {property.attributes?.segment && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Icon name="Tag" size={12} />
-                      {Array.isArray(property.attributes.segment) 
-                        ? property.attributes.segment.join(', ')
-                        : property.attributes.segment}
-                    </div>
-                  )}
                 </div>
               ))
             )}
