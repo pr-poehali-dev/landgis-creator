@@ -11,7 +11,6 @@ import { useAppSettings } from '@/hooks/useAppSettings';
 import SidebarPanel from '@/components/map/SidebarPanel';
 import MobileSidebar from '@/components/map/MobileSidebar';
 import TopNavigation from '@/components/map/TopNavigation';
-import StatisticsBar from '@/components/map/StatisticsBar';
 import DataTableDialog from '@/components/map/DataTableDialog';
 import Icon from '@/components/ui/icon';
 import { authService } from '@/services/authService';
@@ -302,8 +301,6 @@ const Index = () => {
             onVisiblePropertiesChange={setVisiblePropertyIds}
           />
         </div>
-
-        <StatisticsBar properties={properties} />
       </div>
 
       <AddPropertyDialog
