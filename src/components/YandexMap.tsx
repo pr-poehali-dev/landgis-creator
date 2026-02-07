@@ -144,27 +144,28 @@ const YandexMap = ({
     };
   }, [isMapReady, properties, onVisiblePropertiesChange]);
 
-  // Обработчик resize для корректной адаптации карты
+  // Обработчик resize для корректной адаптации карты через ResizeObserver
   useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current) return;
+    if (!isMapReady || !mapInstanceRef.current || !mapRef.current) return;
 
     const map = mapInstanceRef.current;
+    const container = mapRef.current;
     let timeoutId: NodeJS.Timeout;
 
-    const handleResize = () => {
+    const resizeObserver = new ResizeObserver(() => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.container.fitToViewport();
         }
-      }, 150);
-    };
+      }, 100);
+    });
 
-    window.addEventListener('resize', handleResize);
+    resizeObserver.observe(container);
 
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
     };
   }, [isMapReady]);
 
