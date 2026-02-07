@@ -12,7 +12,7 @@ interface FilterControlsProps {
 
 const FilterControls = ({ isOpen, activeCount, onToggle, onLayersClick }: FilterControlsProps) => {
   return (
-    <div className="fixed top-4 right-4 z-40 flex gap-2" style={{ position: 'fixed' }}>
+    <div className="absolute top-4 right-4 z-40 flex gap-2">
       <Button
         onClick={onToggle}
         variant={isOpen || activeCount > 0 ? 'default' : 'outline'}

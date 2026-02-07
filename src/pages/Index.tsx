@@ -53,7 +53,23 @@ const Index = () => {
     }
   }, [appSettings, isSettingsLoading]);
 
+  // Обработка изменения ориентации устройства
+  useEffect(() => {
+    const handleResize = () => {
+      // Принудительный пересчет viewport при изменении ориентации
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
 
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   const loadProperties = async () => {
     setIsLoading(true);
@@ -226,7 +242,7 @@ const Index = () => {
   const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
-    <div className="flex h-full bg-background overflow-hidden">
+    <div className="flex h-full bg-background overflow-hidden" style={{ height: '100vh', height: '-webkit-fill-available' }}>
       <SidebarPanel
         appSettings={appSettings}
         searchQuery={searchQuery}

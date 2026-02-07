@@ -54,6 +54,20 @@
 
   html {
     height: 100%;
+    height: -webkit-fill-available;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  body,
+  #root {
+    @apply h-full;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+    width: 100%;
+    max-width: 100vw;
     overflow: hidden;
   }
 
@@ -61,16 +75,8 @@
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
     font-size: 14px;
-    height: 100vh;
     overflow: hidden;
-    margin: 0;
-    padding: 0;
-  }
-
-  #root {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+    position: relative;
   }
 
   h1,
@@ -80,27 +86,6 @@
   h5,
   h6 {
     font-family: "Montserrat", sans-serif;
-  }
-}
-
-/* Фикс для Radix Portal при изменении ориентации */
-[data-radix-popper-content-wrapper],
-[data-radix-portal] {
-  position: fixed !important;
-  max-width: 100vw !important;
-  max-height: 100vh !important;
-}
-
-/* Фикс для Sheet при изменении ориентации на мобильных */
-@media (max-width: 1024px) {
-  [data-radix-dialog-content] {
-    max-width: 100vw !important;
-    transform: translate3d(0, 0, 0) !important;
-  }
-
-  [data-radix-dialog-overlay] {
-    position: fixed !important;
-    inset: 0 !important;
   }
 }
 
