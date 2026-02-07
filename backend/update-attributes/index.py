@@ -86,7 +86,7 @@ def handler(event: dict, context) -> dict:
         try:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute('''
-                    UPDATE t_p78972315_landgis_creator.properties
+                    UPDATE t_p78972315_landgis_creator.landplots
                     SET attributes = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s
                     RETURNING id, attributes
@@ -222,7 +222,7 @@ def rename_attribute_key(conn, data):
     
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute('''
-            UPDATE t_p78972315_landgis_creator.properties
+            UPDATE t_p78972315_landgis_creator.landplots
             SET attributes = attributes - %s || jsonb_build_object(%s, attributes->%s),
                 updated_at = CURRENT_TIMESTAMP
             WHERE attributes ? %s
@@ -257,7 +257,7 @@ def add_attribute_to_all(conn, data):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         # Добавляем ключ во все объекты, где его ещё нет
         cur.execute('''
-            UPDATE t_p78972315_landgis_creator.properties
+            UPDATE t_p78972315_landgis_creator.landplots
             SET attributes = attributes || jsonb_build_object(%s, %s),
                 updated_at = CURRENT_TIMESTAMP
             WHERE NOT (attributes ? %s)
@@ -281,7 +281,7 @@ def delete_attribute_from_all(conn, data):
     
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute('''
-            UPDATE t_p78972315_landgis_creator.properties
+            UPDATE t_p78972315_landgis_creator.landplots
             SET attributes = attributes - %s,
                 updated_at = CURRENT_TIMESTAMP
             WHERE attributes ? %s

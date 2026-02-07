@@ -65,7 +65,7 @@ def get_properties(conn):
                 id, title, type, price, area, location,
                 latitude, longitude, segment, status, boundary, attributes,
                 created_at, updated_at
-            FROM properties
+            FROM landplots
             ORDER BY created_at DESC
         ''')
         properties = cur.fetchall()
@@ -118,7 +118,7 @@ def create_property(conn, data):
         print(f"Attributes: {attributes_json[:200]}...")
         
         cur.execute('''
-            INSERT INTO properties 
+            INSERT INTO landplots 
             (title, type, price, area, location, latitude, longitude, segment, status, boundary, attributes)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb)
             RETURNING id, title, type, price, area, location, latitude, longitude, 
@@ -161,7 +161,7 @@ def create_property(conn, data):
 def delete_property(conn, property_id):
     '''Удалить объект недвижимости'''
     with conn.cursor() as cur:
-        cur.execute('DELETE FROM properties WHERE id = %s', (property_id,))
+        cur.execute('DELETE FROM landplots WHERE id = %s', (property_id,))
         conn.commit()
         
         if cur.rowcount == 0:
