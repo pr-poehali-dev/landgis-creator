@@ -44,14 +44,13 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     const currentUser = authService.getUser();
     const userRole = currentUser?.role || 'user1';
     
-    // Используем тот же ключ, что и админка: 'attributeConfigs' (НЕ 'displayConfigs'!)
+    // Пробуем загрузить из localStorage
     const saved = localStorage.getItem('attributeConfigs');
     let configsArray: DisplayConfig[] = [];
     
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // attributeConfigs хранится как объект { key: config }
         configsArray = Object.values(parsed)
           .filter((config: any) => {
             const isEnabled = config.enabled || config.conditionalDisplay;
@@ -60,12 +59,33 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           })
           .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
         
-        console.log('📋 Загружено атрибутов из localStorage (attributeConfigs):', configsArray.length, configsArray);
+        console.log('📋 Загружено из localStorage:', configsArray.length, 'атрибутов');
       } catch (error) {
-        console.error('Error parsing localStorage configs:', error);
+        console.error('Ошибка парсинга localStorage:', error);
       }
-    } else {
-      console.warn('⚠️ localStorage пуст! Откройте админку и настройте атрибуты.');
+    }
+    
+    // Если localStorage пуст — используем дефолтные настройки для работы на опубликованном домене
+    if (configsArray.length === 0) {
+      console.warn('⚠️ localStorage пуст, используем дефолтные настройки атрибутов');
+      
+      // Дефолтные атрибуты для формы (минимальный набор)
+      const defaultConfigs: DisplayConfig[] = [
+        { id: 1, configType: 'attribute', configKey: 'region', originalKey: 'region', displayName: 'Регион', displayOrder: 1, visibleRoles: [], enabled: true, settings: {}, formatType: 'text' },
+        { id: 2, configType: 'attribute', configKey: 'segment', originalKey: 'segment', displayName: 'Сегмент', displayOrder: 2, visibleRoles: [], enabled: true, settings: {}, formatType: 'multiselect', formatOptions: { options: ['Премиум', 'Стандарт', 'Эконом'] } },
+        { id: 3, configType: 'attribute', configKey: 'uchastok', originalKey: 'uchastok', displayName: 'Земельный участок', displayOrder: 3, visibleRoles: [], enabled: true, settings: {}, formatType: 'text' },
+        { id: 4, configType: 'attribute', configKey: 'ID', originalKey: 'ID', displayName: 'ID', displayOrder: 4, visibleRoles: [], enabled: true, settings: {}, formatType: 'text' },
+        { id: 5, configType: 'attribute', configKey: 'ekspos', originalKey: 'ekspos', displayName: 'Стоимость', displayOrder: 5, visibleRoles: [], enabled: true, settings: {}, formatType: 'money' },
+        { id: 6, configType: 'attribute', configKey: 'ird', originalKey: 'ird', displayName: 'Наличие ИРД', displayOrder: 6, visibleRoles: [], enabled: true, settings: {}, formatType: 'text' },
+        { id: 7, configType: 'attribute', configKey: 'oks', originalKey: 'oks', displayName: 'Наличие ОКС', displayOrder: 7, visibleRoles: [], enabled: true, settings: {}, formatType: 'toggle', formatOptions: { trueLabel: 'Да', falseLabel: 'Нет' } }
+      ];
+      
+      configsArray = defaultConfigs.filter((config: any) => {
+        const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
+        return config.enabled && hasRoleAccess;
+      });
+      
+      console.log('📋 Используется дефолтный набор:', configsArray.length, 'атрибутов');
     }
     
     setAttributeConfigs(configsArray);
