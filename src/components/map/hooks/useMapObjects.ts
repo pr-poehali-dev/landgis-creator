@@ -167,7 +167,7 @@ export const useMapObjects = ({
           centroid.options.set('iconImageOffset', [-15, -15]);
         });
 
-        map.geoObjects.add(centroid);
+        // Не добавляем сразу - добавим в handleZoomChange
         centroidsRef.current.push({ centroid, propertyId: property.id });
       }
     });
@@ -228,9 +228,15 @@ export const useMapObjects = ({
       const shouldShowCentroids = zoom < 14;
       centroidsRef.current.forEach(({ centroid }) => {
         if (shouldShowCentroids) {
-          centroid.options.set('visible', true);
+          // Показываем центроид - добавляем на карту
+          if (!map.geoObjects.contains(centroid)) {
+            map.geoObjects.add(centroid);
+          }
         } else {
-          centroid.options.set('visible', false);
+          // Скрываем центроид - УДАЛЯЕМ с карты, чтобы не перехватывал клики
+          if (map.geoObjects.contains(centroid)) {
+            map.geoObjects.remove(centroid);
+          }
         }
       });
     };
