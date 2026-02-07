@@ -71,10 +71,6 @@
     font-family: "Inter", sans-serif;
     font-size: 14px;
     overflow: hidden;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
   }
 
   h1,
