@@ -53,9 +53,33 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     }
   };
 
-  const loadConfigs = () => {
+  const loadConfigs = async () => {
     if (!attributes) return;
     
+    // 1. Сначала пробуем загрузить с сервера (из БД)
+    try {
+      const { displayConfigService } = await import('@/services/displayConfigService');
+      const serverConfigs = await displayConfigService.getConfigs();
+      
+      if (serverConfigs && serverConfigs.length > 0) {
+        console.log('✅ Загружено конфигов с сервера:', serverConfigs.length);
+        
+        // Сохраняем в localStorage для кэша
+        const configsMap: Record<string, DisplayConfig> = {};
+        serverConfigs.forEach(config => {
+          configsMap[config.configKey] = config;
+        });
+        localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(configsMap));
+        
+        setConfigs(serverConfigs.sort((a, b) => a.displayOrder - b.displayOrder));
+        setPreviousConfigKeys(new Set(serverConfigs.map(c => c.originalKey || c.configKey)));
+        return;
+      }
+    } catch (error) {
+      console.warn('⚠️ Не удалось загрузить с сервера, используем localStorage:', error);
+    }
+    
+    // 2. Fallback: загружаем из localStorage
     const saved = localStorage.getItem(GLOBAL_STORAGE_KEY);
     let savedConfigs: Record<string, DisplayConfig> = {};
     
