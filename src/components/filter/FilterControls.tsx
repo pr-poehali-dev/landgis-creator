@@ -35,9 +35,9 @@ const FilterControls = ({ isOpen, activeCount, onToggle, onLayersClick }: Filter
         <Button
           onClick={onLayersClick}
           variant="outline"
-          className="shadow-lg gap-2 h-12 text-base font-semibold hover:opacity-90 px-3 md:px-6 md:w-[140px]"
+          className="shadow-lg gap-2 h-9 text-sm font-semibold hover:opacity-90 px-2 md:px-4 md:w-[110px]"
         >
-          <Icon name="Layers" size={20} className="flex-shrink-0" />
+          <Icon name="Layers" size={16} className="flex-shrink-0" />
           <span className="hidden md:inline">Слои</span>
         </Button>
       )}
