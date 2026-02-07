@@ -149,6 +149,14 @@ const MultiselectField = ({ value, config, onValueChange }: AttributeEditFieldPr
 const AttributeEditField = ({ value, config, onValueChange }: AttributeEditFieldProps) => {
   const formatType = config?.formatType || 'text';
   
+  console.log('🎨 AttributeEditField render:', {
+    configKey: config?.configKey,
+    displayName: config?.displayName,
+    formatType,
+    hasConfig: !!config,
+    value: typeof value === 'object' ? JSON.stringify(value) : value
+  });
+  
   switch (formatType) {
     case 'textarea':
       return (
