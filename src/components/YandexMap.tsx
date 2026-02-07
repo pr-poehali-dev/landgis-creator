@@ -144,7 +144,7 @@ const YandexMap = ({
     };
   }, [isMapReady, properties, onVisiblePropertiesChange]);
 
-  // Обработчик resize для корректной адаптации карты через ResizeObserver
+  // Обработчик resize для корректной адаптации карты
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current || !mapRef.current) return;
 
@@ -152,20 +152,38 @@ const YandexMap = ({
     const container = mapRef.current;
     let timeoutId: NodeJS.Timeout;
 
-    const resizeObserver = new ResizeObserver(() => {
+    const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        if (mapInstanceRef.current) {
+        if (mapInstanceRef.current && mapRef.current) {
+          // Получаем текущие размеры контейнера
+          const width = mapRef.current.offsetWidth;
+          const height = mapRef.current.offsetHeight;
+          
+          // Принудительно устанавливаем размеры контейнера карты
+          const mapContainer = mapInstanceRef.current.container.getElement();
+          if (mapContainer) {
+            mapContainer.style.width = `${width}px`;
+            mapContainer.style.height = `${height}px`;
+          }
+          
+          // Пересчитываем viewport карты
           mapInstanceRef.current.container.fitToViewport();
         }
       }, 100);
-    });
+    };
 
+    // ResizeObserver для отслеживания изменений размера контейнера
+    const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
+
+    // Дополнительно слушаем window resize
+    window.addEventListener('resize', handleResize);
 
     return () => {
       clearTimeout(timeoutId);
       resizeObserver.disconnect();
+      window.removeEventListener('resize', handleResize);
     };
   }, [isMapReady]);
 
