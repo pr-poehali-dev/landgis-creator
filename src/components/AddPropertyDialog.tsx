@@ -52,22 +52,29 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
       const { displayConfigService } = await import('@/services/displayConfigService');
       const serverConfigs = await displayConfigService.getConfigs();
       
+      console.log('📋 Получено с сервера:', serverConfigs?.length || 0, 'конфигов');
+      console.log('📋 Первые 3 конфига:', serverConfigs?.slice(0, 3));
+      
       if (serverConfigs && serverConfigs.length > 0) {
         configsArray = serverConfigs
           .filter((config: any) => {
             const isEnabled = config.enabled || config.conditionalDisplay;
             const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
+            console.log(`  - ${config.displayName}: enabled=${isEnabled}, hasRole=${hasRoleAccess}`);
             return isEnabled && hasRoleAccess;
           })
           .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
         
-        console.log('✅ Загружено с сервера:', configsArray.length, 'атрибутов');
+        console.log('✅ Загружено с сервера:', configsArray.length, 'атрибутов (после фильтрации)');
         
         // Кэшируем в localStorage для оффлайн-доступа
         localStorage.setItem('attributeConfigs_cache', JSON.stringify(configsArray));
+      } else {
+        console.warn('⚠️ Сервер вернул пустой массив или null');
       }
     } catch (error) {
-      console.warn('⚠️ Не удалось загрузить с сервера:', error);
+      console.error('❌ Ошибка загрузки с сервера:', error);
+      console.error('❌ Детали ошибки:', error instanceof Error ? error.message : String(error));
     }
     
     // 2. Если с сервера не получилось — пробуем localStorage
