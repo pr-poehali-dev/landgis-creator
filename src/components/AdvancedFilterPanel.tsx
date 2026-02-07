@@ -69,7 +69,7 @@ const AdvancedFilterPanel = ({
             
             const defaultFilters: Record<string, string[]> = {};
             data.config.forEach((setting: FilterColumnSettings) => {
-              if (setting.defaultValues.length > 0) {
+              if (setting.defaultValues && setting.defaultValues.length > 0) {
                 defaultFilters[setting.id] = setting.defaultValues;
               }
             });
