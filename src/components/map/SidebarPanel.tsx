@@ -109,10 +109,6 @@ const SidebarPanel = ({
           </div>
         ))}
       </div>
-
-      <div className="p-3 border-t border-border bg-card/80 backdrop-blur">
-        <div className="h-8"></div>
-      </div>
     </div>
   );
 };
