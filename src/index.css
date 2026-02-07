@@ -55,7 +55,6 @@
   html {
     height: 100%;
     height: -webkit-fill-available;
-    zoom: 0.8;
   }
 
   body,
