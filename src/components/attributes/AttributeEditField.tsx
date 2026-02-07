@@ -269,7 +269,7 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
     
     case 'select':
       const options = config?.formatOptions?.options || [];
-      const selectValue = value !== null && value !== undefined ? String(value) : '';
+      const selectValue = value !== null && value !== undefined && value !== '' ? String(value) : undefined;
       return (
         <Select
           value={selectValue}
@@ -279,7 +279,6 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
             <SelectValue placeholder="Выберите значение" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">—</SelectItem>
             {options.map((option: string) => (
               <SelectItem key={option} value={option}>
                 {option}
