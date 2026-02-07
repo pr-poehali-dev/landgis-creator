@@ -56,23 +56,21 @@ const Index = () => {
   // Обработка изменения ориентации устройства
   useEffect(() => {
     const handleOrientationChange = () => {
-      // Принудительный перерендер при изменении ориентации
-      document.body.style.height = `${window.innerHeight}px`;
-      document.documentElement.style.height = `${window.innerHeight}px`;
+      // Закрываем все модальные окна при изменении ориентации
+      setIsMobileSidebarOpen(false);
+      setIsFilterPanelOpen(false);
+      setShowAttributesPanel(false);
       
-      // Небольшая задержка для полного применения
+      // Принудительный пересчет размеров
       setTimeout(() => {
-        document.body.style.height = '100%';
-        document.documentElement.style.height = '100%';
-      }, 100);
+        window.dispatchEvent(new Event('resize'));
+      }, 300);
     };
 
     window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('resize', handleOrientationChange);
 
     return () => {
       window.removeEventListener('orientationchange', handleOrientationChange);
-      window.removeEventListener('resize', handleOrientationChange);
     };
   }, []);
 
