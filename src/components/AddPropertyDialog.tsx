@@ -7,6 +7,7 @@ import { PropertyFormData } from './AddPropertyDialog/types';
 import { KmlUploadSection } from './AddPropertyDialog/KmlUploadSection';
 import { BasicFieldsSection } from './AddPropertyDialog/BasicFieldsSection';
 import { AttributeFieldRenderer } from './AddPropertyDialog/AttributeFieldRenderer';
+import { authService } from '@/services/authService';
 
 interface AddPropertyDialogProps {
   open: boolean;
@@ -41,11 +42,18 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
 
   const loadAttributeConfigs = () => {
     const saved = localStorage.getItem('attributeConfigs');
+    const currentUser = authService.getUser();
+    const userRole = currentUser?.role || 'user1';
+    
     if (saved) {
       try {
         const configsMap: Record<string, DisplayConfig> = JSON.parse(saved);
         const configsArray = Object.values(configsMap)
-          .filter(config => config.enabled || config.conditionalDisplay)
+          .filter(config => {
+            const isEnabled = config.enabled || config.conditionalDisplay;
+            const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
+            return isEnabled && hasRoleAccess;
+          })
           .sort((a, b) => a.displayOrder - b.displayOrder);
         setAttributeConfigs(configsArray);
         
