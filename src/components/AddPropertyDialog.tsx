@@ -40,57 +40,39 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     }
   }, [open]);
 
-  const loadAttributeConfigs = async () => {
+  const loadAttributeConfigs = () => {
     const currentUser = authService.getUser();
     const userRole = currentUser?.role || 'user1';
     
-    // Загружаем либо из localStorage (если админка уже заполнила)
-    const saved = localStorage.getItem('displayConfigs');
+    // Используем тот же ключ, что и админка: 'attributeConfigs' (НЕ 'displayConfigs'!)
+    const saved = localStorage.getItem('attributeConfigs');
     let configsArray: DisplayConfig[] = [];
     
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        configsArray = (Array.isArray(parsed) ? parsed : Object.values(parsed))
-          .filter(config => {
+        // attributeConfigs хранится как объект { key: config }
+        configsArray = Object.values(parsed)
+          .filter((config: any) => {
             const isEnabled = config.enabled || config.conditionalDisplay;
             const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
             return isEnabled && hasRoleAccess;
           })
-          .sort((a, b) => a.displayOrder - b.displayOrder);
+          .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
         
-        console.log('📋 Загружено атрибутов из localStorage:', configsArray.length);
+        console.log('📋 Загружено атрибутов из localStorage (attributeConfigs):', configsArray.length, configsArray);
       } catch (error) {
         console.error('Error parsing localStorage configs:', error);
       }
-    }
-    
-    // Если в localStorage пусто — пробуем загрузить с сервера
-    if (configsArray.length === 0) {
-      try {
-        console.log('📋 localStorage пуст, загружаем с сервера...');
-        const { displayConfigService } = await import('@/services/displayConfigService');
-        const serverConfigs = await displayConfigService.getConfigs();
-        
-        configsArray = serverConfigs
-          .filter(config => {
-            const isEnabled = config.enabled || config.conditionalDisplay;
-            const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
-            return isEnabled && hasRoleAccess;
-          })
-          .sort((a, b) => a.displayOrder - b.displayOrder);
-        
-        console.log('📋 Загружено атрибутов с сервера:', configsArray.length);
-      } catch (error) {
-        console.error('Error loading configs from server:', error);
-      }
+    } else {
+      console.warn('⚠️ localStorage пуст! Откройте админку и настройте атрибуты.');
     }
     
     setAttributeConfigs(configsArray);
     
     // Инициализируем начальные значения атрибутов
     const initialAttributes: Record<string, any> = {};
-    configsArray.forEach(config => {
+    configsArray.forEach((config: any) => {
       const key = config.originalKey || config.configKey;
       if (config.formatType === 'toggle' || config.formatType === 'boolean') {
         initialAttributes[key] = false;
