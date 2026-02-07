@@ -47,14 +47,17 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     
     if (saved) {
       try {
-        const configsMap: Record<string, DisplayConfig> = JSON.parse(saved);
-        const configsArray = Object.values(configsMap)
+        const parsed = JSON.parse(saved);
+        // displayConfigs хранится как массив, не как объект
+        const configsArray = (Array.isArray(parsed) ? parsed : Object.values(parsed))
           .filter(config => {
             const isEnabled = config.enabled || config.conditionalDisplay;
             const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
             return isEnabled && hasRoleAccess;
           })
           .sort((a, b) => a.displayOrder - b.displayOrder);
+        
+        console.log('📋 Загружено атрибутов для формы:', configsArray.length, configsArray);
         setAttributeConfigs(configsArray);
         
         const initialAttributes: Record<string, any> = {};
