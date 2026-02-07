@@ -19,7 +19,35 @@ export interface RoleVisibilityRule {
   attributeRules: AttributeVisibilityRule[];
 }
 
+export interface EditPermissions {
+  allowedRoles: UserRole[];
+}
+
 class VisibilityService {
+  private getEditPermissions(): EditPermissions {
+    try {
+      const saved = localStorage.getItem('editPermissions');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.error('Error loading edit permissions:', error);
+    }
+    return { allowedRoles: ['admin'] }; // По умолчанию только админ
+  }
+
+  saveEditPermissions(permissions: EditPermissions): void {
+    try {
+      localStorage.setItem('editPermissions', JSON.stringify(permissions));
+    } catch (error) {
+      console.error('Error saving edit permissions:', error);
+    }
+  }
+
+  canEditProperty(userRole: UserRole): boolean {
+    const permissions = this.getEditPermissions();
+    return permissions.allowedRoles.includes(userRole);
+  }
   private getRules(): RoleVisibilityRule[] {
     try {
       const saved = localStorage.getItem('visibilityRulesV2');

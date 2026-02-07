@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { visibilityService, EditPermissions } from '@/services/visibilityService';
 
 interface AttributeVisibilityRule {
   attributePath: string;
@@ -41,10 +42,42 @@ const AdminVisibilitySettings = () => {
   const [availableAttributes, setAvailableAttributes] = useState<Array<{path: string; label: string; values: Set<string>}>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [editPermissions, setEditPermissions] = useState<EditPermissions>({ allowedRoles: ['admin'] });
 
   useEffect(() => {
     loadData();
+    loadEditPermissions();
   }, []);
+
+  const loadEditPermissions = () => {
+    try {
+      const saved = localStorage.getItem('editPermissions');
+      if (saved) {
+        setEditPermissions(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Error loading edit permissions:', error);
+    }
+  };
+
+  const saveEditPermissions = () => {
+    try {
+      visibilityService.saveEditPermissions(editPermissions);
+      toast.success('Права редактирования сохранены');
+    } catch (error) {
+      toast.error('Ошибка сохранения прав редактирования');
+      console.error('Error saving edit permissions:', error);
+    }
+  };
+
+  const toggleEditRole = (role: UserRole) => {
+    setEditPermissions(prev => {
+      const allowedRoles = prev.allowedRoles.includes(role)
+        ? prev.allowedRoles.filter(r => r !== role)
+        : [...prev.allowedRoles, role];
+      return { allowedRoles };
+    });
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -303,6 +336,51 @@ const AdminVisibilitySettings = () => {
             Управляйте доступом к участкам и их атрибутам для разных пользователей
           </p>
         </div>
+
+        {/* Права на редактирование участков */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Icon name="Pencil" className="text-primary" size={24} />
+              Права на редактирование участков
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Выберите роли, которые могут редактировать информацию об участках
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(Object.keys(USER_ROLES) as UserRole[]).map(role => {
+                const roleInfo = USER_ROLES[role];
+                const isChecked = editPermissions.allowedRoles.includes(role);
+                return (
+                  <div 
+                    key={role} 
+                    className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                      isChecked ? 'bg-primary/5 border-primary' : 'hover:bg-accent'
+                    }`}
+                    onClick={() => toggleEditRole(role)}
+                  >
+                    <Checkbox 
+                      checked={isChecked}
+                      onCheckedChange={() => toggleEditRole(role)}
+                    />
+                    <div>
+                      <div className="font-medium">{roleInfo.name}</div>
+                      <div className="text-xs text-muted-foreground">{roleInfo.tier}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={saveEditPermissions} className="gap-2">
+                <Icon name="Save" size={16} />
+                Сохранить права редактирования
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Выбор роли */}
         <Card className="mb-6">

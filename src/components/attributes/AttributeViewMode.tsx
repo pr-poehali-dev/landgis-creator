@@ -4,8 +4,10 @@ import { DisplayConfig } from '@/services/displayConfigService';
 import AttributeEditField, { formatValue } from './AttributeEditField';
 import { authService } from '@/services/authService';
 import { propertyService } from '@/services/propertyService';
+import { visibilityService } from '@/services/visibilityService';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { UserRole } from '@/types/userRoles';
 
 interface AttributeViewModeProps {
   configs: DisplayConfig[];
@@ -87,8 +89,9 @@ const AttributeViewMode = ({
     return normalizeValue(parentValue) === normalizeValue(showWhen);
   };
 
-  const realUserRole = authService.getUser()?.role;
+  const realUserRole = authService.getUser()?.role as UserRole;
   const isRealAdmin = realUserRole === 'admin';
+  const canEdit = visibilityService.canEditProperty(realUserRole);
   
   return (
     <>
@@ -109,24 +112,24 @@ const AttributeViewMode = ({
           {!isEditing ? (
             <>
               {isRealAdmin && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onConfigure}
-                  >
-                    <Icon name="Settings" size={16} className="mr-2" />
-                    Настроить
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onEdit}
-                  >
-                    <Icon name="Pencil" size={16} className="mr-2" />
-                    Редактировать
-                  </Button>
-                </>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onConfigure}
+                >
+                  <Icon name="Settings" size={16} className="mr-2" />
+                  Настроить
+                </Button>
+              )}
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                >
+                  <Icon name="Pencil" size={16} className="mr-2" />
+                  Редактировать
+                </Button>
               )}
             </>
           ) : (
