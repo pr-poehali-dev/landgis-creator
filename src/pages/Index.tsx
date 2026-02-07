@@ -224,7 +224,7 @@ const Index = () => {
   const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <SidebarPanel
         appSettings={appSettings}
         searchQuery={searchQuery}
@@ -243,7 +243,7 @@ const Index = () => {
         totalFilteredCount={baseFilteredProperties.length}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <TopNavigation
           mapType={mapType}
           onMapTypeChange={setMapType}
