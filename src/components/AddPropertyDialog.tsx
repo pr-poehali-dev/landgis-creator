@@ -40,18 +40,20 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     }
   }, [open]);
 
-  const loadAttributeConfigs = () => {
+  const loadAttributeConfigs = async () => {
     const currentUser = authService.getUser();
     const userRole = currentUser?.role || 'user1';
     
     let configsArray: DisplayConfig[] = [];
     
-    // 1. Пробуем загрузить из localStorage редактора (формат объект)
-    const saved = localStorage.getItem('attributeConfigs');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        configsArray = Object.values(parsed)
+    // 1. Пробуем загрузить с сервера (работает на всех доменах)
+    try {
+      console.log('📋 Загрузка настроек атрибутов с сервера...');
+      const { displayConfigService } = await import('@/services/displayConfigService');
+      const serverConfigs = await displayConfigService.getConfigs();
+      
+      if (serverConfigs && serverConfigs.length > 0) {
+        configsArray = serverConfigs
           .filter((config: any) => {
             const isEnabled = config.enabled || config.conditionalDisplay;
             const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
@@ -59,19 +61,22 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           })
           .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
         
-        console.log('📋 Загружено из localStorage (редактор):', configsArray.length, 'атрибутов');
-      } catch (error) {
-        console.error('Ошибка парсинга attributeConfigs:', error);
+        console.log('✅ Загружено с сервера:', configsArray.length, 'атрибутов');
+        
+        // Кэшируем в localStorage для оффлайн-доступа
+        localStorage.setItem('attributeConfigs_cache', JSON.stringify(configsArray));
       }
+    } catch (error) {
+      console.warn('⚠️ Не удалось загрузить с сервера:', error);
     }
     
-    // 2. Если не нашли — пробуем публичный экспорт (формат массив)
+    // 2. Если с сервера не получилось — пробуем localStorage
     if (configsArray.length === 0) {
-      const publicSaved = localStorage.getItem('attributeConfigs_public');
-      if (publicSaved) {
+      const saved = localStorage.getItem('attributeConfigs');
+      if (saved) {
         try {
-          const parsed = JSON.parse(publicSaved);
-          configsArray = (Array.isArray(parsed) ? parsed : [])
+          const parsed = JSON.parse(saved);
+          configsArray = Object.values(parsed)
             .filter((config: any) => {
               const isEnabled = config.enabled || config.conditionalDisplay;
               const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
@@ -79,16 +84,29 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
             })
             .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
           
-          console.log('📋 Загружено из публичного экспорта:', configsArray.length, 'атрибутов');
+          console.log('📋 Загружено из localStorage:', configsArray.length, 'атрибутов');
         } catch (error) {
-          console.error('Ошибка парсинга attributeConfigs_public:', error);
+          console.error('Ошибка парсинга attributeConfigs:', error);
         }
       }
     }
     
-    // 3. Если всё ещё пусто — используем дефолтный набор
+    // 3. Пробуем кэш
     if (configsArray.length === 0) {
-      console.warn('⚠️ localStorage пуст, используем дефолтные настройки атрибутов');
+      const cached = localStorage.getItem('attributeConfigs_cache');
+      if (cached) {
+        try {
+          configsArray = JSON.parse(cached);
+          console.log('📋 Загружено из кэша:', configsArray.length, 'атрибутов');
+        } catch (error) {
+          console.error('Ошибка парсинга кэша:', error);
+        }
+      }
+    }
+    
+    // 4. Если всё не удалось — дефолтный набор
+    if (configsArray.length === 0) {
+      console.warn('⚠️ Все источники недоступны, используем дефолтные настройки');
       
       const defaultConfigs: DisplayConfig[] = [
         { id: 1, configType: 'attribute', configKey: 'region', originalKey: 'region', displayName: 'Регион', displayOrder: 1, visibleRoles: [], enabled: true, settings: {}, formatType: 'text' },
@@ -100,11 +118,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
         { id: 7, configType: 'attribute', configKey: 'oks', originalKey: 'oks', displayName: 'Наличие ОКС', displayOrder: 7, visibleRoles: [], enabled: true, settings: {}, formatType: 'toggle', formatOptions: { trueLabel: 'Да', falseLabel: 'Нет' } }
       ];
       
-      configsArray = defaultConfigs.filter((config: any) => {
-        const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
-        return config.enabled && hasRoleAccess;
-      });
-      
+      configsArray = defaultConfigs;
       console.log('📋 Используется дефолтный набор:', configsArray.length, 'атрибутов');
     }
     
