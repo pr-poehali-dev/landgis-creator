@@ -149,15 +149,31 @@ const YandexMap = ({
     if (!isMapReady || !mapInstanceRef.current) return;
 
     const map = mapInstanceRef.current;
+    let resizeTimeout: NodeJS.Timeout;
     
     const handleResize = () => {
-      // Принудительный пересчет размеров контейнера карты
-      map.container.fitToViewport();
+      // Debounce для оптимизации
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Принудительный пересчет размеров контейнера карты
+        map.container.fitToViewport();
+        
+        // Дополнительно триггерим пересчёт через малый timeout
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.container.fitToViewport();
+          }
+        }, 50);
+      }, 100);
     };
 
+    // Сразу вызываем при монтировании
+    handleResize();
+    
     window.addEventListener('resize', handleResize);
 
     return () => {
+      clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
     };
   }, [isMapReady]);
