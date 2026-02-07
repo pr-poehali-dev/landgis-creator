@@ -35,6 +35,7 @@ const Index = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [visiblePropertyIds, setVisiblePropertyIds] = useState<number[]>([]);
+  const [, forceUpdate] = useState({});
 
   useEffect(() => {
     loadProperties();
@@ -53,12 +54,20 @@ const Index = () => {
     }
   }, [appSettings, isSettingsLoading]);
 
-  // Обработка изменения ориентации устройства
+  // Обработка изменения размеров окна в реальном времени
   useEffect(() => {
+    let resizeTimer: NodeJS.Timeout;
+    
     const handleResize = () => {
-      // Принудительный пересчет viewport при изменении ориентации
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        // Принудительный ре-рендер для адаптации всех компонентов
+        forceUpdate({});
+        
+        // Пересчет viewport высоты
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      }, 100);
     };
 
     handleResize();
@@ -66,6 +75,7 @@ const Index = () => {
     window.addEventListener('orientationchange', handleResize);
 
     return () => {
+      clearTimeout(resizeTimer);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };
@@ -242,7 +252,7 @@ const Index = () => {
   const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
-    <div className="flex h-full bg-background overflow-hidden" style={{ height: '100vh', height: '-webkit-fill-available' }}>
+    <div className="flex h-screen w-screen bg-background overflow-hidden">
       <SidebarPanel
         appSettings={appSettings}
         searchQuery={searchQuery}
