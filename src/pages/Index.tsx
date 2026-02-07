@@ -53,26 +53,20 @@ const Index = () => {
     }
   }, [appSettings, isSettingsLoading]);
 
-  // Обработка изменения ориентации устройства
+  // Блокировка скролла при открытии модальных окон
   useEffect(() => {
-    const handleOrientationChange = () => {
-      // Закрываем все модальные окна при изменении ориентации
-      setIsMobileSidebarOpen(false);
-      setIsFilterPanelOpen(false);
-      setShowAttributesPanel(false);
-      
-      // Принудительный пересчет размеров
-      setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-      }, 300);
-    };
-
-    window.addEventListener('orientationchange', handleOrientationChange);
-
-    return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, []);
+    if (isMobileSidebarOpen || isFilterPanelOpen || showAttributesPanel) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    }
+  }, [isMobileSidebarOpen, isFilterPanelOpen, showAttributesPanel]);
 
   const loadProperties = async () => {
     setIsLoading(true);
@@ -245,7 +239,7 @@ const Index = () => {
   const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
-    <div className="flex h-full bg-background overflow-hidden" style={{ height: '100vh', height: '-webkit-fill-available' }}>
+    <div className="flex h-full w-full bg-background overflow-hidden" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
       <SidebarPanel
         appSettings={appSettings}
         searchQuery={searchQuery}
