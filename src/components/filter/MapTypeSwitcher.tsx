@@ -9,7 +9,7 @@ interface MapTypeSwitcherProps {
 
 const MapTypeSwitcher = ({ mapType, onMapTypeChange }: MapTypeSwitcherProps) => {
   return (
-    <div className="absolute top-4 left-4 z-40">
+    <div className="fixed top-4 left-4 z-40" style={{ position: 'fixed' }}>
       <div className="inline-flex rounded-lg border border-border bg-muted/50 shadow-lg backdrop-blur h-12 p-0.5">
         <Button
           onClick={() => onMapTypeChange('scheme')}
