@@ -60,6 +60,16 @@ def handler(event: dict, context) -> dict:
             else:
                 return error_response('Method not allowed', 405)
         
+        # Handle edit permissions requests
+        if query_params.get('type') == 'edit_permissions':
+            if method == 'GET':
+                return get_edit_permissions(conn)
+            elif method == 'POST':
+                body = json.loads(event.get('body', '{}'))
+                return save_edit_permissions(conn, body)
+            else:
+                return error_response('Method not allowed', 405)
+        
         # Handle attribute config requests
         if query_params.get('type') == 'config':
             if method == 'GET':
@@ -361,6 +371,42 @@ def sync_attribute_configs(conn, data):
         'success': True,
         'message': f'Synced {len(configs)} attribute configs to database'
     })
+
+def get_edit_permissions(conn):
+    '''Получить права редактирования участков'''
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute('''
+            SELECT allowed_roles as "allowedRoles"
+            FROM t_p78972315_landgis_creator.edit_permissions
+            ORDER BY id DESC
+            LIMIT 1
+        ''')
+        result = cur.fetchone()
+    
+    if result:
+        return success_response(result)
+    else:
+        return success_response({'allowedRoles': ['admin']})
+
+def save_edit_permissions(conn, data):
+    '''Сохранить права редактирования участков'''
+    allowed_roles = data.get('allowedRoles', ['admin'])
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        # Удаляем все старые записи
+        cur.execute('DELETE FROM t_p78972315_landgis_creator.edit_permissions')
+        
+        # Вставляем новую
+        cur.execute('''
+            INSERT INTO t_p78972315_landgis_creator.edit_permissions (allowed_roles)
+            VALUES (%s)
+            RETURNING allowed_roles as "allowedRoles"
+        ''', (allowed_roles,))
+        
+        result = cur.fetchone()
+        conn.commit()
+    
+    return success_response(result)
 
 def error_response(message, status_code=400):
     return {

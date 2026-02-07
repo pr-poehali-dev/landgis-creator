@@ -6,7 +6,7 @@ import { authService } from '@/services/authService';
 import { propertyService } from '@/services/propertyService';
 import { visibilityService } from '@/services/visibilityService';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserRole } from '@/types/userRoles';
 
 interface AttributeViewModeProps {
@@ -37,6 +37,27 @@ const AttributeViewMode = ({
   renderEditField
 }: AttributeViewModeProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
+
+  const realUserRole = authService.getUser()?.role as UserRole;
+  const isRealAdmin = realUserRole === 'admin';
+
+  useEffect(() => {
+    const loadPermissions = async () => {
+      try {
+        await visibilityService.loadEditPermissionsFromAPI();
+        setCanEdit(visibilityService.canEditProperty(realUserRole));
+      } catch (error) {
+        console.error('Error loading permissions:', error);
+        setCanEdit(isRealAdmin); // Фоллбэк: только админ
+      } finally {
+        setIsLoadingPermissions(false);
+      }
+    };
+
+    loadPermissions();
+  }, [realUserRole, isRealAdmin]);
 
   const handleDelete = async () => {
     if (!featureId) return;
@@ -89,10 +110,6 @@ const AttributeViewMode = ({
     return normalizeValue(parentValue) === normalizeValue(showWhen);
   };
 
-  const realUserRole = authService.getUser()?.role as UserRole;
-  const isRealAdmin = realUserRole === 'admin';
-  const canEdit = visibilityService.canEditProperty(realUserRole);
-  
   return (
     <>
       <div className="flex justify-between gap-2 mb-4 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-border">

@@ -60,10 +60,10 @@ const AdminVisibilitySettings = () => {
     }
   };
 
-  const saveEditPermissions = () => {
+  const saveEditPermissions = async () => {
     try {
-      visibilityService.saveEditPermissions(editPermissions);
-      toast.success('Права редактирования сохранены');
+      await visibilityService.saveEditPermissions(editPermissions);
+      toast.success('Права редактирования сохранены в БД');
     } catch (error) {
       toast.error('Ошибка сохранения прав редактирования');
       console.error('Error saving edit permissions:', error);

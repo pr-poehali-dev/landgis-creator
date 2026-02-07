@@ -1,5 +1,6 @@
 import { Property } from './propertyService';
 import { UserRole } from '@/types/userRoles';
+import func2url from '../../backend/func2url.json';
 
 export interface PropertyVisibilityCondition {
   attributePath: string;
@@ -24,7 +25,50 @@ export interface EditPermissions {
 }
 
 class VisibilityService {
+  private cachedPermissions: EditPermissions | null = null;
+  
+  async loadEditPermissionsFromAPI(): Promise<EditPermissions> {
+    const apiUrl = func2url['update-attributes'];
+    if (!apiUrl) {
+      console.warn('API URL not found, using default permissions');
+      return { allowedRoles: ['admin'] };
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}?type=edit_permissions`);
+      if (!response.ok) throw new Error('Failed to fetch permissions');
+      
+      const data = await response.json();
+      this.cachedPermissions = data;
+      
+      // Кэшируем в localStorage для оффлайн доступа
+      localStorage.setItem('editPermissions_cache', JSON.stringify(data));
+      
+      return data;
+    } catch (error) {
+      console.error('Error loading edit permissions from API:', error);
+      
+      // Пробуем загрузить из кэша
+      try {
+        const cached = localStorage.getItem('editPermissions_cache');
+        if (cached) {
+          return JSON.parse(cached);
+        }
+      } catch (e) {
+        console.error('Error loading from cache:', e);
+      }
+      
+      return { allowedRoles: ['admin'] };
+    }
+  }
+
   private getEditPermissions(): EditPermissions {
+    // Возвращаем кэшированное значение если есть
+    if (this.cachedPermissions) {
+      return this.cachedPermissions;
+    }
+
+    // Пробуем загрузить из localStorage (админка)
     try {
       const saved = localStorage.getItem('editPermissions');
       if (saved) {
@@ -33,14 +77,47 @@ class VisibilityService {
     } catch (error) {
       console.error('Error loading edit permissions:', error);
     }
-    return { allowedRoles: ['admin'] }; // По умолчанию только админ
+    
+    // Пробуем загрузить из кэша API
+    try {
+      const cached = localStorage.getItem('editPermissions_cache');
+      if (cached) {
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      console.error('Error loading cached permissions:', error);
+    }
+    
+    return { allowedRoles: ['admin'] };
   }
 
-  saveEditPermissions(permissions: EditPermissions): void {
+  async saveEditPermissions(permissions: EditPermissions): Promise<void> {
+    const apiUrl = func2url['update-attributes'];
+    if (!apiUrl) {
+      throw new Error('API URL not found');
+    }
+
     try {
+      // Сохраняем в localStorage для админки
       localStorage.setItem('editPermissions', JSON.stringify(permissions));
+      
+      // Сохраняем в БД через API
+      const response = await fetch(`${apiUrl}?type=edit_permissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(permissions)
+      });
+      
+      if (!response.ok) throw new Error('Failed to save permissions');
+      
+      const data = await response.json();
+      this.cachedPermissions = data;
+      
+      // Обновляем кэш
+      localStorage.setItem('editPermissions_cache', JSON.stringify(data));
     } catch (error) {
       console.error('Error saving edit permissions:', error);
+      throw error;
     }
   }
 
