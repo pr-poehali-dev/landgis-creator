@@ -41,7 +41,7 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
   }, [open]);
 
   const loadAttributeConfigs = () => {
-    const saved = localStorage.getItem('attributeConfigs');
+    const saved = localStorage.getItem('displayConfigs');
     const currentUser = authService.getUser();
     const userRole = currentUser?.role || 'user1';
     
