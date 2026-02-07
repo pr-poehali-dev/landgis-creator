@@ -55,19 +55,24 @@ const Index = () => {
 
   // Обработка изменения ориентации устройства
   useEffect(() => {
-    const handleResize = () => {
-      // Принудительный пересчет viewport при изменении ориентации
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    const handleOrientationChange = () => {
+      // Принудительный перерендер при изменении ориентации
+      document.body.style.height = `${window.innerHeight}px`;
+      document.documentElement.style.height = `${window.innerHeight}px`;
+      
+      // Небольшая задержка для полного применения
+      setTimeout(() => {
+        document.body.style.height = '100%';
+        document.documentElement.style.height = '100%';
+      }, 100);
     };
 
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
     };
   }, []);
 
