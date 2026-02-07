@@ -13,10 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { visibilityService, EditPermissions } from '@/services/visibilityService';
-import EditPermissionsCard from './AdminVisibilitySettings/EditPermissionsCard';
-import PropertyVisibilityCard from './AdminVisibilitySettings/PropertyVisibilityCard';
-import AttributeVisibilityCard from './AdminVisibilitySettings/AttributeVisibilityCard';
 
 interface AttributeVisibilityRule {
   attributePath: string;
@@ -86,6 +85,7 @@ const AdminVisibilitySettings = () => {
       const props = await propertyService.getProperties();
       setProperties(props);
       
+      // Анализируем все доступные атрибуты
       const attrMap = new Map<string, Set<string>>();
       const attrLabels = new Map<string, string>();
       
@@ -95,6 +95,7 @@ const AdminVisibilitySettings = () => {
             const path = `attributes.${key}`;
             if (!attrMap.has(path)) {
               attrMap.set(path, new Set());
+              // Генерируем читаемое название
               attrLabels.set(path, key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
             }
             
@@ -107,6 +108,7 @@ const AdminVisibilitySettings = () => {
           });
         }
         
+        // Добавляем стандартные поля
         ['status', 'segment', 'type'].forEach(field => {
           if (!attrMap.has(field)) {
             attrMap.set(field, new Set());
@@ -126,10 +128,12 @@ const AdminVisibilitySettings = () => {
       }));
       setAvailableAttributes(attrs);
       
+      // Загружаем сохраненные правила
       const savedRules = localStorage.getItem('visibilityRulesV2');
       if (savedRules) {
         setRules(JSON.parse(savedRules));
       } else {
+        // Инициализируем правила по умолчанию для всех ролей
         const defaultRules: RoleVisibilityRule[] = Object.keys(USER_ROLES)
           .filter(role => role !== 'admin')
           .map(role => ({
@@ -253,110 +257,304 @@ const AdminVisibilitySettings = () => {
     setRules(newRules);
   };
 
-  const currentRule = getCurrentRoleRule();
-  const visibleCount = currentRule 
-    ? visibilityService.getVisiblePropertiesCount(properties, selectedRole)
-    : properties.length;
+  const isAttributeVisible = (attributePath: string): boolean => {
+    const rule = getCurrentRoleRule();
+    if (!rule) return false;
+    
+    const attrRule = rule.attributeRules.find(ar => ar.attributePath === attributePath);
+    if (!attrRule) return false;
+    
+    return attrRule.visibleForRoles.includes(selectedRole);
+  };
+
+  const getVisiblePropertiesCount = (): number => {
+    const rule = getCurrentRoleRule();
+    if (!rule || rule.propertyConditions.length === 0) return properties.length;
+    
+    return properties.filter(prop => {
+      return rule.propertyConditions.every(condition => {
+        let propValue: any;
+        
+        if (condition.attributePath.startsWith('attributes.')) {
+          const key = condition.attributePath.replace('attributes.', '');
+          propValue = prop.attributes?.[key];
+        } else {
+          propValue = (prop as any)[condition.attributePath];
+        }
+        
+        const strValue = String(propValue || '');
+        
+        switch (condition.operator) {
+          case 'equals':
+            return strValue === condition.value;
+          case 'notEquals':
+            return strValue !== condition.value;
+          case 'contains':
+            return strValue.includes(condition.value);
+          case 'notContains':
+            return !strValue.includes(condition.value);
+          case 'exists':
+            return !!propValue;
+          case 'notExists':
+            return !propValue;
+          default:
+            return true;
+        }
+      });
+    }).length;
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <AdminNavigation />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
+        <div className="flex items-center justify-center py-12">
           <Icon name="Loader2" className="animate-spin text-primary" size={32} />
         </div>
       </div>
     );
   }
 
+  const currentRule = getCurrentRoleRule();
+  const operators = [
+    { value: 'equals', label: 'Равно' },
+    { value: 'notEquals', label: 'Не равно' },
+    { value: 'contains', label: 'Содержит' },
+    { value: 'notContains', label: 'Не содержит' },
+    { value: 'exists', label: 'Существует' },
+    { value: 'notExists', label: 'Не существует' }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <AdminNavigation />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Настройки видимости</h1>
+
+      <div className="container mx-auto px-4 lg:px-6 py-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">Настройки видимости для ролей</h2>
           <p className="text-muted-foreground">
-            Управляйте правами доступа и видимостью данных для разных ролей пользователей
+            Управляйте доступом к участкам и их атрибутам для разных пользователей
           </p>
         </div>
 
-        <EditPermissionsCard 
-          editPermissions={editPermissions}
-          onToggleRole={toggleEditRole}
-          onSave={saveEditPermissions}
-        />
-
+        {/* Права на редактирование участков */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Icon name="Users" className="text-primary" size={24} />
-              Выберите роль для настройки
+              <Icon name="Pencil" className="text-primary" size={24} />
+              Права на редактирование участков
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Select
-              value={selectedRole}
-              onValueChange={(value) => setSelectedRole(value as UserRole)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(USER_ROLES)
-                  .filter(([role]) => role !== 'admin')
-                  .map(([role, info]) => (
-                    <SelectItem key={role} value={role}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{info.name}</span>
-                        <span className="text-xs text-muted-foreground">{info.tier}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-
-            <div className="mt-4 p-3 bg-accent/10 rounded-lg">
-              <p className="text-sm">
-                <span className="font-semibold">Видимых участков:</span>{' '}
-                {visibleCount} из {properties.length}
-              </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Выберите роли, которые могут редактировать информацию об участках
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(Object.keys(USER_ROLES) as UserRole[]).map(role => {
+                const roleInfo = USER_ROLES[role];
+                const isChecked = editPermissions.allowedRoles.includes(role);
+                return (
+                  <div 
+                    key={role} 
+                    className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                      isChecked ? 'bg-primary/5 border-primary' : 'hover:bg-accent'
+                    }`}
+                    onClick={() => toggleEditRole(role)}
+                  >
+                    <Checkbox 
+                      checked={isChecked}
+                      onCheckedChange={() => toggleEditRole(role)}
+                    />
+                    <div>
+                      <div className="font-medium">{roleInfo.name}</div>
+                      <div className="text-xs text-muted-foreground">{roleInfo.tier}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={saveEditPermissions} className="gap-2">
+                <Icon name="Save" size={16} />
+                Сохранить права редактирования
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        <PropertyVisibilityCard 
-          conditions={currentRule?.propertyConditions || []}
-          availableAttributes={availableAttributes}
-          onAddCondition={addPropertyCondition}
-          onUpdateCondition={updatePropertyCondition}
-          onRemoveCondition={removePropertyCondition}
-        />
+        {/* Выбор роли */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Icon name="Users" className="text-primary" size={24} />
+              Выберите роль пользователя
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {(Object.keys(USER_ROLES) as UserRole[])
+                .filter(role => role !== 'admin')
+                .map(role => {
+                  const roleInfo = USER_ROLES[role];
+                  return (
+                    <Button
+                      key={role}
+                      variant={selectedRole === role ? 'default' : 'outline'}
+                      onClick={() => setSelectedRole(role)}
+                      className="h-auto py-4 flex-col items-start gap-2"
+                    >
+                      <div className="font-semibold">{roleInfo.name}</div>
+                      <div className="text-xs opacity-70">{roleInfo.tier}</div>
+                    </Button>
+                  );
+                })}
+            </div>
+          </CardContent>
+        </Card>
 
-        <AttributeVisibilityCard 
-          availableAttributes={availableAttributes}
-          attributeRules={currentRule?.attributeRules || []}
-          selectedRole={selectedRole}
-          onToggleAttribute={toggleAttributeVisibility}
-        />
+        <div className="grid gap-6">
+          {/* Условия видимости участков */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Icon name="Filter" className="text-primary" size={24} />
+                  Условия отображения участков
+                </div>
+                <div className="text-sm font-normal text-muted-foreground">
+                  Видимых участков: {getVisiblePropertiesCount()} из {properties.length}
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {currentRule?.propertyConditions.map((condition, index) => {
+                  const attr = availableAttributes.find(a => a.path === condition.attributePath);
+                  return (
+                    <div key={index} className="flex gap-2 items-start p-4 border rounded-lg">
+                      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <Select
+                          value={condition.attributePath}
+                          onValueChange={(value) => updatePropertyCondition(index, 'attributePath', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableAttributes.map(attr => (
+                              <SelectItem key={attr.path} value={attr.path}>
+                                {attr.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-        <div className="mt-8 flex justify-end gap-3">
-          <Button
-            onClick={() => window.location.href = '/admin'}
-            variant="outline"
-          >
-            <Icon name="ArrowLeft" size={16} className="mr-2" />
-            Назад к админке
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-          >
+                        <Select
+                          value={condition.operator}
+                          onValueChange={(value) => updatePropertyCondition(index, 'operator', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {operators.map(op => (
+                              <SelectItem key={op.value} value={op.value}>
+                                {op.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {condition.operator !== 'exists' && condition.operator !== 'notExists' && (
+                          <Select
+                            value={condition.value}
+                            onValueChange={(value) => updatePropertyCondition(index, 'value', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Выберите значение" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from(attr?.values || []).map(value => (
+                                <SelectItem key={value} value={value}>
+                                  {value}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removePropertyCondition(index)}
+                      >
+                        <Icon name="X" size={16} />
+                      </Button>
+                    </div>
+                  );
+                })}
+
+                <Button onClick={addPropertyCondition} variant="outline" className="w-full">
+                  <Icon name="Plus" className="mr-2" size={16} />
+                  Добавить условие
+                </Button>
+
+                {(!currentRule?.propertyConditions || currentRule.propertyConditions.length === 0) && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Icon name="Filter" className="mx-auto mb-2 opacity-20" size={48} />
+                    <p>Нет условий — все участки видимы</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Видимость атрибутов */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Eye" className="text-primary" size={24} />
+                Видимость атрибутов участков
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availableAttributes.map(attr => (
+                  <div key={attr.path} className="flex items-center space-x-2 p-3 border rounded-lg">
+                    <Checkbox
+                      id={attr.path}
+                      checked={isAttributeVisible(attr.path)}
+                      onCheckedChange={() => toggleAttributeVisibility(attr.path)}
+                    />
+                    <Label htmlFor={attr.path} className="flex-1 cursor-pointer">
+                      <div className="font-medium">{attr.label}</div>
+                      <div className="text-xs text-muted-foreground">{attr.path}</div>
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex gap-4 mt-6">
+          <Button onClick={handleSave} disabled={isSaving}>
             {isSaving ? (
-              <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+              <>
+                <Icon name="Loader2" className="animate-spin mr-2" size={16} />
+                Сохранение...
+              </>
             ) : (
-              <Icon name="Save" size={16} className="mr-2" />
+              <>
+                <Icon name="Save" className="mr-2" size={16} />
+                Сохранить настройки
+              </>
             )}
-            Сохранить все настройки
+          </Button>
+          <Button variant="outline" onClick={loadData}>
+            <Icon name="RotateCcw" className="mr-2" size={16} />
+            Сбросить изменения
           </Button>
         </div>
       </div>
