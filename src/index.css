@@ -52,30 +52,20 @@
     @apply border-border;
   }
 
-  html {
-    height: 100%;
-    height: -webkit-fill-available;
-    zoom: 0.75;
-  }
-
+  html,
   body,
   #root {
-    @apply h-full;
-    height: 100vh;
-    height: -webkit-fill-available;
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
     font-size: 14px;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
   }
 
   h1,

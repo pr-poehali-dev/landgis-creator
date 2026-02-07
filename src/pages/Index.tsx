@@ -224,7 +224,7 @@ const Index = () => {
   const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
-    <div className="flex h-full bg-background overflow-hidden" style={{ height: '100vh', height: '-webkit-fill-available' }}>
+    <div className="flex h-screen bg-background">
       <SidebarPanel
         appSettings={appSettings}
         searchQuery={searchQuery}
