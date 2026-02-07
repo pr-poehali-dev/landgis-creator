@@ -53,6 +53,24 @@ const Index = () => {
     }
   }, [appSettings, isSettingsLoading]);
 
+  // Обработка изменения ориентации устройства
+  useEffect(() => {
+    const handleResize = () => {
+      // Принудительный пересчет viewport при изменении ориентации
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
   const loadProperties = async () => {
     setIsLoading(true);
     try {

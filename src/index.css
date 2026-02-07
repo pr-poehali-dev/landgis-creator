@@ -55,15 +55,20 @@
   html {
     height: 100%;
     height: -webkit-fill-available;
+    width: 100%;
+    overflow: hidden;
   }
 
   body,
   #root {
     @apply h-full;
     height: 100vh;
-    height: -webkit-fill-available;
+    height: calc(var(--vh, 1vh) * 100);
     min-height: 100vh;
-    min-height: -webkit-fill-available;
+    min-height: calc(var(--vh, 1vh) * 100);
+    width: 100%;
+    max-width: 100vw;
+    overflow: hidden;
   }
 
   body {
@@ -71,6 +76,7 @@
     font-family: "Inter", sans-serif;
     font-size: 14px;
     overflow: hidden;
+    position: relative;
   }
 
   h1,
