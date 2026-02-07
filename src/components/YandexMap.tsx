@@ -144,6 +144,24 @@ const YandexMap = ({
     };
   }, [isMapReady, properties, onVisiblePropertiesChange]);
 
+  // Обработчик изменения размеров окна для пересчета карты
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
+    
+    const handleResize = () => {
+      // Принудительный пересчет размеров контейнера карты
+      map.container.fitToViewport();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isMapReady]);
+
   // Обработчик клика на карту для закрытия панели атрибутов
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return;
