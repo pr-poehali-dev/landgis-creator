@@ -222,16 +222,17 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
       const trueLabel = config?.formatOptions?.trueLabel || 'Да';
       const falseLabel = config?.formatOptions?.falseLabel || 'Нет';
       
-      // Проверяем все варианты истины: true, 'true', 'да', 'Да', и custom trueLabel
-      const isTrueValue = value === true || 
-                         value === 'true' || 
-                         String(value).toLowerCase() === 'да' ||
-                         String(value).toLowerCase() === trueLabel.toLowerCase();
+      // Нормализуем значение
+      const normalizeToggleValue = (val: any): boolean => {
+        if (val === null || val === undefined || val === '') return false;
+        if (typeof val === 'boolean') return val;
+        const strVal = String(val).toLowerCase().trim();
+        return strVal === 'true' || strVal === 'да' || strVal === trueLabel.toLowerCase();
+      };
       
+      const isTrueValue = normalizeToggleValue(value);
       const toggleCheckedValue = isTrueValue ? 'true' : 'false';
       const radioName = `toggle-${config?.configKey || Math.random()}`;
-      
-      console.log('Toggle render:', { key: config?.configKey, value, toggleCheckedValue, isTrueValue });
       
       return (
         <div className="flex gap-4">
@@ -268,15 +269,17 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
     
     case 'select':
       const options = config?.formatOptions?.options || [];
+      const selectValue = value !== null && value !== undefined ? String(value) : '';
       return (
         <Select
-          value={value !== null && value !== undefined ? String(value) : ''}
+          value={selectValue}
           onValueChange={(val) => onValueChange(val)}
         >
           <SelectTrigger className="text-sm">
             <SelectValue placeholder="Выберите значение" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="">—</SelectItem>
             {options.map((option: string) => (
               <SelectItem key={option} value={option}>
                 {option}
