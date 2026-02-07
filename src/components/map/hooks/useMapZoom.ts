@@ -31,6 +31,29 @@ interface UseMapZoomProps {
   initialViewRef: React.MutableRefObject<{ center: [number, number], zoom: number } | null>;
 }
 
+// Константы для зума
+const ZOOM_DURATION = 1500; // 1.5 секунды
+const ZOOM_OUT_DURATION = 1500;
+const ZOOM_OUT_DELTA = 2; // На сколько уровней отдаляем при закрытии
+const MIN_ZOOM_LEVEL = 10;
+
+// Определяем размеры отступов в зависимости от размера экрана
+const getZoomMargins = (): [number, number, number, number] => {
+  const isMobile = window.innerWidth < 768;
+  const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+  
+  if (isMobile) {
+    // На мобильных: меньше отступ справа (панель над картой)
+    return [80, 100, 80, 100];
+  } else if (isTablet) {
+    // На планшетах: средние отступы
+    return [100, 300, 100, 250];
+  } else {
+    // На десктопе: большой отступ справа для панели
+    return [100, 450, 100, 360];
+  }
+};
+
 export const useMapZoom = ({
   isMapReady,
   properties,
@@ -47,15 +70,13 @@ export const useMapZoom = ({
 }: UseMapZoomProps) => {
   const hoverSvgCacheRef = useRef<Map<string, string>>(new Map());
   
-  // Функция зума к участку
-  const zoomToProperty = (property: Property) => {
+  // ЕДИНАЯ функция зума к участку
+  const performZoomToProperty = (property: Property, source: 'selection' | 'button' = 'selection') => {
     const map = mapInstanceRef.current;
     if (!map || !property.boundary || property.boundary.length < 3) {
-      console.log('❌ Зум невозможен:', { map: !!map, boundary: property.boundary?.length });
       return;
     }
 
-    console.log('🔍 Поиск полигона для участка:', property.title);
     const existingPolygon = polygonsRef.current.find((polygon: any) => {
       try {
         const coords = polygon.geometry?.getCoordinates()?.[0];
@@ -71,28 +92,46 @@ export const useMapZoom = ({
     
     if (existingPolygon) {
       const bounds = existingPolygon.geometry?.getBounds();
-      console.log('✅ Полигон найден, запускаем анимацию:', bounds);
       if (bounds) {
         isAnimatingRef.current = true;
         
         const options: any = {
           checkZoomRange: true,
-          zoomMargin: [100, 450, 100, 360],
-          duration: 2000
+          zoomMargin: getZoomMargins(),
+          duration: ZOOM_DURATION
         };
         
-        console.log('⏱️ СТАРТ анимации (кнопка зума)');
         map.setBounds(bounds, options).then(() => {
-          console.log(`✅ Анимация (кнопка) завершена`);
           isAnimatingRef.current = false;
         }).catch(() => {
-          console.log(`❌ Ошибка анимации (кнопка)`);
           isAnimatingRef.current = false;
         });
       }
-    } else {
-      console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
     }
+  };
+  
+  // Публичная функция для внешнего вызова (кнопка зума)
+  const zoomToProperty = (property: Property) => {
+    performZoomToProperty(property, 'button');
+  };
+  
+  // Функция плавного отдаления при закрытии панели
+  const zoomOut = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    
+    const currentZoom = map.getZoom();
+    const targetZoom = Math.max(currentZoom - ZOOM_OUT_DELTA, MIN_ZOOM_LEVEL);
+    
+    isAnimatingRef.current = true;
+    map.setZoom(targetZoom, {
+      checkZoomRange: true,
+      duration: ZOOM_OUT_DURATION
+    }).then(() => {
+      isAnimatingRef.current = false;
+    }).catch(() => {
+      isAnimatingRef.current = false;
+    });
   };
 
   // Выделение центроида при наведении
@@ -159,7 +198,7 @@ export const useMapZoom = ({
     mapInstanceRef.current.setType(`yandex#${layerType}`);
   }, [mapType]);
 
-  // Зумирование к выбранному объекту
+  // Зумирование к выбранному объекту при его выборе
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -167,7 +206,6 @@ export const useMapZoom = ({
     // Сброс выбора
     if (!selectedProperty) {
       if (previousSelectedRef.current) {
-        // Не делаем анимацию при закрытии - она управляется из YandexMap
         previousSelectedRef.current = null;
       }
       return;
@@ -178,56 +216,13 @@ export const useMapZoom = ({
       return;
     }
 
-    // Запоминаем выбранный объект и приближаем камеру
+    // Запоминаем выбранный объект
     previousSelectedRef.current = selectedProperty;
     map.balloon.close();
 
-    console.log('📍 Начинаем зум к участку:', selectedProperty.title);
-    
-    // Зумируем к участку напрямую
-    if (!selectedProperty.boundary || selectedProperty.boundary.length < 3) {
-      console.log('❌ Нет границ у участка');
-      return;
-    }
+    // Выполняем зум через единую функцию
+    performZoomToProperty(selectedProperty, 'selection');
+  }, [selectedProperty, isMapReady, mapInstanceRef, polygonsRef, isAnimatingRef]);
 
-    const existingPolygon = polygonsRef.current.find((polygon: any) => {
-      try {
-        const coords = polygon.geometry?.getCoordinates()?.[0];
-        if (!coords || coords.length !== selectedProperty.boundary?.length) return false;
-        return coords.every((coord: [number, number], idx: number) => 
-          coord[0] === selectedProperty.boundary?.[idx]?.[0] && 
-          coord[1] === selectedProperty.boundary?.[idx]?.[1]
-        );
-      } catch {
-        return false;
-      }
-    });
-    
-    if (existingPolygon) {
-      const bounds = existingPolygon.geometry?.getBounds();
-      console.log('✅ Полигон найден, bounds:', bounds);
-      if (bounds) {
-        isAnimatingRef.current = true;
-        
-        const options: any = {
-          checkZoomRange: true,
-          zoomMargin: [100, 450, 100, 360],
-          duration: 2000
-        };
-        
-        console.log('⏱️ СТАРТ анимации к участку');
-        map.setBounds(bounds, options).then(() => {
-          console.log(`✅ Анимация завершена`);
-          isAnimatingRef.current = false;
-        }).catch(() => {
-          console.log(`❌ Ошибка анимации`);
-          isAnimatingRef.current = false;
-        });
-      }
-    } else {
-      console.log('❌ Полигон не найден среди', polygonsRef.current.length, 'полигонов');
-    }
-  }, [selectedProperty]);
-
-  return { zoomToProperty };
+  return { zoomToProperty, zoomOut };
 };

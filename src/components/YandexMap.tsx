@@ -93,7 +93,7 @@ const YandexMap = ({
   });
 
   // Управление зумом и анимацией
-  const { zoomToProperty } = useMapZoom({
+  const { zoomToProperty, zoomOut } = useMapZoom({
     isMapReady,
     properties,
     selectedProperty,
@@ -227,18 +227,9 @@ const YandexMap = ({
   };
 
   const handleClosePanel = () => {
-    // Плавная анимация отдаления при закрытии панели
-    if (mapInstanceRef.current && selectedProperty) {
-      const currentZoom = mapInstanceRef.current.getZoom();
-      const targetZoom = Math.max(currentZoom - 2, 10);
-      
-      isAnimatingRef.current = true;
-      mapInstanceRef.current.setZoom(targetZoom, {
-        checkZoomRange: true,
-        duration: 1500
-      }).then(() => {
-        isAnimatingRef.current = false;
-      });
+    // Плавная анимация отдаления при закрытии панели через единую функцию
+    if (selectedProperty) {
+      zoomOut();
     }
     
     if (onAttributesPanelChange) onAttributesPanelChange(false);
@@ -284,7 +275,7 @@ const YandexMap = ({
       const options: any = {
         checkZoomRange: true,
         zoomMargin: 100,
-        duration: 2000
+        duration: 1500
       };
       
       mapInstanceRef.current.setBounds(bounds, options).then(() => {
