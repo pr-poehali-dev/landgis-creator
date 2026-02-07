@@ -100,7 +100,9 @@ export const useMapObjects = ({
           }
         );
 
-        polygon.events.add('click', () => {
+        polygon.events.add('click', (e: any) => {
+          console.log('🖱️ Polygon clicked:', property.title);
+          e.stopPropagation();
           if (isAnimatingRef.current) return;
           onSelectProperty(property);
           if (onAttributesPanelChange) onAttributesPanelChange(true);
@@ -147,7 +149,9 @@ export const useMapObjects = ({
           }
         );
 
-        centroid.events.add('click', () => {
+        centroid.events.add('click', (e: any) => {
+          console.log('🖱️ Centroid clicked:', property.title);
+          e.stopPropagation();
           if (isAnimatingRef.current) return;
           onSelectProperty(property);
           if (onAttributesPanelChange) onAttributesPanelChange(true);
