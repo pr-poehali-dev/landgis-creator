@@ -159,8 +159,6 @@ const YandexMap = ({
           const width = mapRef.current.offsetWidth;
           const height = mapRef.current.offsetHeight;
           
-          console.log('🔄 Resize карты:', { width, height, windowWidth: window.innerWidth });
-          
           const mapContainer = mapInstanceRef.current.container.getElement();
           if (mapContainer) {
             mapContainer.style.width = `${width}px`;
@@ -168,7 +166,6 @@ const YandexMap = ({
           }
           
           mapInstanceRef.current.container.fitToViewport();
-          console.log('✅ fitToViewport() выполнен');
         }
       }, 100);
     };
