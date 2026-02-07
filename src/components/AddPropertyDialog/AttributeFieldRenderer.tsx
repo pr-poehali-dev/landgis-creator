@@ -206,12 +206,13 @@ export const AttributeFieldRenderer = ({
       );
 
     case 'select':
+      const selectValue = value !== null && value !== undefined && value !== '' ? String(value) : undefined;
       return (
         <div key={key} className="space-y-2">
           <Label htmlFor={key} className="text-sm font-medium">
             {config.displayName}
           </Label>
-          <Select value={value} onValueChange={(val) => onAttributeChange(key, val)}>
+          <Select value={selectValue} onValueChange={(val) => onAttributeChange(key, val)}>
             <SelectTrigger id={key}>
               <SelectValue placeholder="Выберите значение" />
             </SelectTrigger>
