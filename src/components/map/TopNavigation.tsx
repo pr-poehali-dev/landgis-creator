@@ -49,8 +49,8 @@ const TopNavigation = ({
   const debugInfo = `LS:${rawSettings ? 'Y' : 'N'} | AS:${appSettings ? 'Y' : 'N'} | L:${appSettings?.logo?.length || 0}`;
   
   return (
-    <div className="h-12 border-b border-border flex items-center px-3 lg:px-4 bg-card/30 backdrop-blur w-full relative">
-      <div className="flex items-center gap-3">
+    <div className="h-10 border-b border-border flex items-center px-2 lg:px-3 bg-card/30 backdrop-blur w-full relative">
+      <div className="flex items-center gap-2">
         {appSettings?.logo ? (
           <img 
             src={appSettings.logo} 

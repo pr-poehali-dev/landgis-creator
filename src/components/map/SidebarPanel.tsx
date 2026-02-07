@@ -41,9 +41,9 @@ const SidebarPanel = ({
   totalFilteredCount
 }: SidebarPanelProps) => {
   return (
-    <div className="hidden lg:flex w-80 border-r border-border flex-col bg-card/50 backdrop-blur">
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-center mb-4">
+    <div className="hidden lg:flex w-64 border-r border-border flex-col bg-card/50 backdrop-blur">
+      <div className="p-3 border-b border-border">
+        <div className="flex items-center justify-center mb-3">
           {appSettings.logo ? (
             <img src={appSettings.logo} alt="Logo" className="h-12 max-w-[240px] object-contain" />
           ) : (

@@ -12,13 +12,13 @@ interface FilterControlsProps {
 
 const FilterControls = ({ isOpen, activeCount, onToggle, onLayersClick }: FilterControlsProps) => {
   return (
-    <div className="absolute top-4 right-4 z-40 flex gap-2">
+    <div className="absolute top-3 right-3 z-40 flex gap-2">
       <Button
         onClick={onToggle}
         variant={isOpen || activeCount > 0 ? 'default' : 'outline'}
         className={cn(
-          "shadow-lg gap-2 h-12 text-base font-semibold hover:opacity-90",
-          "px-3 md:px-6 md:w-[140px]",
+          "shadow-lg gap-2 h-9 text-sm font-semibold hover:opacity-90",
+          "px-2 md:px-4 md:w-[110px]",
           (isOpen || activeCount > 0) ? "bg-accent text-accent-foreground" : ""
         )}
       >

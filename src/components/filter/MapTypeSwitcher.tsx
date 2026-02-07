@@ -9,13 +9,13 @@ interface MapTypeSwitcherProps {
 
 const MapTypeSwitcher = ({ mapType, onMapTypeChange }: MapTypeSwitcherProps) => {
   return (
-    <div className="absolute top-4 left-4 z-40">
-      <div className="inline-flex rounded-lg border border-border bg-muted/50 shadow-lg backdrop-blur h-12 p-0.5">
+    <div className="absolute top-3 left-3 z-40">
+      <div className="inline-flex rounded-lg border border-border bg-muted/50 shadow-lg backdrop-blur h-9 p-0.5">
         <Button
           onClick={() => onMapTypeChange('scheme')}
           variant="ghost"
           className={cn(
-            "gap-2 px-4 h-full text-base font-semibold rounded-md transition-all",
+            "gap-2 px-3 h-full text-sm font-semibold rounded-md transition-all",
             mapType === 'scheme' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
           )}
         >
@@ -26,7 +26,7 @@ const MapTypeSwitcher = ({ mapType, onMapTypeChange }: MapTypeSwitcherProps) => 
           onClick={() => onMapTypeChange('hybrid')}
           variant="ghost"
           className={cn(
-            "gap-2 px-4 h-full text-base font-semibold rounded-md transition-all",
+            "gap-2 px-3 h-full text-sm font-semibold rounded-md transition-all",
             mapType === 'hybrid' ? "bg-accent text-accent-foreground shadow-sm" : "hover:bg-muted"
           )}
         >
