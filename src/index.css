@@ -55,16 +55,19 @@
   html {
     height: 100%;
     overflow: hidden;
+    touch-action: pan-x pan-y;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: "Inter", sans-serif;
     font-size: 14px;
+    height: 100dvh;
     height: 100vh;
     overflow: hidden;
     margin: 0;
     padding: 0;
+    touch-action: pan-x pan-y;
   }
 
   #root {
