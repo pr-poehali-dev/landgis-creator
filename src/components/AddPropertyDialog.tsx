@@ -40,16 +40,18 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     }
   }, [open]);
 
-  const loadAttributeConfigs = () => {
-    const saved = localStorage.getItem('displayConfigs');
+  const loadAttributeConfigs = async () => {
     const currentUser = authService.getUser();
     const userRole = currentUser?.role || 'user1';
+    
+    // Загружаем либо из localStorage (если админка уже заполнила)
+    const saved = localStorage.getItem('displayConfigs');
+    let configsArray: DisplayConfig[] = [];
     
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // displayConfigs хранится как массив, не как объект
-        const configsArray = (Array.isArray(parsed) ? parsed : Object.values(parsed))
+        configsArray = (Array.isArray(parsed) ? parsed : Object.values(parsed))
           .filter(config => {
             const isEnabled = config.enabled || config.conditionalDisplay;
             const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
@@ -57,27 +59,50 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           })
           .sort((a, b) => a.displayOrder - b.displayOrder);
         
-        console.log('📋 Загружено атрибутов для формы:', configsArray.length, configsArray);
-        setAttributeConfigs(configsArray);
-        
-        const initialAttributes: Record<string, any> = {};
-        configsArray.forEach(config => {
-          const key = config.originalKey || config.configKey;
-          if (config.formatType === 'toggle' || config.formatType === 'boolean') {
-            initialAttributes[key] = false;
-          } else if (config.formatType === 'number' || config.formatType === 'money') {
-            initialAttributes[key] = 0;
-          } else if (config.formatType === 'multiselect') {
-            initialAttributes[key] = JSON.stringify([]);
-          } else {
-            initialAttributes[key] = '';
-          }
-        });
-        setFormData(prev => ({ ...prev, attributes: initialAttributes }));
+        console.log('📋 Загружено атрибутов из localStorage:', configsArray.length);
       } catch (error) {
-        console.error('Error loading attribute configs:', error);
+        console.error('Error parsing localStorage configs:', error);
       }
     }
+    
+    // Если в localStorage пусто — пробуем загрузить с сервера
+    if (configsArray.length === 0) {
+      try {
+        console.log('📋 localStorage пуст, загружаем с сервера...');
+        const { displayConfigService } = await import('@/services/displayConfigService');
+        const serverConfigs = await displayConfigService.getConfigs();
+        
+        configsArray = serverConfigs
+          .filter(config => {
+            const isEnabled = config.enabled || config.conditionalDisplay;
+            const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
+            return isEnabled && hasRoleAccess;
+          })
+          .sort((a, b) => a.displayOrder - b.displayOrder);
+        
+        console.log('📋 Загружено атрибутов с сервера:', configsArray.length);
+      } catch (error) {
+        console.error('Error loading configs from server:', error);
+      }
+    }
+    
+    setAttributeConfigs(configsArray);
+    
+    // Инициализируем начальные значения атрибутов
+    const initialAttributes: Record<string, any> = {};
+    configsArray.forEach(config => {
+      const key = config.originalKey || config.configKey;
+      if (config.formatType === 'toggle' || config.formatType === 'boolean') {
+        initialAttributes[key] = false;
+      } else if (config.formatType === 'number' || config.formatType === 'money') {
+        initialAttributes[key] = 0;
+      } else if (config.formatType === 'multiselect') {
+        initialAttributes[key] = JSON.stringify([]);
+      } else {
+        initialAttributes[key] = '';
+      }
+    });
+    setFormData(prev => ({ ...prev, attributes: initialAttributes }));
   };
 
   const parseKmlFile = async (file: File) => {
