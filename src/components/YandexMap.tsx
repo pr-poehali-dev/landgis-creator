@@ -144,40 +144,6 @@ const YandexMap = ({
     };
   }, [isMapReady, properties, onVisiblePropertiesChange]);
 
-  // Обработчик изменения размеров окна для пересчета карты
-  useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current) return;
-
-    const map = mapInstanceRef.current;
-    let resizeTimeout: NodeJS.Timeout;
-    
-    const handleResize = () => {
-      // Debounce для оптимизации
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        // Принудительный пересчет размеров контейнера карты
-        map.container.fitToViewport();
-        
-        // Дополнительно триггерим пересчёт через малый timeout
-        setTimeout(() => {
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.container.fitToViewport();
-          }
-        }, 50);
-      }, 100);
-    };
-
-    // Сразу вызываем при монтировании
-    handleResize();
-    
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      clearTimeout(resizeTimeout);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [isMapReady]);
-
   // Обработчик клика на карту для закрытия панели атрибутов
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return;
