@@ -15,7 +15,7 @@ export const RoleSelector = ({
     <div>
       <label className="text-[10px] text-muted-foreground mb-1 block">Доступно для ролей</label>
       <div className="flex flex-wrap gap-1.5">
-        {['admin', 'user1', 'user2', 'user3', 'user4'].map((role) => (
+        {['admin', 'vip', 'user1', 'user2', 'user3', 'user4'].map((role) => (
           <label key={role} className="flex items-center gap-1 text-[11px] px-2 py-1 rounded border border-border hover:bg-accent cursor-pointer">
             <input
               type="checkbox"
@@ -29,7 +29,14 @@ export const RoleSelector = ({
               }}
               className="rounded h-3 w-3"
             />
-            <span>{role === 'admin' ? 'Админ' : role === 'user1' ? 'Free' : role === 'user2' ? 'Light' : role === 'user3' ? 'Max' : 'VIP'}</span>
+            <span>
+              {role === 'admin' ? 'Админ' : 
+               role === 'vip' ? 'VIP' :
+               role === 'user1' ? 'Free' : 
+               role === 'user2' ? 'Light' : 
+               role === 'user3' ? 'Max' : 
+               'User4'}
+            </span>
           </label>
         ))}
       </div>
