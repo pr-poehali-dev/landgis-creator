@@ -59,8 +59,12 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
         configsArray = serverConfigs
           .filter((config: any) => {
             const isEnabled = config.enabled || config.conditionalDisplay;
-            const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
-            console.log(`  - ${config.displayName}: enabled=${isEnabled}, hasRole=${hasRoleAccess}`);
+            // VIP и admin видят одно и то же
+            const hasRoleAccess = !config.visibleRoles || 
+                                 config.visibleRoles.length === 0 || 
+                                 config.visibleRoles.includes(userRole) ||
+                                 (userRole === 'vip' && config.visibleRoles.includes('admin'));
+            console.log(`  - ${config.displayName}: enabled=${isEnabled}, hasRole=${hasRoleAccess}, roles=${JSON.stringify(config.visibleRoles)}, userRole=${userRole}`);
             return isEnabled && hasRoleAccess;
           })
           .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
