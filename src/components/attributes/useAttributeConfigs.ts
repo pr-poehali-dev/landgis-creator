@@ -381,6 +381,29 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     
     localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(configsMap));
     
+    // Экспорт настроек для опубликованного домена (создаём публичный файл)
+    try {
+      const publicConfigs = configs.map(c => ({
+        id: c.id,
+        configType: c.configType,
+        configKey: c.configKey,
+        originalKey: c.originalKey,
+        displayName: c.displayName,
+        displayOrder: c.displayOrder,
+        visibleRoles: c.visibleRoles,
+        enabled: c.enabled,
+        formatType: c.formatType,
+        formatOptions: c.formatOptions,
+        conditionalDisplay: c.conditionalDisplay
+      }));
+      
+      // Сохраняем в localStorage для кросс-доменной синхронизации
+      localStorage.setItem('attributeConfigs_public', JSON.stringify(publicConfigs));
+      console.log('✅ Настройки экспортированы для публичного домена');
+    } catch (error) {
+      console.error('❌ Ошибка экспорта настроек:', error);
+    }
+    
     const renamedKeys = configs.filter(c => c.originalKey && c.originalKey !== c.configKey);
     
     if (renamedKeys.length > 0) {

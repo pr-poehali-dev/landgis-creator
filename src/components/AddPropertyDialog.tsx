@@ -44,10 +44,10 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
     const currentUser = authService.getUser();
     const userRole = currentUser?.role || 'user1';
     
-    // Пробуем загрузить из localStorage
-    const saved = localStorage.getItem('attributeConfigs');
     let configsArray: DisplayConfig[] = [];
     
+    // 1. Пробуем загрузить из localStorage редактора (формат объект)
+    const saved = localStorage.getItem('attributeConfigs');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -59,17 +59,37 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
           })
           .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
         
-        console.log('📋 Загружено из localStorage:', configsArray.length, 'атрибутов');
+        console.log('📋 Загружено из localStorage (редактор):', configsArray.length, 'атрибутов');
       } catch (error) {
-        console.error('Ошибка парсинга localStorage:', error);
+        console.error('Ошибка парсинга attributeConfigs:', error);
       }
     }
     
-    // Если localStorage пуст — используем дефолтные настройки для работы на опубликованном домене
+    // 2. Если не нашли — пробуем публичный экспорт (формат массив)
+    if (configsArray.length === 0) {
+      const publicSaved = localStorage.getItem('attributeConfigs_public');
+      if (publicSaved) {
+        try {
+          const parsed = JSON.parse(publicSaved);
+          configsArray = (Array.isArray(parsed) ? parsed : [])
+            .filter((config: any) => {
+              const isEnabled = config.enabled || config.conditionalDisplay;
+              const hasRoleAccess = !config.visibleRoles || config.visibleRoles.length === 0 || config.visibleRoles.includes(userRole);
+              return isEnabled && hasRoleAccess;
+            })
+            .sort((a: any, b: any) => a.displayOrder - b.displayOrder);
+          
+          console.log('📋 Загружено из публичного экспорта:', configsArray.length, 'атрибутов');
+        } catch (error) {
+          console.error('Ошибка парсинга attributeConfigs_public:', error);
+        }
+      }
+    }
+    
+    // 3. Если всё ещё пусто — используем дефолтный набор
     if (configsArray.length === 0) {
       console.warn('⚠️ localStorage пуст, используем дефолтные настройки атрибутов');
       
-      // Дефолтные атрибуты для формы (минимальный набор)
       const defaultConfigs: DisplayConfig[] = [
         { id: 1, configType: 'attribute', configKey: 'region', originalKey: 'region', displayName: 'Регион', displayOrder: 1, visibleRoles: [], enabled: true, settings: {}, formatType: 'text' },
         { id: 2, configType: 'attribute', configKey: 'segment', originalKey: 'segment', displayName: 'Сегмент', displayOrder: 2, visibleRoles: [], enabled: true, settings: {}, formatType: 'multiselect', formatOptions: { options: ['Премиум', 'Стандарт', 'Эконом'] } },
