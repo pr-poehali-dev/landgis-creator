@@ -52,6 +52,14 @@ def handler(event: dict, context) -> dict:
             else:
                 return error_response('Method not allowed', 405)
         
+        # Handle syncing attribute configs to DB
+        if query_params.get('action') == 'sync_configs':
+            if method == 'POST':
+                body = json.loads(event.get('body', '{}'))
+                return sync_attribute_configs(conn, body)
+            else:
+                return error_response('Method not allowed', 405)
+        
         # Handle attribute config requests
         if query_params.get('type') == 'config':
             if method == 'GET':
@@ -127,7 +135,9 @@ def get_attribute_configs(conn):
                 display_name as "displayName",
                 display_order as "displayOrder", 
                 visible_in_table as "visibleInTable",
-                visible_roles as "visibleRoles", 
+                visible_roles as "visibleRoles",
+                format_type as "formatType",
+                format_options as "formatOptions",
                 created_at as "createdAt", 
                 updated_at as "updatedAt"
             FROM t_p78972315_landgis_creator.attribute_config
@@ -294,6 +304,62 @@ def delete_attribute_from_all(conn, data):
         'success': True,
         'message': f'Deleted attribute {key}',
         'affectedRows': affected_rows
+    })
+
+def sync_attribute_configs(conn, data):
+    '''Синхронизация настроек атрибутов из localStorage в БД'''
+    configs = data.get('configs', [])
+    
+    if not configs:
+        return error_response('configs array is required', 400)
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        for config in configs:
+            attribute_key = config.get('configKey') or config.get('attributeKey')
+            if not attribute_key:
+                continue
+            
+            # Проверяем существование записи
+            cur.execute('''
+                SELECT id FROM t_p78972315_landgis_creator.attribute_config
+                WHERE attribute_key = %s
+            ''', (attribute_key,))
+            
+            existing = cur.fetchone()
+            
+            format_type = config.get('formatType', 'text')
+            format_options = json.dumps(config.get('formatOptions')) if config.get('formatOptions') else None
+            display_name = config.get('displayName', attribute_key)
+            display_order = config.get('displayOrder', 0)
+            visible_in_table = config.get('enabled', False)
+            visible_roles = config.get('visibleRoles', ['admin'])
+            
+            if existing:
+                # Обновляем существующую запись
+                cur.execute('''
+                    UPDATE t_p78972315_landgis_creator.attribute_config
+                    SET display_name = %s,
+                        display_order = %s,
+                        visible_in_table = %s,
+                        visible_roles = %s,
+                        format_type = %s,
+                        format_options = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE attribute_key = %s
+                ''', (display_name, display_order, visible_in_table, visible_roles, format_type, format_options, attribute_key))
+            else:
+                # Создаём новую запись
+                cur.execute('''
+                    INSERT INTO t_p78972315_landgis_creator.attribute_config
+                    (attribute_key, display_name, display_order, visible_in_table, visible_roles, format_type, format_options)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ''', (attribute_key, display_name, display_order, visible_in_table, visible_roles, format_type, format_options))
+        
+        conn.commit()
+    
+    return success_response({
+        'success': True,
+        'message': f'Synced {len(configs)} attribute configs to database'
     })
 
 def error_response(message, status_code=400):

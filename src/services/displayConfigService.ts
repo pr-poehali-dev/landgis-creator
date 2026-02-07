@@ -29,6 +29,8 @@ type BackendConfig = {
   displayOrder: number;
   visibleInTable: boolean;
   visibleRoles: string[];
+  formatType?: string;
+  formatOptions?: any;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -38,11 +40,14 @@ function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
     id: backend.id,
     configType: 'attribute',
     configKey: backend.attributeKey,
+    originalKey: backend.attributeKey,
     displayName: backend.displayName,
     displayOrder: backend.displayOrder,
     visibleRoles: backend.visibleRoles,
     enabled: backend.visibleInTable,
     settings: {},
+    formatType: (backend.formatType as any) || 'text',
+    formatOptions: backend.formatOptions || null,
     createdAt: backend.createdAt,
     updatedAt: backend.updatedAt
   };

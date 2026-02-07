@@ -318,6 +318,24 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
   };
 
   const saveConfigs = async (onAttributesUpdate?: (attributes: Record<string, any>) => void) => {
+    // 🔄 СНАЧАЛА синхронизируем настройки в БД
+    try {
+      const response = await fetch(`${func2url['update-attributes']}?action=sync_configs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ configs })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Настройки синхронизированы в БД:', result.message);
+      } else {
+        console.warn('⚠️ Не удалось синхронизировать настройки в БД');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка синхронизации в БД:', error);
+    }
+    
     const configsMap: Record<string, DisplayConfig> = {};
     configs.forEach(c => {
       configsMap[c.configKey] = c;
