@@ -109,6 +109,27 @@ const SidebarPanel = ({
           </div>
         ))}
       </div>
+
+      <div className="p-3 border-t border-border bg-card/80 backdrop-blur">
+        <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+          <div>
+            <div className="font-bold text-base text-primary">{properties.length}</div>
+            <div className="text-muted-foreground">Объектов</div>
+          </div>
+          <div>
+            <div className="font-bold text-base text-green-400">
+              {properties.filter(p => p.status === 'available').length}
+            </div>
+            <div className="text-muted-foreground">Доступно</div>
+          </div>
+          <div>
+            <div className="font-bold text-base text-secondary">
+              {formatPrice(properties.reduce((sum, p) => sum + p.price, 0) / properties.length).replace(/\s₽/, '')}
+            </div>
+            <div className="text-muted-foreground">Средняя цена</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
