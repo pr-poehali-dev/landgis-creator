@@ -156,19 +156,19 @@ const YandexMap = ({
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         if (mapInstanceRef.current && mapRef.current) {
-          // Получаем текущие размеры контейнера
           const width = mapRef.current.offsetWidth;
           const height = mapRef.current.offsetHeight;
           
-          // Принудительно устанавливаем размеры контейнера карты
+          console.log('🔄 Resize карты:', { width, height, windowWidth: window.innerWidth });
+          
           const mapContainer = mapInstanceRef.current.container.getElement();
           if (mapContainer) {
             mapContainer.style.width = `${width}px`;
             mapContainer.style.height = `${height}px`;
           }
           
-          // Пересчитываем viewport карты
           mapInstanceRef.current.container.fitToViewport();
+          console.log('✅ fitToViewport() выполнен');
         }
       }, 100);
     };
