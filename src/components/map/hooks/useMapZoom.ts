@@ -232,9 +232,15 @@ export const useMapZoom = ({
       return;
     }
 
-    // Не делаем ничего, если выбран тот же участок
+    const currentZoom = map.getZoom();
+    
+    // Если выбран тот же участок, но зум < порога - разрешаем повторный зум (для двухэтапной логики)
+    // Если зум >= порога - не делаем ничего (уже показали детально)
     if (previousSelectedRef.current?.id === selectedProperty.id) {
-      return;
+      if (currentZoom >= CENTROID_ZOOM_THRESHOLD) {
+        return; // Уже показали детально
+      }
+      // Иначе продолжаем - нужно зумить к границам
     }
 
     // Запоминаем выбранный объект
