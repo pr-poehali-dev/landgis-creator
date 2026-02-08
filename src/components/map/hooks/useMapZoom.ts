@@ -85,14 +85,18 @@ export const useMapZoom = ({
       
       isAnimatingRef.current = true;
       
-      // Используем panTo для плавного перемещения, затем setZoom для плавного зума
-      map.panTo(center, {
-        flying: true,
-        duration: ZOOM_DURATION / 2
+      // Используем setBounds для плавной анимации к центру с нужным зумом
+      const centerBounds: [[number, number], [number, number]] = [
+        [center[0] - 0.005, center[1] - 0.005],
+        [center[0] + 0.005, center[1] + 0.005]
+      ];
+      
+      map.setBounds(centerBounds, {
+        checkZoomRange: true,
+        duration: ZOOM_DURATION
       }).then(() => {
-        return map.setZoom(CENTROID_ZOOM_LEVEL, {
-          duration: ZOOM_DURATION / 2
-        });
+        // После анимации устанавливаем точный зум 14
+        return map.setZoom(CENTROID_ZOOM_LEVEL, { duration: 0 });
       }).then(() => {
         isAnimatingRef.current = false;
       }).catch(() => {
@@ -242,14 +246,19 @@ export const useMapZoom = ({
     }
 
     const currentZoom = map.getZoom();
+    const isSameProperty = previousSelectedRef.current?.id === selectedProperty.id;
     
-    // Проверяем, был ли уже выполнен детальный зум (зум > 15)
-    if (previousSelectedRef.current?.id === selectedProperty.id && currentZoom > 15) {
-      return; // Уже показали детально
+    // Если тот же участок и зум уже детальный (> 15) - ничего не делаем
+    if (isSameProperty && currentZoom > 15) {
+      return;
     }
-
-    // Запоминаем выбранный объект
-    previousSelectedRef.current = selectedProperty;
+    
+    // Если тот же участок и зум >= 14 - это второй клик, разрешаем зум к границам
+    // НЕ обновляем previousSelectedRef, чтобы третий клик заблокировался
+    if (!isSameProperty) {
+      previousSelectedRef.current = selectedProperty;
+    }
+    
     map.balloon.close();
 
     // Выполняем зум через единую функцию
