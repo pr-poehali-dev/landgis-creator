@@ -343,6 +343,7 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
 
   const saveConfigs = async (onAttributesUpdate?: (attributes: Record<string, any>) => void) => {
     // 🔄 СНАЧАЛА синхронизируем настройки в БД
+    let syncSuccess = false;
     try {
       const response = await fetch(`${func2url['update-attributes']}?action=sync_configs`, {
         method: 'POST',
@@ -353,6 +354,7 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       if (response.ok) {
         const result = await response.json();
         console.log('✅ Настройки синхронизированы в БД:', result.message);
+        syncSuccess = true;
       } else {
         console.warn('⚠️ Не удалось синхронизировать настройки в БД');
       }
@@ -479,6 +481,11 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     setPreviousConfigKeys(new Set(configs.map(c => c.originalKey || c.configKey)));
     
     toast.success('Настройки сохранены для всех объектов');
+    
+    // После успешного сохранения перезагружаем настройки с сервера
+    if (syncSuccess) {
+      await loadConfigs();
+    }
     
     if (renamedKeys.length > 0 || deletedKeys.length > 0) {
       window.location.reload();
