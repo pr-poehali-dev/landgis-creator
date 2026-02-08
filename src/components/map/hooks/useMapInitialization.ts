@@ -64,22 +64,27 @@ export const useMapInitialization = ({
       map.geoObjects.add(clusterer);
 
       // Добавляем слой ПКК Росреестра (кадастровая карта)
-      const pkkLayer = new window.ymaps.Layer(
-        'https://nspd.gov.ru/api/aeggis/v3/36048/wms?REQUEST=GetMap&SERVICE=WMS&VERSION=1.3.0&FORMAT=image%2Fpng&STYLES=&TRANSPARENT=true&LAYERS=36048&RANDOM=&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&BBOX=%b',
-        {
-          tileTransparent: true
-        }
-      );
-      
-      window.ymaps.layer.storage.add('pkk#layer', () => pkkLayer);
-      const pkkMapType = new window.ymaps.MapType('ПКК', ['pkk#layer']);
-      map.types.add('pkk', pkkMapType);
+      try {
+        const pkkLayer = new window.ymaps.Layer(
+          'https://nspd.gov.ru/api/aeggis/v3/36048/wms?REQUEST=GetMap&SERVICE=WMS&VERSION=1.3.0&FORMAT=image%2Fpng&STYLES=&TRANSPARENT=true&LAYERS=36048&RANDOM=&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&BBOX=%b',
+          {
+            tileTransparent: true
+          }
+        );
+        
+        // Добавляем слой как оверлей поверх основной карты
+        map.layers.add(pkkLayer);
+        
+        console.log('✅ Слой ПКК Росреестра добавлен');
+      } catch (error) {
+        console.warn('⚠️ Не удалось добавить слой ПКК:', error);
+      }
 
       mapInstanceRef.current = map;
       initialViewRef.current = { center: [55.751244, 37.618423], zoom: 12 };
       setIsMapReady(true);
 
-      console.log('✅ Карта инициализирована с ПКК Росреестра');
+      console.log('✅ Карта инициализирована');
     });
 
     return () => {
