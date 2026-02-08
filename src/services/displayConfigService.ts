@@ -36,6 +36,12 @@ type BackendConfig = {
 };
 
 function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
+  const formatOptions = backend.formatOptions || {};
+  const conditionalDisplay = formatOptions.conditionalDisplay || null;
+  
+  const cleanFormatOptions = { ...formatOptions };
+  delete cleanFormatOptions.conditionalDisplay;
+  
   return {
     id: backend.id,
     configType: 'attribute',
@@ -47,7 +53,8 @@ function mapBackendToFrontend(backend: BackendConfig): DisplayConfig {
     enabled: backend.visibleInTable,
     settings: {},
     formatType: (backend.formatType as any) || 'text',
-    formatOptions: backend.formatOptions || null,
+    formatOptions: Object.keys(cleanFormatOptions).length > 0 ? cleanFormatOptions : null,
+    conditionalDisplay: conditionalDisplay,
     createdAt: backend.createdAt,
     updatedAt: backend.updatedAt
   };

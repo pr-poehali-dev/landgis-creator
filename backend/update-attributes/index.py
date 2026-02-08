@@ -338,7 +338,12 @@ def sync_attribute_configs(conn, data):
             existing = cur.fetchone()
             
             format_type = config.get('formatType', 'text')
-            format_options = json.dumps(config.get('formatOptions')) if config.get('formatOptions') else None
+            
+            format_options_dict = config.get('formatOptions') or {}
+            if config.get('conditionalDisplay'):
+                format_options_dict['conditionalDisplay'] = config.get('conditionalDisplay')
+            
+            format_options = json.dumps(format_options_dict) if format_options_dict else None
             display_name = config.get('displayName', attribute_key)
             display_order = config.get('displayOrder', 0)
             visible_in_table = config.get('enabled', False)

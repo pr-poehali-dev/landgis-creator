@@ -87,10 +87,14 @@ const AttributeViewMode = ({
     
     const parentValue = attributes?.[dependsOn];
     
-    // Normalize values for comparison (handle boolean, "Да"/"да", true, etc.)
     const normalizeValue = (val: any): string => {
-      if (typeof val === 'boolean') return val ? 'да' : 'нет';
-      if (typeof val === 'string') return val.toLowerCase().trim();
+      if (typeof val === 'boolean') return val.toString();
+      if (typeof val === 'string') {
+        const lower = val.toLowerCase().trim();
+        if (lower === 'да' || lower === 'yes') return 'true';
+        if (lower === 'нет' || lower === 'no') return 'false';
+        return lower;
+      }
       return String(val).toLowerCase().trim();
     };
     
