@@ -82,21 +82,12 @@ export const useMapZoom = ({
     // Если зум меньше порога - зумим к центроиду (показываем общую область)
     if (currentZoom < CENTROID_ZOOM_THRESHOLD) {
       const center = property.coordinates;
-      
       isAnimatingRef.current = true;
       
-      // Используем setBounds для плавной анимации к центру с нужным зумом
-      const centerBounds: [[number, number], [number, number]] = [
-        [center[0] - 0.005, center[1] - 0.005],
-        [center[0] + 0.005, center[1] + 0.005]
-      ];
-      
-      map.setBounds(centerBounds, {
+      // Используем setCenter с duration для плавного перемещения + зума
+      map.setCenter(center, CENTROID_ZOOM_LEVEL, {
         checkZoomRange: true,
         duration: ZOOM_DURATION
-      }).then(() => {
-        // После анимации устанавливаем точный зум 14
-        return map.setZoom(CENTROID_ZOOM_LEVEL, { duration: 0 });
       }).then(() => {
         isAnimatingRef.current = false;
       }).catch(() => {
