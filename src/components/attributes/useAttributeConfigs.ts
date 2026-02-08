@@ -342,6 +342,8 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
   };
 
   const saveConfigs = async (onAttributesUpdate?: (attributes: Record<string, any>) => void) => {
+    console.log('💾 Сохраняем конфиги, количество:', configs.length);
+    
     // 🔄 СНАЧАЛА синхронизируем настройки в БД
     let syncSuccess = false;
     try {
@@ -356,7 +358,8 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
         console.log('✅ Настройки синхронизированы в БД:', result.message);
         syncSuccess = true;
       } else {
-        console.warn('⚠️ Не удалось синхронизировать настройки в БД');
+        const errorText = await response.text();
+        console.error('⚠️ Не удалось синхронизировать настройки в БД:', response.status, errorText);
       }
     } catch (error) {
       console.error('❌ Ошибка синхронизации в БД:', error);
@@ -423,7 +426,8 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
       }
     }
     
-    localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(configsMap));
+    // НЕ сохраняем в localStorage здесь! loadConfigs() сделает это после загрузки с сервера
+    // localStorage.setItem(GLOBAL_STORAGE_KEY, JSON.stringify(configsMap));
     
     // Экспорт настроек для опубликованного домена (создаём публичный файл)
     try {
@@ -482,9 +486,13 @@ export const useAttributeConfigs = (attributes?: Record<string, any>) => {
     
     toast.success('Настройки сохранены для всех объектов');
     
-    // После успешного сохранения перезагружаем настройки с сервера
+    // ВАЖНО: После успешного сохранения ОБЯЗАТЕЛЬНО перезагружаем с сервера!
     if (syncSuccess) {
+      console.log('🔄 Перезагружаем настройки после сохранения...');
       await loadConfigs();
+      console.log('✅ Настройки перезагружены');
+    } else {
+      console.error('⚠️ Сохранение не удалось, перезагрузка не будет выполнена');
     }
     
     if (renamedKeys.length > 0 || deletedKeys.length > 0) {
