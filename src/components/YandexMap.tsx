@@ -77,7 +77,7 @@ const YandexMap = ({
   });
 
   // Управление зумом и анимацией
-  const { zoomToProperty, zoomOut } = useMapZoom({
+  const { zoomToProperty, zoomToPropertyDetail, zoomOut } = useMapZoom({
     isMapReady,
     properties,
     selectedProperty,
@@ -106,7 +106,7 @@ const YandexMap = ({
     isAnimatingRef,
     onSelectProperty,
     onAttributesPanelChange,
-    zoomToProperty
+    zoomToPropertyDetail
   });
 
   // Отслеживание видимых участков при изменении границ карты

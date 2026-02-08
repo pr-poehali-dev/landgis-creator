@@ -73,14 +73,14 @@ export const useMapZoom = ({
   const hoverSvgCacheRef = useRef<Map<string, string>>(new Map());
   
   // Функция зума к участку: если далеко - к центроиду, если близко - к границам
-  const performZoomToProperty = (property: Property, source: 'selection' | 'button' = 'selection') => {
+  const performZoomToProperty = (property: Property, source: 'selection' | 'button' = 'selection', forceDetailZoom = false) => {
     const map = mapInstanceRef.current;
     if (!map) return;
     
     const currentZoom = map.getZoom();
     
-    // Если зум меньше порога - зумим к центроиду (показываем общую область)
-    if (currentZoom < CENTROID_ZOOM_THRESHOLD) {
+    // Если зум меньше порога И это не принудительный детальный зум - зумим к центроиду
+    if (currentZoom < CENTROID_ZOOM_THRESHOLD && !forceDetailZoom) {
       const center = property.coordinates;
       isAnimatingRef.current = true;
       
@@ -138,6 +138,11 @@ export const useMapZoom = ({
   // Публичная функция для внешнего вызова (кнопка зума)
   const zoomToProperty = (property: Property) => {
     performZoomToProperty(property, 'button');
+  };
+  
+  // Функция для принудительного зума к границам (при повторном клике)
+  const zoomToPropertyDetail = (property: Property) => {
+    performZoomToProperty(property, 'button', true);
   };
   
   // Функция плавного отдаления при закрытии панели
@@ -255,5 +260,5 @@ export const useMapZoom = ({
     performZoomToProperty(selectedProperty, 'selection');
   }, [selectedProperty, isMapReady, mapInstanceRef, polygonsRef, isAnimatingRef]);
 
-  return { zoomToProperty, zoomOut };
+  return { zoomToProperty, zoomToPropertyDetail, zoomOut };
 };
