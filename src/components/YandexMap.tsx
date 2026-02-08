@@ -62,10 +62,8 @@ const YandexMap = ({
   const previousSelectedRef = useRef<Property | null>(null);
   const isAnimatingRef = useRef(false);
   const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
-  const pkkLayerRef = useRef<any>(null);
 
   const [isMapReady, setIsMapReady] = useState(false);
-  const [isPkkLayerVisible, setIsPkkLayerVisible] = useState(false);
 
   // Инициализация карты
   useMapInitialization({
@@ -75,7 +73,6 @@ const YandexMap = ({
     polygonsRef,
     placeMarksRef,
     initialViewRef,
-    pkkLayerRef,
     setIsMapReady
   });
 
@@ -288,22 +285,6 @@ const YandexMap = ({
     }
   };
 
-  // Управление видимостью слоя ПКК
-  const togglePkkLayer = () => {
-    if (!isMapReady || !mapInstanceRef.current || !pkkLayerRef.current) return;
-
-    const map = mapInstanceRef.current;
-    const layer = pkkLayerRef.current;
-
-    if (isPkkLayerVisible) {
-      map.layers.remove(layer);
-      setIsPkkLayerVisible(false);
-    } else {
-      map.layers.add(layer);
-      setIsPkkLayerVisible(true);
-    }
-  };
-
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
@@ -321,8 +302,6 @@ const YandexMap = ({
           }}
           onGeneratePDF={handleGeneratePDF}
           onReturnToOverview={handleReturnToOverview}
-          isPkkLayerVisible={isPkkLayerVisible}
-          onTogglePkkLayer={togglePkkLayer}
         />
       )}
     </div>

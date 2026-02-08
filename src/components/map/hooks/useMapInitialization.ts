@@ -7,7 +7,6 @@ interface UseMapInitializationProps {
   polygonsRef: React.MutableRefObject<any[]>;
   placeMarksRef: React.MutableRefObject<any[]>;
   initialViewRef: React.MutableRefObject<{ center: [number, number], zoom: number } | null>;
-  pkkLayerRef: React.MutableRefObject<any>;
   setIsMapReady: (ready: boolean) => void;
 }
 
@@ -18,7 +17,6 @@ export const useMapInitialization = ({
   polygonsRef,
   placeMarksRef,
   initialViewRef,
-  pkkLayerRef,
   setIsMapReady
 }: UseMapInitializationProps) => {
   useEffect(() => {
@@ -64,22 +62,6 @@ export const useMapInitialization = ({
 
       clustererRef.current = clusterer;
       map.geoObjects.add(clusterer);
-
-      // Создаём слой ПКК Росреестра (изначально не добавлен на карту)
-      try {
-        const pkkLayer = new window.ymaps.Layer(
-          'https://nspd.gov.ru/api/aeggis/v3/36048/wms?REQUEST=GetMap&SERVICE=WMS&VERSION=1.3.0&FORMAT=image%2Fpng&STYLES=&TRANSPARENT=true&LAYERS=36048&RANDOM=&WIDTH=256&HEIGHT=256&CRS=EPSG%3A3857&BBOX=%b',
-          {
-            tileTransparent: true
-          }
-        );
-        
-        pkkLayerRef.current = pkkLayer;
-        console.log('✅ Слой ПКК Росреестра создан');
-      } catch (error) {
-        console.warn('⚠️ Не удалось создать слой ПКК:', error);
-      }
-
       mapInstanceRef.current = map;
       initialViewRef.current = { center: [55.751244, 37.618423], zoom: 12 };
       setIsMapReady(true);
