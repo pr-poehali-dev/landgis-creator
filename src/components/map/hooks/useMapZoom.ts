@@ -32,10 +32,12 @@ interface UseMapZoomProps {
 }
 
 // Константы для зума
-const ZOOM_DURATION = 1500; // 1.5 секунды
-const ZOOM_OUT_DURATION = 1500;
+const ZOOM_DURATION = 1000; // 1 секунда
+const ZOOM_OUT_DURATION = 1000;
 const ZOOM_OUT_DELTA = 2; // На сколько уровней отдаляем при закрытии
 const MIN_ZOOM_LEVEL = 10;
+const CENTROID_ZOOM_THRESHOLD = 14; // Минимальный зум для показа участков вместо центроидов
+const CENTROID_ZOOM_LEVEL = 14; // До какого уровня зумим при клике на центроид
 
 // Определяем размеры отступов в зависимости от размера экрана
 const getZoomMargins = (): [number, number, number, number] => {
@@ -70,10 +72,31 @@ export const useMapZoom = ({
 }: UseMapZoomProps) => {
   const hoverSvgCacheRef = useRef<Map<string, string>>(new Map());
   
-  // ЕДИНАЯ функция зума к участку с плавной двухэтапной анимацией
+  // Функция зума к участку: если далеко - к центроиду, если близко - к границам
   const performZoomToProperty = (property: Property, source: 'selection' | 'button' = 'selection') => {
     const map = mapInstanceRef.current;
-    if (!map || !property.boundary || property.boundary.length < 3) {
+    if (!map) return;
+    
+    const currentZoom = map.getZoom();
+    
+    // Если зум меньше порога - зумим к центроиду (показываем общую область)
+    if (currentZoom < CENTROID_ZOOM_THRESHOLD) {
+      const center = property.coordinates;
+      
+      isAnimatingRef.current = true;
+      map.setCenter(center, CENTROID_ZOOM_LEVEL, {
+        checkZoomRange: true,
+        duration: ZOOM_DURATION
+      }).then(() => {
+        isAnimatingRef.current = false;
+      }).catch(() => {
+        isAnimatingRef.current = false;
+      });
+      return;
+    }
+    
+    // Если зум достаточный и есть границы - зумим к границам участка
+    if (!property.boundary || property.boundary.length < 3) {
       return;
     }
 
@@ -95,77 +118,15 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Вычисляем центр участка
-        const center = [
-          (bounds[0][0] + bounds[1][0]) / 2,
-          (bounds[0][1] + bounds[1][1]) / 2
-        ] as [number, number];
-        
-        const currentZoom = map.getZoom();
-        const currentCenter = map.getCenter();
-        
-        // Вычисляем расстояние между текущим центром и целевым
-        const distance = Math.sqrt(
-          Math.pow(currentCenter[0] - center[0], 2) + 
-          Math.pow(currentCenter[1] - center[1], 2)
-        );
-        
-        // Определяем целевой зум для bounds
-        const tempMap = new window.ymaps.Map(document.createElement('div'), {
-          center: center,
-          zoom: currentZoom
+        map.setBounds(bounds, {
+          checkZoomRange: true,
+          zoomMargin: getZoomMargins(),
+          duration: ZOOM_DURATION
+        }).then(() => {
+          isAnimatingRef.current = false;
+        }).catch(() => {
+          isAnimatingRef.current = false;
         });
-        tempMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: getZoomMargins() });
-        const targetZoom = tempMap.getZoom();
-        tempMap.destroy();
-        
-        const zoomDiff = Math.abs(targetZoom - currentZoom);
-        
-        // Если расстояние большое или зум сильно отличается - делаем двухэтапную анимацию
-        if (distance > 0.1 || zoomDiff > 3) {
-          // Этап 1: Плавно перемещаемся к центру участка с промежуточным зумом
-          const intermediateZoom = currentZoom < targetZoom 
-            ? Math.min(currentZoom + 3, targetZoom - 1)
-            : Math.max(currentZoom - 2, targetZoom + 1);
-          
-          map.setCenter(center, intermediateZoom, {
-            checkZoomRange: true,
-            duration: ZOOM_DURATION
-          }).then(() => {
-            // Этап 2: Точная подгонка к границам участка
-            map.setBounds(bounds, {
-              checkZoomRange: true,
-              zoomMargin: getZoomMargins(),
-              duration: ZOOM_DURATION * 0.6
-            }).then(() => {
-              isAnimatingRef.current = false;
-            }).catch(() => {
-              isAnimatingRef.current = false;
-            });
-          }).catch(() => {
-            // Если первый этап не удался, пробуем сразу setBounds
-            map.setBounds(bounds, {
-              checkZoomRange: true,
-              zoomMargin: getZoomMargins(),
-              duration: ZOOM_DURATION
-            }).then(() => {
-              isAnimatingRef.current = false;
-            }).catch(() => {
-              isAnimatingRef.current = false;
-            });
-          });
-        } else {
-          // Если расстояние небольшое - сразу setBounds
-          map.setBounds(bounds, {
-            checkZoomRange: true,
-            zoomMargin: getZoomMargins(),
-            duration: ZOOM_DURATION
-          }).then(() => {
-            isAnimatingRef.current = false;
-          }).catch(() => {
-            isAnimatingRef.current = false;
-          });
-        }
       }
     }
   };

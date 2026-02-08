@@ -275,7 +275,7 @@ const YandexMap = ({
       const options: any = {
         checkZoomRange: true,
         zoomMargin: 100,
-        duration: 1500
+        duration: 1000
       };
       
       mapInstanceRef.current.setBounds(bounds, options).then(() => {
