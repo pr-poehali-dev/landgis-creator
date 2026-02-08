@@ -76,22 +76,6 @@ const YandexMap = ({
     setIsMapReady
   });
 
-  // Управление объектами на карте
-  useMapObjects({
-    isMapReady,
-    properties,
-    selectedProperty,
-    mapInstanceRef,
-    clustererRef,
-    polygonsRef,
-    placeMarksRef,
-    centroidsRef,
-    initialViewRef,
-    isAnimatingRef,
-    onSelectProperty,
-    onAttributesPanelChange
-  });
-
   // Управление зумом и анимацией
   const { zoomToProperty, zoomOut } = useMapZoom({
     isMapReady,
@@ -106,6 +90,23 @@ const YandexMap = ({
     previousSelectedRef,
     isAnimatingRef,
     initialViewRef
+  });
+
+  // Управление объектами на карте
+  useMapObjects({
+    isMapReady,
+    properties,
+    selectedProperty,
+    mapInstanceRef,
+    clustererRef,
+    polygonsRef,
+    placeMarksRef,
+    centroidsRef,
+    initialViewRef,
+    isAnimatingRef,
+    onSelectProperty,
+    onAttributesPanelChange,
+    zoomToProperty
   });
 
   // Отслеживание видимых участков при изменении границ карты

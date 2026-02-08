@@ -239,20 +239,19 @@ export const useMapZoom = ({
     const currentZoom = map.getZoom();
     const isSameProperty = previousSelectedRef.current?.id === selectedProperty.id;
     
-    // Если тот же участок и зум уже детальный (> 15) - ничего не делаем
-    if (isSameProperty && currentZoom > 15) {
+    // Если тот же участок - это второй клик на него
+    if (isSameProperty) {
+      // Если зум уже близкий (>= 14) - зумим к границам
+      if (currentZoom >= CENTROID_ZOOM_THRESHOLD) {
+        map.balloon.close();
+        performZoomToProperty(selectedProperty, 'selection');
+      }
       return;
     }
     
-    // Если тот же участок и зум >= 14 - это второй клик, разрешаем зум к границам
-    // НЕ обновляем previousSelectedRef, чтобы третий клик заблокировался
-    if (!isSameProperty) {
-      previousSelectedRef.current = selectedProperty;
-    }
-    
+    // Новый участок - запоминаем его и зумим
+    previousSelectedRef.current = selectedProperty;
     map.balloon.close();
-
-    // Выполняем зум через единую функцию
     performZoomToProperty(selectedProperty, 'selection');
   }, [selectedProperty, isMapReady, mapInstanceRef, polygonsRef, isAnimatingRef]);
 

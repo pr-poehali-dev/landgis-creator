@@ -29,6 +29,7 @@ interface UseMapObjectsProps {
   isAnimatingRef: React.MutableRefObject<boolean>;
   onSelectProperty: (property: Property | null) => void;
   onAttributesPanelChange?: (show: boolean) => void;
+  zoomToProperty: (property: Property) => void;
 }
 
 export const useMapObjects = ({
@@ -43,7 +44,8 @@ export const useMapObjects = ({
   initialViewRef,
   isAnimatingRef,
   onSelectProperty,
-  onAttributesPanelChange
+  onAttributesPanelChange,
+  zoomToProperty
 }: UseMapObjectsProps) => {
   const previousPropertiesHashRef = useRef<string>('');
   const [stylesLoaded, setStylesLoaded] = useState(false);
@@ -101,8 +103,14 @@ export const useMapObjects = ({
 
         polygon.events.add('click', () => {
           if (isAnimatingRef.current) return;
-          onSelectProperty(property);
-          if (onAttributesPanelChange) onAttributesPanelChange(true);
+          
+          // Если участок уже выбран - вызываем зум напрямую
+          if (selectedProperty?.id === property.id) {
+            zoomToProperty(property);
+          } else {
+            onSelectProperty(property);
+            if (onAttributesPanelChange) onAttributesPanelChange(true);
+          }
         });
 
         map.geoObjects.add(polygon);
@@ -137,8 +145,14 @@ export const useMapObjects = ({
 
         centroid.events.add('click', () => {
           if (isAnimatingRef.current) return;
-          onSelectProperty(property);
-          if (onAttributesPanelChange) onAttributesPanelChange(true);
+          
+          // Если участок уже выбран - вызываем зум напрямую
+          if (selectedProperty?.id === property.id) {
+            zoomToProperty(property);
+          } else {
+            onSelectProperty(property);
+            if (onAttributesPanelChange) onAttributesPanelChange(true);
+          }
         });
 
         map.geoObjects.add(centroid);
