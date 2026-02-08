@@ -223,6 +223,9 @@ export const useMapObjects = ({
   useEffect(() => {
     if (!isMapReady || !selectedProperty) return;
 
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
     const selectedCentroid = centroidsRef.current.find(({ propertyId }) => propertyId === selectedProperty.id);
     if (!selectedCentroid) return;
 
@@ -245,9 +248,47 @@ export const useMapObjects = ({
     selectedCentroid.centroid.options.set('zIndex', 2000);
     
     // Скрываем центроид если зум слишком близкий
-    const map = mapInstanceRef.current;
-    const currentZoom = map ? map.getZoom() : 10;
+    const currentZoom = map.getZoom();
     selectedCentroid.centroid.options.set('visible', currentZoom < 14);
+    
+    // Создаём полигон-подсветку с эффектом свечения
+    let glowPolygon: any = null;
+    if (selectedProperty.boundary && selectedProperty.boundary.length >= 3) {
+      // Цвет свечения - яркая версия цвета заливки
+      const glowColor = style.fillColor;
+      
+      glowPolygon = new window.ymaps.Polygon(
+        [selectedProperty.boundary],
+        {},
+        {
+          fillColor: glowColor,
+          fillOpacity: 0.15,
+          strokeColor: glowColor,
+          strokeWidth: 8,
+          strokeStyle: 'solid',
+          strokeOpacity: 0.8,
+          zIndex: 1500
+        }
+      );
+      
+      map.geoObjects.add(glowPolygon);
+      
+      // Анимация пульсации (опционально)
+      let opacity = 0.8;
+      let direction = -1;
+      const pulseInterval = setInterval(() => {
+        opacity += direction * 0.05;
+        if (opacity <= 0.3 || opacity >= 0.8) {
+          direction *= -1;
+        }
+        if (glowPolygon) {
+          glowPolygon.options.set('strokeOpacity', opacity);
+        }
+      }, 100);
+      
+      // Сохраняем интервал для очистки
+      (glowPolygon as any)._pulseInterval = pulseInterval;
+    }
     
     // Подписываемся на изменение зума для выбранного центроида
     const handleSelectedZoomChange = () => {
@@ -274,6 +315,14 @@ export const useMapObjects = ({
           const zoom = map.getZoom();
           selectedCentroid.centroid.options.set('visible', zoom < 14);
         }
+      }
+      
+      // Удаляем полигон-подсветку
+      if (glowPolygon) {
+        if ((glowPolygon as any)._pulseInterval) {
+          clearInterval((glowPolygon as any)._pulseInterval);
+        }
+        map.geoObjects.remove(glowPolygon);
       }
     };
   }, [selectedProperty, isMapReady, currentZoom]);
