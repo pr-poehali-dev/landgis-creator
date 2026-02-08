@@ -118,9 +118,12 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
+        // Для детального просмотра используем меньшие отступы (ближе к участку)
+        const detailedMargins: [number, number, number, number] = [40, 60, 40, 60];
+        
         map.setBounds(bounds, {
           checkZoomRange: true,
-          zoomMargin: getZoomMargins(),
+          zoomMargin: detailedMargins,
           duration: ZOOM_DURATION
         }).then(() => {
           isAnimatingRef.current = false;
