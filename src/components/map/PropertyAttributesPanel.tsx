@@ -28,9 +28,11 @@ interface PropertyAttributesPanelProps {
   onZoomToProperty?: () => void;
   onGeneratePDF?: () => void;
   onReturnToOverview?: () => void;
+  isPkkLayerVisible?: boolean;
+  onTogglePkkLayer?: () => void;
 }
 
-const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview }: PropertyAttributesPanelProps) => {
+const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview, isPkkLayerVisible, onTogglePkkLayer }: PropertyAttributesPanelProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -231,7 +233,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
                 onClick={onReturnToOverview || onClose}
                 variant="outline"
                 size="sm"
-                className="h-7 px-3 gap-1.5"
+                className="h-7 px-3 gap-1.5 flex-1"
               >
                 <Icon name="MapPin" size={14} />
                 Вернуться к обзору
@@ -240,13 +242,24 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
                 <Button
                   onClick={onGeneratePDF}
                   size="sm"
-                  className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90"
+                  className="h-7 px-3 gap-1.5 bg-primary hover:bg-primary/90 flex-1"
                 >
                   <Icon name="FileText" size={14} />
                   Скачать PDF
                 </Button>
               )}
             </div>
+            {onTogglePkkLayer && (
+              <Button
+                onClick={onTogglePkkLayer}
+                variant={isPkkLayerVisible ? "default" : "outline"}
+                size="sm"
+                className="h-7 px-3 gap-1.5 w-full"
+              >
+                <Icon name="Layers" size={14} />
+                {isPkkLayerVisible ? 'Скрыть ПКК Росреестра' : 'Показать ПКК Росреестра'}
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="p-4 overflow-y-auto flex-1 flex flex-col">
