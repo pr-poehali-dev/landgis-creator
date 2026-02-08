@@ -92,7 +92,7 @@ const FilterPanelContent = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {columns.map((column) => (
           <div key={column.id}>
-            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+            <h3 className="text-sm font-semibold mb-3 text-orange-500 uppercase tracking-wide">
               {column.label}
             </h3>
             <div className="space-y-1.5">
