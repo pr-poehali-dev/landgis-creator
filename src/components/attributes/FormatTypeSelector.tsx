@@ -49,6 +49,7 @@ export const FormatTypeSelector = ({
             <SelectItem value="select">Выпадающий список</SelectItem>
             <SelectItem value="multiselect">Множественный выбор</SelectItem>
             <SelectItem value="date">Дата</SelectItem>
+            <SelectItem value="link">Ссылка</SelectItem>
             <SelectItem value="button">Кнопка</SelectItem>
           </SelectContent>
         </Select>
