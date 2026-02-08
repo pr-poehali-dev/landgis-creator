@@ -63,6 +63,8 @@ export const formatValue = (value: any, formatType?: string, formatOptions?: any
       } catch {
         return 'Кнопка';
       }
+    case 'link':
+      return value ? String(value) : '—';
     default:
       // Дефолтная обработка для обычных полей - тоже проверяем на JSON-массив
       if (typeof value === 'string' && (value.startsWith('[') || value.includes(','))) {
@@ -360,6 +362,17 @@ const AttributeEditField = ({ value, config, onValueChange }: AttributeEditField
           value={value !== null && value !== undefined ? String(value) : ''}
           onChange={(e) => onValueChange(e.target.value)}
           className="text-sm"
+        />
+      );
+    
+    case 'link':
+      return (
+        <Input
+          type="url"
+          value={value !== null && value !== undefined ? String(value) : ''}
+          onChange={(e) => onValueChange(e.target.value)}
+          className="text-sm"
+          placeholder="https://"
         />
       );
     
