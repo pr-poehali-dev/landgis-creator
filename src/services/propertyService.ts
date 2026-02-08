@@ -15,7 +15,7 @@ interface Property {
 }
 
 const API_URL = 'https://functions.poehali.dev/ac71b9f6-6521-4747-af29-18fd8700222c';
-const CACHE_KEY = 'landgis_properties_cache';
+const CACHE_KEY = 'landgis_properties_cache_v2';
 const CACHE_DURATION = 5 * 60 * 1000;
 
 interface CacheData {
