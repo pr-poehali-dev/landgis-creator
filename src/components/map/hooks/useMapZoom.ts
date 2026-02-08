@@ -84,9 +84,15 @@ export const useMapZoom = ({
       const center = property.coordinates;
       
       isAnimatingRef.current = true;
-      map.setCenter(center, CENTROID_ZOOM_LEVEL, {
-        checkZoomRange: true,
-        duration: ZOOM_DURATION
+      
+      // Используем panTo для плавного перемещения, затем setZoom для плавного зума
+      map.panTo(center, {
+        flying: true,
+        duration: ZOOM_DURATION / 2
+      }).then(() => {
+        return map.setZoom(CENTROID_ZOOM_LEVEL, {
+          duration: ZOOM_DURATION / 2
+        });
       }).then(() => {
         isAnimatingRef.current = false;
       }).catch(() => {
@@ -237,12 +243,9 @@ export const useMapZoom = ({
 
     const currentZoom = map.getZoom();
     
-    // Если выбран тот же участок и зум уже достаточно близкий (больше порога) - не зумим повторно
-    if (previousSelectedRef.current?.id === selectedProperty.id) {
-      if (currentZoom > CENTROID_ZOOM_THRESHOLD) {
-        return; // Уже показали детально (зум больше 14)
-      }
-      // Если зум = 14 или меньше - продолжаем к границам
+    // Проверяем, был ли уже выполнен детальный зум (зум > 15)
+    if (previousSelectedRef.current?.id === selectedProperty.id && currentZoom > 15) {
+      return; // Уже показали детально
     }
 
     // Запоминаем выбранный объект
