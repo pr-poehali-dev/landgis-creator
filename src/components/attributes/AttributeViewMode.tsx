@@ -232,16 +232,6 @@ const AttributeViewMode = ({
                   </Button>
                 );
               })()
-            ) : config.formatType === 'link' && value ? (
-              <a 
-                href={String(value)} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline break-words inline-flex items-center gap-1"
-              >
-                {String(value)}
-                <Icon name="ExternalLink" size={14} />
-              </a>
             ) : (
               <p className="text-sm text-foreground break-words whitespace-pre-wrap">
                 {formatValue(value, config.formatType, config.formatOptions)}

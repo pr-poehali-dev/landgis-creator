@@ -37,8 +37,6 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
   const [dragStartY, setDragStartY] = useState(0);
   const [currentTranslate, setCurrentTranslate] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handlePropertyDeleted = () => {
@@ -125,7 +123,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
         ref={panelRef}
         className={cn(
           "sm:hidden absolute bottom-0 left-0 right-0 shadow-2xl animate-slide-up overflow-hidden flex flex-col z-50 rounded-t-2xl rounded-b-none transition-all duration-300",
-          isExpanded ? "h-[calc(100vh-120px)]" : "h-[55vh]"
+          isExpanded ? "h-[calc(100vh-140px)]" : "h-[50vh]"
         )}
         style={{
           transform: `translateY(${currentTranslate}px)`,
@@ -178,15 +176,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             )}
           </div>
         </CardHeader>
-        <CardContent 
-          ref={contentRef}
-          className="p-3 pb-6 overflow-y-auto flex-1 flex flex-col relative"
-          onScroll={(e) => {
-            const target = e.currentTarget;
-            const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 50;
-            setShowScrollIndicator(!isAtBottom);
-          }}
-        >
+        <CardContent className="p-3 pb-6 overflow-y-auto flex-1 flex flex-col">
           <AttributesDisplay 
             attributes={property.attributes}
             userRole={userRole}
@@ -194,16 +184,6 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             onAttributesUpdate={onAttributesUpdate}
           />
           <div className="h-16" />
-          
-          {/* Индикатор прокрутки */}
-          {showScrollIndicator && (
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none flex items-end justify-center pb-3 animate-pulse">
-              <div className="flex flex-col items-center gap-1 text-muted-foreground/60">
-                <Icon name="ChevronDown" size={20} />
-                <span className="text-xs">Прокрутите вниз</span>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
