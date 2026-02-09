@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -40,6 +41,31 @@ const SidebarPanel = ({
   onOpenDataTable,
   totalFilteredCount
 }: SidebarPanelProps) => {
+  const listRef = useRef<HTMLDivElement>(null);
+  const selectedItemRef = useRef<HTMLDivElement>(null);
+
+  // Автоматическая прокрутка к выбранному элементу
+  useEffect(() => {
+    if (selectedProperty && selectedItemRef.current && listRef.current) {
+      const listContainer = listRef.current;
+      const selectedElement = selectedItemRef.current;
+      
+      // Получаем позицию элемента относительно контейнера
+      const elementTop = selectedElement.offsetTop;
+      const elementHeight = selectedElement.offsetHeight;
+      const containerHeight = listContainer.offsetHeight;
+      
+      // Вычисляем позицию для центрирования элемента
+      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      
+      // Плавная прокрутка к элементу
+      listContainer.scrollTo({
+        top: scrollTo,
+        behavior: 'smooth'
+      });
+    }
+  }, [selectedProperty?.id]);
+
   return (
     <div className="hidden lg:flex w-64 border-r border-border flex-col bg-card/50 backdrop-blur">
       <div className="p-3 border-b border-border">
@@ -88,10 +114,11 @@ const SidebarPanel = ({
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-2">
         {filteredProperties.map(property => (
           <div
             key={property.id}
+            ref={selectedProperty?.id === property.id ? selectedItemRef : null}
             className={`cursor-pointer transition-all hover:bg-accent p-3 rounded-lg ${
               selectedProperty?.id === property.id ? 'bg-accent' : ''
             }`}
