@@ -78,14 +78,33 @@ export const useMapZoom = ({
     if (!map) return;
     
     const currentZoom = map.getZoom();
+    const isMobile = window.innerWidth < 768;
     
     // Если зум меньше порога И это не принудительный детальный зум - зумим к центроиду
     if (currentZoom < CENTROID_ZOOM_THRESHOLD && !forceDetailZoom) {
-      const center = property.coordinates;
+      let targetCenter = property.coordinates;
+      
+      // На мобильных смещаем центр вверх, чтобы панель атрибутов не закрывала участок
+      if (isMobile) {
+        const pixelCenter = map.getGlobalPixelCenter();
+        const projection = map.options.get('projection');
+        
+        // Смещаем на 25% высоты экрана вверх (между центром и верхним краем)
+        const offsetY = -(window.innerHeight * 0.25);
+        const newPixelCenter = [pixelCenter[0], pixelCenter[1] + offsetY];
+        
+        // Конвертируем обратно в координаты, если необходимо
+        // Используем текущий центр как базу и смещаем его
+        targetCenter = [
+          property.coordinates[0] - (offsetY * 0.00001), // приблизительное смещение в градусах
+          property.coordinates[1]
+        ];
+      }
+      
       isAnimatingRef.current = true;
       
       // Используем setCenter с duration для плавного перемещения + зума
-      map.setCenter(center, CENTROID_ZOOM_LEVEL, {
+      map.setCenter(targetCenter, CENTROID_ZOOM_LEVEL, {
         checkZoomRange: true,
         duration: ZOOM_DURATION
       }).then(() => {
@@ -119,8 +138,11 @@ export const useMapZoom = ({
       if (bounds) {
         isAnimatingRef.current = true;
         
-        // Для детального просмотра используем меньшие отступы (ближе к участку)
-        const detailedMargins: [number, number, number, number] = [40, 60, 40, 60];
+        // Для мобильных увеличиваем нижний отступ, чтобы панель атрибутов не закрывала участок
+        const isMobile = window.innerWidth < 768;
+        const detailedMargins: [number, number, number, number] = isMobile 
+          ? [40, 60, 320, 60] // На мобильных: больший нижний отступ для панели атрибутов
+          : [40, 60, 40, 60];  // На десктопе: равномерные отступы
         
         map.setBounds(bounds, {
           checkZoomRange: true,
