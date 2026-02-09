@@ -31,7 +31,6 @@ interface YandexMapProps {
   hoveredPropertyId?: number | null;
   logoUrl?: string;
   companyName?: string;
-  onVisiblePropertiesChange?: (propertyIds: number[]) => void;
 }
 
 declare global {
@@ -50,8 +49,7 @@ const YandexMap = ({
   onAttributesPanelChange,
   hoveredPropertyId,
   logoUrl,
-  companyName,
-  onVisiblePropertiesChange
+  companyName
 }: YandexMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -109,41 +107,7 @@ const YandexMap = ({
     zoomToPropertyDetail
   });
 
-  // Отслеживание видимых участков при изменении границ карты
-  const updateVisibleProperties = () => {
-    const map = mapInstanceRef.current;
-    if (!map || !onVisiblePropertiesChange) return;
 
-    const bounds = map.getBounds();
-    if (!bounds) return;
-
-    const [[minLat, minLng], [maxLat, maxLng]] = bounds;
-    
-    const visibleIds = properties.filter(property => {
-      const [lat, lng] = property.coordinates;
-      return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng;
-    }).map(p => p.id);
-
-    onVisiblePropertiesChange(visibleIds);
-  };
-
-  // Подписываемся на события изменения границ карты
-  useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current || !onVisiblePropertiesChange) return;
-
-    const map = mapInstanceRef.current;
-    
-    // Первоначальное обновление
-    updateVisibleProperties();
-
-    // Подписываемся на события карты
-    const handler = () => updateVisibleProperties();
-    map.events.add('boundschange', handler);
-
-    return () => {
-      map.events.remove('boundschange', handler);
-    };
-  }, [isMapReady, properties, onVisiblePropertiesChange]);
 
   // Обработчик resize для корректной адаптации карты
   useEffect(() => {
