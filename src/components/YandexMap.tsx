@@ -60,6 +60,7 @@ const YandexMap = ({
   const previousSelectedRef = useRef<Property | null>(null);
   const isAnimatingRef = useRef(false);
   const initialViewRef = useRef<{ center: [number, number], zoom: number } | null>(null);
+  const hasPannedRef = useRef(false);
 
   const [isMapReady, setIsMapReady] = useState(false);
 
@@ -197,13 +198,19 @@ const YandexMap = ({
       zoomOut();
     }
     
+    // Сбрасываем флаг смещения при закрытии панели
+    hasPannedRef.current = false;
+    
     if (onAttributesPanelChange) onAttributesPanelChange(false);
     onSelectProperty(null);
   };
 
   const handlePanelOpened = () => {
-    // Смещаем карту при открытии панели атрибутов
-    if (!mapInstanceRef.current || !selectedProperty) return;
+    // Смещаем карту при открытии панели атрибутов только один раз
+    if (!mapInstanceRef.current || !selectedProperty || hasPannedRef.current) return;
+    
+    // Устанавливаем флаг, что смещение уже произведено
+    hasPannedRef.current = true;
     
     const map = mapInstanceRef.current;
     const currentCenter = map.getCenter();
