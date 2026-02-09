@@ -209,15 +209,28 @@ const YandexMap = ({
     const currentCenter = map.getCenter();
     const isMobile = window.innerWidth < 768;
     
-    // На мобильных смещаем вверх (панель снизу), на десктопе - влево (панель справа)
-    const pixelOffset = isMobile 
-      ? [0, -120]  // Вверх на 120px для мобильных
-      : [-180, 0]; // Влево на 180px для десктопа
+    // Получаем текущий центр в пикселях
+    const projection = map.options.get('projection');
+    const zoom = map.getZoom();
+    const pixelCenter = projection.toGlobalPixels(currentCenter, zoom);
     
-    map.panTo(currentCenter, {
+    // На мобильных смещаем вверх (панель снизу), на десктопе - влево (панель справа)
+    const offsetX = isMobile ? 0 : -180;  // Влево на 180px для десктопа
+    const offsetY = isMobile ? -120 : 0;  // Вверх на 120px для мобильных
+    
+    // Новый центр в пикселях
+    const newPixelCenter = [
+      pixelCenter[0] + offsetX,
+      pixelCenter[1] + offsetY
+    ];
+    
+    // Конвертируем обратно в географические координаты
+    const newCenter = projection.fromGlobalPixels(newPixelCenter, zoom);
+    
+    // Плавно перемещаем карту
+    map.panTo(newCenter, {
       delay: 0,
       duration: 400,
-      offset: pixelOffset,
       checkZoomRange: true
     });
   };
