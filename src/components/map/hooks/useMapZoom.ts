@@ -82,36 +82,27 @@ export const useMapZoom = ({
     
     // Если зум меньше порога И это не принудительный детальный зум - зумим к центроиду
     if (currentZoom < CENTROID_ZOOM_THRESHOLD && !forceDetailZoom) {
-      let targetCenter = property.coordinates;
-      
-      // На мобильных смещаем центр вверх, чтобы панель атрибутов не закрывала участок
-      if (isMobile) {
-        const pixelCenter = map.getGlobalPixelCenter();
-        const projection = map.options.get('projection');
-        
-        // Смещаем на 25% высоты экрана вверх (между центром и верхним краем)
-        const offsetY = -(window.innerHeight * 0.25);
-        const newPixelCenter = [pixelCenter[0], pixelCenter[1] + offsetY];
-        
-        // Конвертируем обратно в координаты, если необходимо
-        // Используем текущий центр как базу и смещаем его
-        targetCenter = [
-          property.coordinates[0] - (offsetY * 0.00001), // приблизительное смещение в градусах
-          property.coordinates[1]
-        ];
-      }
-      
       isAnimatingRef.current = true;
       
-      // Используем setCenter с duration для плавного перемещения + зума
-      map.setCenter(targetCenter, CENTROID_ZOOM_LEVEL, {
+      // На мобильных используем смещение через options для правильного позиционирования
+      const options: any = {
         checkZoomRange: true,
         duration: ZOOM_DURATION
-      }).then(() => {
-        isAnimatingRef.current = false;
-      }).catch(() => {
-        isAnimatingRef.current = false;
-      });
+      };
+      
+      // Для мобильных добавляем offset, чтобы участок был выше центра
+      if (isMobile) {
+        // Смещаем центр вверх на 140px (примерно 25% от типичной высоты мобильного экрана)
+        options.offset = [0, -140];
+      }
+      
+      // Используем setCenter с offset для правильного позиционирования
+      map.setCenter(property.coordinates, CENTROID_ZOOM_LEVEL, options)
+        .then(() => {
+          isAnimatingRef.current = false;
+        }).catch(() => {
+          isAnimatingRef.current = false;
+        });
       return;
     }
     
