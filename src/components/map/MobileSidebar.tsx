@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { Property } from '@/services/propertyService';
 import { AppSettings } from '@/hooks/useAppSettings';
+import { useEffect, useRef } from 'react';
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -13,7 +14,7 @@ interface MobileSidebarProps {
   onSearchChange: (value: string) => void;
   filteredProperties: Property[];
   selectedProperty: Property | null;
-  onPropertySelect: (property: Property, closePanel: boolean) => void;
+  onPropertySelect: (property: Property) => void;
   onPropertyHover: (id: number | null) => void;
   properties: Property[];
   formatPrice: (price: number) => string;
@@ -34,6 +35,27 @@ const MobileSidebar = ({
   formatPrice,
   onOpenDataTable
 }: MobileSidebarProps) => {
+  const selectedItemRef = useRef<HTMLDivElement>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
+
+  // Прокрутка к выбранному элементу при открытии
+  useEffect(() => {
+    if (isOpen && selectedProperty && selectedItemRef.current && listContainerRef.current) {
+      setTimeout(() => {
+        selectedItemRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 100);
+    }
+  }, [isOpen, selectedProperty]);
+
+  const handlePropertySelect = (property: Property) => {
+    onPropertySelect(property);
+    // Закрываем панель после выбора
+    onOpenChange(false);
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-[85vw] sm:w-96 p-0">
@@ -61,7 +83,7 @@ const MobileSidebar = ({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div ref={listContainerRef} className="flex-1 overflow-y-auto p-4 space-y-2">
             {filteredProperties.length === 0 ? (
               <div className="text-center text-muted-foreground text-sm py-8">
                 <Icon name="SearchX" size={32} className="mx-auto mb-2 opacity-50" />
@@ -71,10 +93,11 @@ const MobileSidebar = ({
               filteredProperties.map(property => (
                 <div
                   key={property.id}
+                  ref={selectedProperty?.id === property.id ? selectedItemRef : null}
                   className={`cursor-pointer transition-all hover:bg-accent p-2 rounded-lg border ${
                     selectedProperty?.id === property.id ? 'bg-accent border-primary' : 'border-transparent'
                   }`}
-                  onClick={() => onPropertySelect(property, true)}
+                  onClick={() => handlePropertySelect(property)}
                   onMouseEnter={() => onPropertyHover(property.id)}
                   onMouseLeave={() => onPropertyHover(null)}
                 >

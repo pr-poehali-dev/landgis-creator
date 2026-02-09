@@ -203,12 +203,9 @@ const Index = () => {
     setShowAttributesPanel(true);
   };
 
-  const handleMobilePropertySelect = (property: Property, closePanel: boolean) => {
+  const handleMobilePropertySelect = (property: Property) => {
     setSelectedProperty(property);
     setShowAttributesPanel(true);
-    if (closePanel) {
-      setIsMobileSidebarOpen(false);
-    }
   };
 
   const handlePropertyHover = useMemo(() => {
