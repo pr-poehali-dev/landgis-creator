@@ -28,9 +28,10 @@ interface PropertyAttributesPanelProps {
   onZoomToProperty?: () => void;
   onGeneratePDF?: () => void;
   onReturnToOverview?: () => void;
+  onPanelOpened?: () => void;
 }
 
-const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview }: PropertyAttributesPanelProps) => {
+const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview, onPanelOpened }: PropertyAttributesPanelProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -47,6 +48,18 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
     window.addEventListener('property-deleted', handlePropertyDeleted);
     return () => window.removeEventListener('property-deleted', handlePropertyDeleted);
   }, [onClose]);
+
+  // Смещаем карту при открытии панели
+  useEffect(() => {
+    if (onPanelOpened) {
+      // Небольшая задержка, чтобы панель успела отрендериться
+      const timer = setTimeout(() => {
+        onPanelOpened();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [onPanelOpened]);
 
   useEffect(() => {
     const dragHandle = dragHandleRef.current;

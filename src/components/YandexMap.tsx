@@ -201,6 +201,27 @@ const YandexMap = ({
     onSelectProperty(null);
   };
 
+  const handlePanelOpened = () => {
+    // Смещаем карту при открытии панели атрибутов
+    if (!mapInstanceRef.current || !selectedProperty) return;
+    
+    const map = mapInstanceRef.current;
+    const currentCenter = map.getCenter();
+    const isMobile = window.innerWidth < 768;
+    
+    // На мобильных смещаем вверх (панель снизу), на десктопе - влево (панель справа)
+    const pixelOffset = isMobile 
+      ? [0, -120]  // Вверх на 120px для мобильных
+      : [-180, 0]; // Влево на 180px для десктопа
+    
+    map.panTo(currentCenter, {
+      delay: 0,
+      duration: 400,
+      offset: pixelOffset,
+      checkZoomRange: true
+    });
+  };
+
   const handleReturnToOverview = () => {
     if (!mapInstanceRef.current || properties.length === 0) return;
 
@@ -266,6 +287,7 @@ const YandexMap = ({
           }}
           onGeneratePDF={handleGeneratePDF}
           onReturnToOverview={handleReturnToOverview}
+          onPanelOpened={handlePanelOpened}
         />
       )}
     </div>

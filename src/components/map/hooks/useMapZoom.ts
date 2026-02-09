@@ -84,25 +84,15 @@ export const useMapZoom = ({
     if (currentZoom < CENTROID_ZOOM_THRESHOLD && !forceDetailZoom) {
       isAnimatingRef.current = true;
       
-      // На мобильных используем смещение через options для правильного позиционирования
-      const options: any = {
+      // Зумим к центроиду без смещения (смещение будет позже при открытии панели)
+      map.setCenter(property.coordinates, CENTROID_ZOOM_LEVEL, {
         checkZoomRange: true,
         duration: ZOOM_DURATION
-      };
-      
-      // Для мобильных добавляем offset, чтобы участок был выше центра
-      if (isMobile) {
-        // Смещаем центр вверх на 140px (примерно 25% от типичной высоты мобильного экрана)
-        options.offset = [0, -140];
-      }
-      
-      // Используем setCenter с offset для правильного позиционирования
-      map.setCenter(property.coordinates, CENTROID_ZOOM_LEVEL, options)
-        .then(() => {
-          isAnimatingRef.current = false;
-        }).catch(() => {
-          isAnimatingRef.current = false;
-        });
+      }).then(() => {
+        isAnimatingRef.current = false;
+      }).catch(() => {
+        isAnimatingRef.current = false;
+      });
       return;
     }
     
