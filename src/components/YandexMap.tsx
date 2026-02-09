@@ -214,8 +214,8 @@ const YandexMap = ({
     const zoom = map.getZoom();
     const pixelCenter = projection.toGlobalPixels(currentCenter, zoom);
     
-    // На мобильных смещаем вверх (панель снизу), на десктопе - влево (панель справа)
-    const offsetX = isMobile ? 0 : -180;  // Влево на 180px для десктопа
+    // На мобильных смещаем вверх (панель снизу), на десктопе - вправо (чтобы участок сдвинулся влево от панели)
+    const offsetX = isMobile ? 0 : 180;  // Вправо на 180px для десктопа
     const offsetY = isMobile ? -120 : 0;  // Вверх на 120px для мобильных
     
     // Новый центр в пикселях
