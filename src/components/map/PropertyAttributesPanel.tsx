@@ -1,10 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import AttributesDisplay from '@/components/AttributesDisplay';
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
+import { propertyService } from '@/services/propertyService';
+import { toast } from 'sonner';
 
 interface Property {
   id: number;
@@ -39,6 +42,20 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
   const [currentTranslate, setCurrentTranslate] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(property.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setEditedTitle(property.title);
+  }, [property.title]);
+
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+      titleInputRef.current.select();
+    }
+  }, [isEditingTitle]);
 
   useEffect(() => {
     const handlePropertyDeleted = () => {
@@ -48,6 +65,39 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
     window.addEventListener('property-deleted', handlePropertyDeleted);
     return () => window.removeEventListener('property-deleted', handlePropertyDeleted);
   }, [onClose]);
+
+  const handleSaveTitle = async () => {
+    if (!editedTitle.trim()) {
+      toast.error('Название не может быть пустым');
+      setEditedTitle(property.title);
+      setIsEditingTitle(false);
+      return;
+    }
+
+    if (editedTitle === property.title) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    try {
+      await propertyService.updateProperty(property.id, { title: editedTitle });
+      toast.success('Название обновлено');
+      setIsEditingTitle(false);
+    } catch (error) {
+      console.error('Error updating title:', error);
+      toast.error('Не удалось обновить название');
+      setEditedTitle(property.title);
+    }
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      setEditedTitle(property.title);
+      setIsEditingTitle(false);
+    }
+  };
 
   // Смещаем карту при открытии панели
   useEffect(() => {
@@ -153,16 +203,39 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
         </div>
         
         <CardHeader className="pb-3 border-b border-border flex-shrink-0 pt-2">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <CardTitle className="text-lg font-bold">
-                {property.title}
-              </CardTitle>
+              {isEditingTitle ? (
+                <div className="flex items-center gap-1">
+                  <Input
+                    ref={titleInputRef}
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onKeyDown={handleTitleKeyDown}
+                    onBlur={handleSaveTitle}
+                    className="text-lg font-bold h-9"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-lg font-bold">
+                    {property.title}
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setIsEditingTitle(true)}
+                  >
+                    <Icon name="Pencil" size={14} />
+                  </Button>
+                </div>
+              )}
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 -mt-1"
+              className="h-8 w-8 -mt-1 flex-shrink-0"
               onClick={onClose}
             >
               <Icon name="X" size={18} />
@@ -207,16 +280,39 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
       {/* Десктопная версия - справа */}
       <Card className="hidden sm:flex absolute top-0 right-0 h-full w-[450px] shadow-2xl animate-fade-in overflow-hidden flex-col z-50">
         <CardHeader className="pb-3 border-b border-border flex-shrink-0">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <CardTitle className="text-xl font-bold mb-3">
-                {property.title}
-              </CardTitle>
+              {isEditingTitle ? (
+                <div className="flex items-center gap-1 mb-3">
+                  <Input
+                    ref={titleInputRef}
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onKeyDown={handleTitleKeyDown}
+                    onBlur={handleSaveTitle}
+                    className="text-xl font-bold h-10"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mb-3">
+                  <CardTitle className="text-xl font-bold">
+                    {property.title}
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setIsEditingTitle(true)}
+                  >
+                    <Icon name="Pencil" size={16} />
+                  </Button>
+                </div>
+              )}
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 -mt-1"
+              className="h-8 w-8 -mt-1 flex-shrink-0"
               onClick={onClose}
             >
               <Icon name="X" size={20} />
