@@ -43,6 +43,12 @@ def handler(event: dict, context) -> dict:
         elif method == 'POST':
             body = json.loads(event.get('body', '{}'))
             return create_property(conn, body)
+        elif method == 'PUT':
+            property_id = event.get('queryStringParameters', {}).get('id')
+            if not property_id:
+                return error_response('Property ID required', 400)
+            body = json.loads(event.get('body', '{}'))
+            return update_property(conn, int(property_id), body)
         elif method == 'DELETE':
             property_id = event.get('queryStringParameters', {}).get('id')
             if not property_id:
@@ -158,6 +164,97 @@ def create_property(conn, data):
         
         return success_response(result, 201)
 
+def update_property(conn, property_id, data):
+    '''Обновить объект недвижимости'''
+    updates = []
+    params = []
+    
+    if 'title' in data:
+        updates.append('title = %s')
+        params.append(data['title'])
+    if 'type' in data:
+        updates.append('type = %s')
+        params.append(data['type'])
+    if 'price' in data:
+        updates.append('price = %s')
+        params.append(data['price'])
+    if 'area' in data:
+        updates.append('area = %s')
+        params.append(data['area'])
+    if 'location' in data:
+        updates.append('location = %s')
+        params.append(data['location'])
+    if 'segment' in data:
+        updates.append('segment = %s')
+        params.append(data['segment'])
+    if 'status' in data:
+        updates.append('status = %s')
+        params.append(data['status'])
+    
+    if not updates:
+        return error_response('No fields to update', 400)
+    
+    updates.append('updated_at = CURRENT_TIMESTAMP')
+    params.append(property_id)
+    
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        query = f'''
+            UPDATE landplots
+            SET {', '.join(updates)}
+            WHERE id = %s
+            RETURNING id, title, type, price, area, location, latitude, longitude,
+                      segment, status, boundary, attributes, created_at, updated_at
+        '''
+        cur.execute(query, params)
+        prop = cur.fetchone()
+        
+        if not prop:
+            return error_response('Property not found', 404)
+        
+        if 'title' in data:
+            cur.execute('''
+                UPDATE landplots
+                SET attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb), '{name}', to_jsonb(%s::text))
+                WHERE id = %s
+            ''', (data['title'], property_id))
+        
+        conn.commit()
+        
+        cur.execute('''
+            SELECT id, title, type, price, area, location, latitude, longitude,
+                   segment, status, boundary, attributes, created_at, updated_at
+            FROM landplots WHERE id = %s
+        ''', (property_id,))
+        prop = cur.fetchone()
+        
+        attrs = prop['attributes'] if prop['attributes'] else {}
+        if isinstance(attrs, dict):
+            cleaned_attrs = {}
+            for k, v in attrs.items():
+                if isinstance(v, str) and v in ('""', '"\\"\\""', '\\"\\""'):
+                    cleaned_attrs[k] = ''
+                else:
+                    cleaned_attrs[k] = v
+            attrs = cleaned_attrs
+        
+        result = {
+            'id': prop['id'],
+            'title': prop['title'],
+            'type': prop['type'],
+            'price': float(prop['price']),
+            'area': float(prop['area']),
+            'location': prop['location'],
+            'coordinates': [float(prop['latitude']), float(prop['longitude'])],
+            'segment': prop['segment'],
+            'status': prop['status'],
+            'boundary': prop['boundary'] if prop['boundary'] else None,
+            'attributes': attrs,
+            'created_at': prop['created_at'].isoformat() if prop['created_at'] else None,
+            'updated_at': prop['updated_at'].isoformat() if prop['updated_at'] else None
+        }
+        
+        return success_response(result)
+
 def delete_property(conn, property_id):
     '''Удалить объект недвижимости'''
     with conn.cursor() as cur:
@@ -176,7 +273,7 @@ def success_response(data, status_code=200):
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
-        'body': json.dumps(data),
+        'body': json.dumps(data, default=str),
         'isBase64Encoded': False
     }
 

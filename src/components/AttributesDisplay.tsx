@@ -58,6 +58,8 @@ const AttributesDisplay = ({ attributes, userRole = 'user1', featureId, onAttrib
 
   const displayAttributes = isEditing ? editedAttributes : attributes;
   const enabledConfigs = configs.filter(c => {
+    const attrKey = c.originalKey || c.configKey;
+    if (attrKey === 'name') return false;
     // Проверяем новую систему видимости (ПОЛНЫЙ приоритет)
     const attributePath = `attributes.${c.originalKey || c.configKey}`;
     const hasNewSystemAccess = visibilityService.isAttributeVisible(attributePath, userRole as UserRole);

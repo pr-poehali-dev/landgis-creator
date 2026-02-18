@@ -123,6 +123,26 @@ class PropertyService {
     return newProperty;
   }
 
+  async updateProperty(id: number, data: Partial<Omit<Property, 'id' | 'created_at' | 'updated_at'>>): Promise<Property> {
+    const response = await fetch(`${API_URL}?id=${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) throw new Error('Failed to update property');
+    
+    const updatedProperty: Property = await response.json();
+    
+    if (this.cache) {
+      this.cache = this.cache.map(p => p.id === id ? updatedProperty : p);
+      this.saveToLocalStorage(this.cache);
+      this.notifySubscribers();
+    }
+    
+    return updatedProperty;
+  }
+
   async deleteProperty(id: number): Promise<void> {
     const response = await fetch(`${API_URL}?id=${id}`, {
       method: 'DELETE'

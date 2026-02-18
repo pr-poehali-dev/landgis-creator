@@ -111,9 +111,9 @@ def handler(event: dict, context) -> dict:
                 ''', (json.dumps(attributes), int(property_id)))
                 
                 row = cur.fetchone()
-                conn.commit()
                 
                 if not row:
+                    conn.commit()
                     print(f'❌ Property {property_id} not found')
                     return {
                         'statusCode': 404,
@@ -121,6 +121,16 @@ def handler(event: dict, context) -> dict:
                         'body': json.dumps({'error': 'Property not found'}),
                         'isBase64Encoded': False
                     }
+                
+                name_value = attributes.get('name', '')
+                if name_value and name_value != '""':
+                    cur.execute('''
+                        UPDATE t_p78972315_landgis_creator.landplots
+                        SET title = %s
+                        WHERE id = %s
+                    ''', (name_value, int(property_id)))
+                
+                conn.commit()
                 
                 result = {
                     'id': row['id'],

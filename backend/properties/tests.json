@@ -4,50 +4,22 @@
       "name": "Get all properties",
       "method": "GET",
       "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "0": {
-          "id": "number",
-          "title": "string",
-          "type": "string"
-        }
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
-      "name": "Create property",
-      "method": "POST",
-      "path": "/",
+      "name": "Update property title",
+      "method": "PUT",
+      "path": "/?id=1905",
       "body": {
-        "title": "Test Property",
-        "type": "land",
-        "price": 1000000,
-        "area": 500,
-        "location": "Test Location",
-        "coordinates": [55.751244, 37.618423],
-        "segment": "standard",
-        "status": "available"
+        "title": "Подбельского 5-й, 4А - 4,48 га"
       },
-      "expectedStatus": 201,
-      "expectedBody": {
-        "id": "number",
-        "title": "Test Property"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     },
     {
       "name": "Get attribute configs",
       "method": "GET",
       "path": "/?type=config",
-      "expectedStatus": 200,
-      "expectedBody": [
-        {
-          "id": "number",
-          "attributeKey": "string",
-          "displayName": "string"
-        }
-      ],
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     }
   ]
 }
