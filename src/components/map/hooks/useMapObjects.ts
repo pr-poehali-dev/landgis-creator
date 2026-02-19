@@ -51,6 +51,8 @@ export const useMapObjects = ({
   const [stylesLoaded, setStylesLoaded] = useState(false);
   const svgCacheRef = useRef<Map<string, string>>(new Map());
   const [currentZoom, setCurrentZoom] = useState<number>(10);
+  const selectedPropertyRef = useRef(selectedProperty);
+  selectedPropertyRef.current = selectedProperty;
 
   useEffect(() => {
     polygonStyleService.loadSettings().then(() => setStylesLoaded(true));
@@ -105,7 +107,7 @@ export const useMapObjects = ({
           if (isAnimatingRef.current) return;
           
           // Если участок уже выбран - вызываем детальный зум напрямую
-          if (selectedProperty?.id === property.id) {
+          if (selectedPropertyRef.current?.id === property.id) {
             zoomToPropertyDetail(property);
           } else {
             onSelectProperty(property);
@@ -113,6 +115,7 @@ export const useMapObjects = ({
           }
         });
 
+        (polygon as any).__propertyId = property.id;
         map.geoObjects.add(polygon);
         polygonsRef.current.push(polygon);
       }
@@ -147,7 +150,7 @@ export const useMapObjects = ({
           if (isAnimatingRef.current) return;
           
           // Если участок уже выбран - вызываем детальный зум напрямую
-          if (selectedProperty?.id === property.id) {
+          if (selectedPropertyRef.current?.id === property.id) {
             zoomToPropertyDetail(property);
           } else {
             onSelectProperty(property);

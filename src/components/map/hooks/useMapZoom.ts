@@ -83,14 +83,19 @@ export const useMapZoom = ({
     // Если зум меньше порога И это не принудительный детальный зум - зумим к центроиду
     if (currentZoom < CENTROID_ZOOM_THRESHOLD && !forceDetailZoom) {
       isAnimatingRef.current = true;
+      const safetyTimeout = setTimeout(() => {
+        isAnimatingRef.current = false;
+      }, ZOOM_DURATION + 500);
       
       // Зумим к центроиду без смещения (смещение будет позже при открытии панели)
       map.setCenter(property.coordinates, CENTROID_ZOOM_LEVEL, {
         checkZoomRange: true,
         duration: ZOOM_DURATION
       }).then(() => {
+        clearTimeout(safetyTimeout);
         isAnimatingRef.current = false;
       }).catch(() => {
+        clearTimeout(safetyTimeout);
         isAnimatingRef.current = false;
       });
       return;
@@ -102,22 +107,16 @@ export const useMapZoom = ({
     }
 
     const existingPolygon = polygonsRef.current.find((polygon: any) => {
-      try {
-        const coords = polygon.geometry?.getCoordinates()?.[0];
-        if (!coords || coords.length !== property.boundary?.length) return false;
-        return coords.every((coord: [number, number], idx: number) => 
-          coord[0] === property.boundary?.[idx]?.[0] && 
-          coord[1] === property.boundary?.[idx]?.[1]
-        );
-      } catch {
-        return false;
-      }
+      return (polygon as any).__propertyId === property.id;
     });
     
     if (existingPolygon) {
       const bounds = existingPolygon.geometry?.getBounds();
       if (bounds) {
         isAnimatingRef.current = true;
+        const safetyTimeout = setTimeout(() => {
+          isAnimatingRef.current = false;
+        }, ZOOM_DURATION + 500);
         
         // Для мобильных увеличиваем нижний отступ, чтобы панель атрибутов не закрывала участок
         const isMobile = window.innerWidth < 768;
@@ -130,8 +129,10 @@ export const useMapZoom = ({
           zoomMargin: detailedMargins,
           duration: ZOOM_DURATION
         }).then(() => {
+          clearTimeout(safetyTimeout);
           isAnimatingRef.current = false;
         }).catch(() => {
+          clearTimeout(safetyTimeout);
           isAnimatingRef.current = false;
         });
       }
@@ -157,12 +158,17 @@ export const useMapZoom = ({
     const targetZoom = Math.max(currentZoom - ZOOM_OUT_DELTA, MIN_ZOOM_LEVEL);
     
     isAnimatingRef.current = true;
+    const safetyTimeout = setTimeout(() => {
+      isAnimatingRef.current = false;
+    }, ZOOM_OUT_DURATION + 500);
     map.setZoom(targetZoom, {
       checkZoomRange: true,
       duration: ZOOM_OUT_DURATION
     }).then(() => {
+      clearTimeout(safetyTimeout);
       isAnimatingRef.current = false;
     }).catch(() => {
+      clearTimeout(safetyTimeout);
       isAnimatingRef.current = false;
     });
   };
