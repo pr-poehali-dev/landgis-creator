@@ -206,40 +206,40 @@ const YandexMap = ({
   };
 
   const handlePanelOpened = () => {
-    // Смещаем карту при открытии панели атрибутов только один раз
     if (!mapInstanceRef.current || !selectedProperty || hasPannedRef.current) return;
-    
-    // Устанавливаем флаг, что смещение уже произведено
     hasPannedRef.current = true;
-    
-    const map = mapInstanceRef.current;
-    const currentCenter = map.getCenter();
-    const isMobile = window.innerWidth < 768;
-    
-    // Получаем текущий центр в пикселях
-    const projection = map.options.get('projection');
-    const zoom = map.getZoom();
-    const pixelCenter = projection.toGlobalPixels(currentCenter, zoom);
-    
-    // На мобильных смещаем вниз (чтобы участок оказался выше панели), на десктопе - вправо (чтобы участок сдвинулся влево от панели)
-    const offsetX = isMobile ? 0 : 180;  // Вправо на 180px для десктопа
-    const offsetY = isMobile ? 120 : 0;  // Вниз на 120px для мобильных
-    
-    // Новый центр в пикселях
-    const newPixelCenter = [
-      pixelCenter[0] + offsetX,
-      pixelCenter[1] + offsetY
-    ];
-    
-    // Конвертируем обратно в географические координаты
-    const newCenter = projection.fromGlobalPixels(newPixelCenter, zoom);
-    
-    // Плавно перемещаем карту
-    map.panTo(newCenter, {
-      delay: 0,
-      duration: 400,
-      checkZoomRange: true
-    });
+
+    const doPan = () => {
+      if (isAnimatingRef.current) {
+        setTimeout(doPan, 150);
+        return;
+      }
+      const map = mapInstanceRef.current;
+      if (!map) return;
+
+      const currentCenter = map.getCenter();
+      const isMobile = window.innerWidth < 768;
+      const projection = map.options.get('projection');
+      const zoom = map.getZoom();
+      const pixelCenter = projection.toGlobalPixels(currentCenter, zoom);
+
+      const offsetX = isMobile ? 0 : 180;
+      const offsetY = isMobile ? 120 : 0;
+
+      const newPixelCenter = [
+        pixelCenter[0] + offsetX,
+        pixelCenter[1] + offsetY
+      ];
+      const newCenter = projection.fromGlobalPixels(newPixelCenter, zoom);
+
+      map.panTo(newCenter, {
+        delay: 0,
+        duration: 400,
+        checkZoomRange: true
+      });
+    };
+
+    doPan();
   };
 
   const handleReturnToOverview = () => {
