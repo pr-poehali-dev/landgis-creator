@@ -28,7 +28,7 @@ const EditPermissionsSection = ({ editPermissions, onToggleRole }: EditPermissio
                 onCheckedChange={() => onToggleRole(role)}
               />
               <Label htmlFor={`edit-${role}`} className="cursor-pointer">
-                {USER_ROLES[role]} ({role})
+                {USER_ROLES[role].name} ({role})
               </Label>
             </div>
           ))}

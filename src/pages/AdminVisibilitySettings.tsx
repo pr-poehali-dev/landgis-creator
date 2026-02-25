@@ -312,9 +312,9 @@ const AdminVisibilitySettings = () => {
               <SelectContent>
                 {Object.entries(USER_ROLES)
                   .filter(([role]) => role !== 'admin')
-                  .map(([role, label]) => (
+                  .map(([role, info]) => (
                     <SelectItem key={role} value={role}>
-                      {label} ({role})
+                      {info.name} ({role})
                     </SelectItem>
                   ))}
               </SelectContent>
