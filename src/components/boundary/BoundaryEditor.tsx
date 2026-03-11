@@ -12,9 +12,10 @@ interface BoundaryEditorProps {
   boundary?: Array<[number, number]>;
   coordinates: [number, number];
   onBoundaryUpdate: (boundary: Array<[number, number]>, coordinates: [number, number]) => void;
+  onStartMapEdit?: () => void;
 }
 
-const BoundaryEditor = ({ propertyId, boundary, coordinates, onBoundaryUpdate }: BoundaryEditorProps) => {
+const BoundaryEditor = ({ propertyId, boundary, coordinates, onBoundaryUpdate, onStartMapEdit }: BoundaryEditorProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedPoints, setEditedPoints] = useState<Array<[number, number]>>(boundary || []);
@@ -183,6 +184,17 @@ const BoundaryEditor = ({ propertyId, boundary, coordinates, onBoundaryUpdate }:
         <CardContent className="pt-0 space-y-3">
           {!isEditing ? (
             <>
+              {onStartMapEdit && boundary && boundary.length >= 3 && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full gap-1.5 bg-blue-600 hover:bg-blue-700 text-white mb-2"
+                  onClick={onStartMapEdit}
+                >
+                  <Icon name="MousePointer2" size={14} />
+                  Редактировать на карте
+                </Button>
+              )}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -191,7 +203,7 @@ const BoundaryEditor = ({ propertyId, boundary, coordinates, onBoundaryUpdate }:
                   onClick={startManualEdit}
                 >
                   <Icon name="Pencil" size={14} />
-                  Редактировать точки
+                  Точки вручную
                 </Button>
                 <Button
                   variant="outline"

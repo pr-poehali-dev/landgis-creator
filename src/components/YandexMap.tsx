@@ -1,9 +1,11 @@
 import { useRef, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import PropertyAttributesPanel from '@/components/map/PropertyAttributesPanel';
+import BoundaryMapToolbar from '@/components/map/BoundaryMapToolbar';
 import { useMapInitialization } from '@/components/map/hooks/useMapInitialization';
 import { useMapObjects } from '@/components/map/hooks/useMapObjects';
 import { useMapZoom } from '@/components/map/hooks/useMapZoom';
+import { useBoundaryMapEdit } from '@/components/map/hooks/useBoundaryMapEdit';
 import { captureMapScreenshots, generatePropertyPDF } from '@/utils/pdfGenerator';
 
 interface Property {
@@ -108,6 +110,24 @@ const YandexMap = ({
     zoomToPropertyDetail
   });
 
+  const { editState: boundaryEditState, startEdit: startBoundaryEdit, cancelEdit: cancelBoundaryEdit, saveEdit: saveBoundaryEdit } = useBoundaryMapEdit({
+    mapInstanceRef,
+    polygonsRef,
+    isMapReady
+  });
+
+  const handleStartBoundaryEdit = () => {
+    if (!selectedProperty || !selectedProperty.boundary) return;
+    startBoundaryEdit(
+      selectedProperty.id,
+      selectedProperty.boundary,
+      (newBoundary, newCoordinates) => {
+        const updatedProperty = { ...selectedProperty, boundary: newBoundary, coordinates: newCoordinates };
+        onSelectProperty(updatedProperty);
+      }
+    );
+  };
+
 
 
   // Обработчик resize для корректной адаптации карты
@@ -157,7 +177,7 @@ const YandexMap = ({
     const map = mapInstanceRef.current;
     
     const handleMapClick = (e: any) => {
-      // Проверяем, что клик был по самой карте, а не по объекту
+      if (boundaryEditState.isActive) return;
       const target = e.get('target');
       if (!target || target === map) {
         if (showAttributesPanel) {
@@ -294,20 +314,29 @@ const YandexMap = ({
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full" />
 
-      {showAttributesPanel && selectedProperty && (
+      {boundaryEditState.isActive && (
+        <BoundaryMapToolbar
+          pointCount={boundaryEditState.editedBoundary.length}
+          isSaving={boundaryEditState.isSaving}
+          onSave={saveBoundaryEdit}
+          onCancel={cancelBoundaryEdit}
+        />
+      )}
+
+      {showAttributesPanel && selectedProperty && !boundaryEditState.isActive && (
         <PropertyAttributesPanel
           property={selectedProperty}
           onClose={handleClosePanel}
           userRole={userRole}
           onZoomToProperty={() => zoomToProperty(selectedProperty)}
           onAttributesUpdate={(updatedAttributes) => {
-            // Обновляем selectedProperty с новыми атрибутами
             const updatedProperty = { ...selectedProperty, attributes: updatedAttributes };
             onSelectProperty(updatedProperty);
           }}
           onGeneratePDF={handleGeneratePDF}
           onReturnToOverview={handleReturnToOverview}
           onPanelOpened={handlePanelOpened}
+          onStartBoundaryEdit={handleStartBoundaryEdit}
         />
       )}
     </div>

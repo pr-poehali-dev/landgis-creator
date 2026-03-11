@@ -36,9 +36,10 @@ interface PropertyAttributesPanelProps {
   onGeneratePDF?: () => void;
   onReturnToOverview?: () => void;
   onPanelOpened?: () => void;
+  onStartBoundaryEdit?: () => void;
 }
 
-const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview, onPanelOpened }: PropertyAttributesPanelProps) => {
+const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpdate, onZoomToProperty, onGeneratePDF, onReturnToOverview, onPanelOpened, onStartBoundaryEdit }: PropertyAttributesPanelProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -303,6 +304,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
                 boundary={property.boundary}
                 coordinates={property.coordinates}
                 onBoundaryUpdate={handleBoundaryUpdate}
+                onStartMapEdit={onStartBoundaryEdit}
               />
             </div>
           )}
@@ -389,6 +391,7 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
                 boundary={property.boundary}
                 coordinates={property.coordinates}
                 onBoundaryUpdate={handleBoundaryUpdate}
+                onStartMapEdit={onStartBoundaryEdit}
               />
             </div>
           )}
