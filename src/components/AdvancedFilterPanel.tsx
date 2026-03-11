@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import MapTypeSwitcher from '@/components/filter/MapTypeSwitcher';
 import FilterControls from '@/components/filter/FilterControls';
 import FilterPanelContent from '@/components/filter/FilterPanelContent';
+import { filterVisibilityService } from '@/services/filterVisibilityService';
+import { UserRole } from '@/types/userRoles';
 
 interface FilterColumnSettings {
   id: string;
@@ -35,6 +37,8 @@ interface AdvancedFilterPanelProps {
   mapType?: 'scheme' | 'hybrid';
   onMapTypeChange?: (type: 'scheme' | 'hybrid') => void;
   onLayersClick?: () => void;
+  userRole?: UserRole;
+  companyId?: number;
 }
 
 const AdvancedFilterPanel = ({
@@ -45,7 +49,9 @@ const AdvancedFilterPanel = ({
   properties,
   mapType = 'scheme',
   onMapTypeChange,
-  onLayersClick
+  onLayersClick,
+  userRole = 'admin',
+  companyId
 }: AdvancedFilterPanelProps) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [filterSettings, setFilterSettings] = useState<FilterColumnSettings[]>([]);
@@ -111,6 +117,7 @@ const AdvancedFilterPanel = ({
     };
     
     loadSettings();
+    filterVisibilityService.loadConfig();
   }, [isOpen]);
 
   const statusLabels: Record<string, string> = {
@@ -290,7 +297,13 @@ const AdvancedFilterPanel = ({
       .filter(Boolean) as FilterColumn[];
   }, [properties, filterSettings]);
 
-  // Динамический пересчёт количества с учётом активных фильтров
+  const visibleColumns = useMemo(() => {
+    if (userRole === 'admin') return columns;
+    return columns.filter(col =>
+      filterVisibilityService.isFilterVisible(col.id, userRole, companyId)
+    );
+  }, [columns, userRole, companyId]);
+
   const columnsWithDynamicCounts = useMemo(() => {
     // Функция проверки, подходит ли объект под фильтры (исключая текущую колонку)
     const matchesFilters = (property: any, excludeColumnId?: string) => {
@@ -347,8 +360,7 @@ const AdvancedFilterPanel = ({
       });
     };
 
-    // Пересчитываем counts для каждой колонки
-    return columns.map(column => {
+    return visibleColumns.map(column => {
       const setting = filterSettings.find(s => s.id === column.id);
       
       const updatedOptions = column.options.map(option => {
@@ -400,7 +412,7 @@ const AdvancedFilterPanel = ({
       
       return { ...column, options: updatedOptions };
     });
-  }, [columns, localFilters, properties, filterSettings]);
+  }, [visibleColumns, localFilters, properties, filterSettings]);
 
   const toggleFilter = (columnId: string, value: string) => {
     setLocalFilters(prev => {
@@ -428,7 +440,7 @@ const AdvancedFilterPanel = ({
   const getActiveFilters = () => {
     const active: Array<{ column: string; value: string; label: string }> = [];
     Object.entries(localFilters).forEach(([columnId, values]) => {
-      const column = columns.find(c => c.id === columnId);
+      const column = visibleColumns.find(c => c.id === columnId);
       if (column) {
         values.forEach(value => {
           const option = column.options.find(o => o.value === value);

@@ -263,6 +263,8 @@ const Index = () => {
             mapType={mapType}
             onMapTypeChange={setMapType}
             onLayersClick={() => toast.info('Функция "Слои" в разработке')}
+            userRole={currentUserRole}
+            companyId={authService.getUser()?.id}
           />
           
           {/* Баннер режима просмотра для админа */}

@@ -13,6 +13,7 @@ import Companies from "./pages/Companies";
 import Users from "./pages/Users";
 import AdminFilterSettings from "./pages/AdminFilterSettings";
 import AdminVisibilitySettings from "./pages/AdminVisibilitySettings";
+import AdminFilterVisibility from "./pages/AdminFilterVisibility";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -65,6 +66,11 @@ const App = () => (
             <Route path="/admin/visibility" element={
               <ProtectedRoute requireAdmin>
                 <AdminVisibilitySettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/filter-visibility" element={
+              <ProtectedRoute requireAdmin>
+                <AdminFilterVisibility />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
