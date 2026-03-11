@@ -190,6 +190,16 @@ def update_property(conn, property_id, data):
     if 'status' in data:
         updates.append('status = %s')
         params.append(data['status'])
+    if 'boundary' in data:
+        updates.append('boundary = %s::jsonb')
+        params.append(json.dumps(data['boundary']) if data['boundary'] else None)
+    if 'coordinates' in data:
+        coords = data['coordinates']
+        if coords and len(coords) == 2:
+            updates.append('latitude = %s')
+            params.append(coords[0])
+            updates.append('longitude = %s')
+            params.append(coords[1])
     
     if not updates:
         return error_response('No fields to update', 400)

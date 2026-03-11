@@ -4,9 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import AttributesDisplay from '@/components/AttributesDisplay';
+import BoundaryEditor from '@/components/boundary/BoundaryEditor';
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 import { propertyService } from '@/services/propertyService';
+import { visibilityService } from '@/services/visibilityService';
+import { authService } from '@/services/authService';
+import { UserRole } from '@/types/userRoles';
 import { toast } from 'sonner';
 
 interface Property {
@@ -45,6 +49,21 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(property.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const [canEditBoundary, setCanEditBoundary] = useState(false);
+
+  const realUserRole = authService.getUser()?.role as UserRole;
+
+  useEffect(() => {
+    const loadPermissions = async () => {
+      try {
+        await visibilityService.loadEditPermissionsFromAPI();
+        setCanEditBoundary(visibilityService.canEditProperty(realUserRole));
+      } catch {
+        setCanEditBoundary(realUserRole === 'admin');
+      }
+    };
+    loadPermissions();
+  }, [realUserRole]);
 
   useEffect(() => {
     setEditedTitle(property.title);
@@ -178,6 +197,10 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
     };
   }, [isDragging, dragStartY, currentTranslate, isExpanded, onClose]);
 
+  const handleBoundaryUpdate = (newBoundary: Array<[number, number]>, newCoordinates: [number, number]) => {
+    onAttributesUpdate({ ...property.attributes });
+  };
+
   if (!property.attributes) return null;
 
   return (
@@ -273,6 +296,16 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             featureId={property.id}
             onAttributesUpdate={onAttributesUpdate}
           />
+          {canEditBoundary && (
+            <div className="mt-4">
+              <BoundaryEditor
+                propertyId={property.id}
+                boundary={property.boundary}
+                coordinates={property.coordinates}
+                onBoundaryUpdate={handleBoundaryUpdate}
+              />
+            </div>
+          )}
           <div className="h-16" />
         </CardContent>
       </Card>
@@ -349,6 +382,16 @@ const PropertyAttributesPanel = ({ property, userRole, onClose, onAttributesUpda
             featureId={property.id}
             onAttributesUpdate={onAttributesUpdate}
           />
+          {canEditBoundary && (
+            <div className="mt-4">
+              <BoundaryEditor
+                propertyId={property.id}
+                boundary={property.boundary}
+                coordinates={property.coordinates}
+                onBoundaryUpdate={handleBoundaryUpdate}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </>
