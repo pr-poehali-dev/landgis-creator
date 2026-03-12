@@ -55,7 +55,7 @@ const Index = () => {
   const loadProperties = async () => {
     setIsLoading(true);
     try {
-      const data = await propertyService.getProperties();
+      const data = await propertyService.getProperties(true);
       setProperties(data);
     } catch (error) {
       console.error('Error loading properties:', error);
