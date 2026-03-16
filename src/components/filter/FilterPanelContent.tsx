@@ -90,7 +90,7 @@ const FilterPanelContent = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {columns.map((column) => (
+        {columns.filter(col => col.options.length > 0).map((column) => (
           <div key={column.id}>
             <h3 className="text-sm font-semibold mb-3 text-orange-500 uppercase tracking-wide">
               {column.label}
