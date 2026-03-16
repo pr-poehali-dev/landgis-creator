@@ -29,9 +29,7 @@ export const useFilterSettings = (
         const defaultFilters: Record<string, string[]> = {};
         settings.forEach((setting: FilterColumnSettings) => {
           if (setting.defaultValues && setting.defaultValues.length > 0) {
-            if (filterVisibilityService.isFilterVisible(setting.id, userRole, companyId)) {
-              defaultFilters[setting.id] = setting.defaultValues;
-            }
+            defaultFilters[setting.id] = setting.defaultValues;
           }
         });
         if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
