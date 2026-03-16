@@ -145,9 +145,29 @@ export const useFilterSettingsLogic = () => {
         segment: Array.from(segments).sort()
       };
 
-      const saved = localStorage.getItem('filterSettings');
-      if (saved) {
-        const savedSettings = JSON.parse(saved);
+      let savedSettings: FilterColumn[] | null = null;
+
+      try {
+        const resp = await fetch('https://functions.poehali.dev/d55d58af-9be6-493a-a89d-45634d648637');
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.config && data.config.length > 0) {
+            savedSettings = data.config;
+            localStorage.setItem('filterSettings', JSON.stringify(data.config));
+          }
+        }
+      } catch {
+        console.error('Не удалось загрузить конфиг фильтров с сервера');
+      }
+
+      if (!savedSettings) {
+        const saved = localStorage.getItem('filterSettings');
+        if (saved) {
+          savedSettings = JSON.parse(saved);
+        }
+      }
+
+      if (savedSettings && savedSettings.length > 0) {
         const merged = savedSettings.map((savedCol: FilterColumn) => {
           if (savedCol.id === 'region' || savedCol.id === 'segment') {
             const savedOptions = savedCol.options || [];
@@ -162,7 +182,7 @@ export const useFilterSettingsLogic = () => {
         });
         
         defaultColumns.forEach(col => {
-          if (!savedSettings.find((s: FilterColumn) => s.id === col.id)) {
+          if (!savedSettings!.find((s: FilterColumn) => s.id === col.id)) {
             merged.push({
               ...col,
               options: freshOptions[col.id] || col.options
