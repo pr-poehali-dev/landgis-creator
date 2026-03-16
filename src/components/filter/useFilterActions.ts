@@ -142,13 +142,22 @@ export const useFilterActions = (
   };
 
   const clearFilters = () => {
-    const emptyFilters = {};
-    setLocalFilters(emptyFilters);
-    onFiltersChange(emptyFilters);
+    const visibleIds = new Set(visibleColumns.map(c => c.id));
+    const preserved: Record<string, string[]> = {};
+    Object.entries(localFilters).forEach(([columnId, values]) => {
+      if (!visibleIds.has(columnId) && values.length > 0) {
+        preserved[columnId] = values;
+      }
+    });
+    setLocalFilters(preserved);
+    onFiltersChange(preserved);
   };
 
   const getActiveFiltersCount = () => {
-    return Object.values(localFilters).reduce((sum, arr) => sum + arr.length, 0);
+    const visibleIds = new Set(visibleColumns.map(c => c.id));
+    return Object.entries(localFilters)
+      .filter(([columnId]) => visibleIds.has(columnId))
+      .reduce((sum, [, arr]) => sum + arr.length, 0);
   };
 
   const getActiveFilters = () => {

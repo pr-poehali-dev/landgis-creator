@@ -27,20 +27,16 @@ const Index = () => {
   const [filterSegment, setFilterSegment] = useState<string>('all');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUserRole, setCurrentUserRole] = useState<UserRole>('admin');
+  const [currentUserRole, setCurrentUserRole] = useState<UserRole>(() => {
+    const user = authService.getUser();
+    return user?.role ? mapDbRole(user.role) : 'admin';
+  });
   const [showAttributesPanel, setShowAttributesPanel] = useState(false);
   const [hoveredPropertyId, setHoveredPropertyId] = useState<number | null>(null);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({});
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
-
-  useEffect(() => {
-    const user = authService.getUser();
-    if (user?.role) {
-      setCurrentUserRole(mapDbRole(user.role));
-    }
-  }, []);
 
   useEffect(() => {
     loadProperties();
