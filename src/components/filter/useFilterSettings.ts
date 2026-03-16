@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { filterVisibilityService } from '@/services/filterVisibilityService';
+import { filterVisibilityService, FilterVisibilityConfig } from '@/services/filterVisibilityService';
 import { FilterColumnSettings } from './types';
 
 const FILTER_CONFIG_URL = 'https://functions.poehali.dev/d55d58af-9be6-493a-a89d-45634d648637';
@@ -10,16 +10,23 @@ export const useFilterSettings = (
   onFiltersChange: (filters: Record<string, string[]>) => void
 ) => {
   const [filterSettings, setFilterSettings] = useState<FilterColumnSettings[]>([]);
+  const [visibilityConfig, setVisibilityConfig] = useState<FilterVisibilityConfig | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
+      try {
+        const visConfig = await filterVisibilityService.loadConfig();
+        setVisibilityConfig(visConfig);
+      } catch (e) {
+        console.error('Error loading visibility config:', e);
+      }
+
       try {
         const response = await fetch(FILTER_CONFIG_URL);
         
         if (response.ok) {
           const data = await response.json();
           if (data.config && data.config.length > 0) {
-            console.log('📱 Настройки загружены с сервера:', data.config);
             setFilterSettings(data.config);
             
             localStorage.setItem('filterSettings', JSON.stringify(data.config));
@@ -32,7 +39,6 @@ export const useFilterSettings = (
             });
             
             if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
-              console.log('🔄 Применяем дефолтные фильтры:', defaultFilters);
               onFiltersChange(defaultFilters);
             }
             return;
@@ -42,7 +48,6 @@ export const useFilterSettings = (
         const saved = localStorage.getItem('filterSettings');
         if (saved) {
           const settings = JSON.parse(saved);
-          console.log('📱 Настройки загружены из localStorage:', settings);
           setFilterSettings(settings);
           
           const defaultFilters: Record<string, string[]> = {};
@@ -57,7 +62,7 @@ export const useFilterSettings = (
           }
         }
       } catch (error) {
-        console.error('❌ Ошибка загрузки настроек:', error);
+        console.error('Ошибка загрузки настроек:', error);
         
         const saved = localStorage.getItem('filterSettings');
         if (saved) {
@@ -79,10 +84,9 @@ export const useFilterSettings = (
     };
     
     loadSettings();
-    filterVisibilityService.loadConfig();
   }, [isOpen]);
 
-  return filterSettings;
+  return { filterSettings, visibilityConfig };
 };
 
 export default useFilterSettings;

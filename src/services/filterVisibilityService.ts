@@ -18,8 +18,6 @@ class FilterVisibilityService {
   private config: FilterVisibilityConfig | null = null;
 
   async loadConfig(): Promise<FilterVisibilityConfig> {
-    if (this.config) return this.config;
-
     try {
       const apiUrl = (func2url as Record<string, string>)['filter-config'];
       if (apiUrl) {

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { filterVisibilityService } from '@/services/filterVisibilityService';
+import { filterVisibilityService, FilterVisibilityConfig } from '@/services/filterVisibilityService';
 import { UserRole } from '@/types/userRoles';
 import {
   FilterColumnSettings,
@@ -15,7 +15,8 @@ export const useFilterColumns = (
   properties: any[],
   filterSettings: FilterColumnSettings[],
   userRole: UserRole,
-  companyId?: number
+  companyId?: number,
+  visibilityConfig?: FilterVisibilityConfig | null
 ) => {
   const columns = useMemo(() => {
     const extractedValues = new Map<string, Set<string>>();
@@ -181,7 +182,7 @@ export const useFilterColumns = (
     return columns.filter(col =>
       filterVisibilityService.isFilterVisible(col.id, userRole, companyId)
     );
-  }, [columns, userRole, companyId]);
+  }, [columns, userRole, companyId, visibilityConfig]);
 
   return { columns, visibleColumns };
 };

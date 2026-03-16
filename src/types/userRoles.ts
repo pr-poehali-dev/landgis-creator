@@ -94,6 +94,23 @@ export const USER_ROLES: Record<UserRole, UserRoleInfo> = {
   },
 };
 
+const DB_ROLE_MAP: Record<string, UserRole> = {
+  admin: 'admin',
+  free: 'user1',
+  lite: 'user2',
+  light: 'user2',
+  max: 'user3',
+  vip: 'user4',
+  user1: 'user1',
+  user2: 'user2',
+  user3: 'user3',
+  user4: 'user4',
+};
+
+export const mapDbRole = (dbRole: string): UserRole => {
+  return DB_ROLE_MAP[dbRole.toLowerCase()] || 'user1';
+};
+
 export const getRoleInfo = (role: UserRole): UserRoleInfo => {
   return USER_ROLES[role];
 };

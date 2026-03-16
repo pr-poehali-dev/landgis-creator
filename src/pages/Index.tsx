@@ -5,7 +5,7 @@ import YandexMap from '@/components/YandexMap';
 import AddPropertyDialog, { PropertyFormData } from '@/components/AddPropertyDialog';
 import { propertyService, Property } from '@/services/propertyService';
 import { visibilityService } from '@/services/visibilityService';
-import { UserRole, USER_ROLES } from '@/types/userRoles';
+import { UserRole, USER_ROLES, mapDbRole } from '@/types/userRoles';
 import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import SidebarPanel from '@/components/map/SidebarPanel';
@@ -34,6 +34,13 @@ const Index = () => {
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({});
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
+
+  useEffect(() => {
+    const user = authService.getUser();
+    if (user?.role) {
+      setCurrentUserRole(mapDbRole(user.role));
+    }
+  }, []);
 
   useEffect(() => {
     loadProperties();
