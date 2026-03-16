@@ -48,6 +48,15 @@ const defaultColumns: FilterColumn[] = [
     options: ['land', 'commercial', 'residential'],
     defaultValues: [],
     attributePath: 'type'
+  },
+  {
+    id: 'status_publ',
+    label: 'Статус публикации',
+    enabled: true,
+    order: 5,
+    options: ['На модерации', 'Опубликован', 'На паузе', 'Продан', 'Снят с продажи', 'Архив'],
+    defaultValues: [],
+    attributePath: 'attributes.status_publ'
   }
 ];
 

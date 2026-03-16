@@ -244,6 +244,15 @@ const AdvancedFilterPanel = ({
           label: typeLabels[t] || t,
           count: properties.filter(p => p.type === t).length
         }))
+      },
+      {
+        id: 'status_publ',
+        label: 'Статус публикации',
+        options: Array.from(extractedValues.get('attributes.status_publ') || []).sort().map(v => ({
+          value: v,
+          label: v,
+          count: properties.filter(p => p.attributes?.status_publ === v).length
+        }))
       }
     ];
 
@@ -350,7 +359,10 @@ const AdvancedFilterPanel = ({
           return selectedValues.includes(property.type);
         }
         
-        // Для attributes.*
+        if (columnId === 'status_publ') {
+          return selectedValues.includes(property.attributes?.status_publ);
+        }
+
         if (setting?.attributePath) {
           const value = getValueFromPath(property, setting.attributePath);
           return selectedValues.includes(value);
@@ -399,6 +411,10 @@ const AdvancedFilterPanel = ({
         } else if (column.id === 'type') {
           count = properties.filter(p => 
             p.type === option.value && matchesFilters(p, column.id)
+          ).length;
+        } else if (column.id === 'status_publ') {
+          count = properties.filter(p => 
+            p.attributes?.status_publ === option.value && matchesFilters(p, column.id)
           ).length;
         } else if (setting?.attributePath) {
           count = properties.filter(p => {

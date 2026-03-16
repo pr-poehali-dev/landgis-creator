@@ -167,6 +167,9 @@ const Index = () => {
         if (key === 'type' || attributePath === 'type') {
           return values.includes(property.type);
         }
+        if (key === 'status_publ' || attributePath === 'attributes.status_publ') {
+          return values.includes(property.attributes?.status_publ);
+        }
 
         if (attributePath) {
           const getValue = (obj: any, path: string): any => {
