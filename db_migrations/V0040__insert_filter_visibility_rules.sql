@@ -1,0 +1,5 @@
+INSERT INTO filter_config (config, config_type)
+VALUES (
+  '{"rules":[{"filterId":"region","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"segment","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"attributes_ird","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"status_publ","hiddenForRoles":["user1"],"hiddenForCompanies":[]},{"filterId":"attributes_soinvest","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"attributes_oks","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"attributes_status_mpt","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"attributes_broker","hiddenForRoles":[],"hiddenForCompanies":[]},{"filterId":"attributes_type_predl","hiddenForRoles":[],"hiddenForCompanies":[]}],"updatedAt":"2026-03-17T00:00:00.000Z"}'::jsonb,
+  'filter_visibility'
+);

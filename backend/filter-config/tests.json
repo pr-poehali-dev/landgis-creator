@@ -1,18 +1,38 @@
 {
   "tests": [
     {
-      "name": "Save filter config",
-      "method": "POST",
+      "name": "Get filter config",
+      "method": "GET",
       "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "config": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get filter visibility config",
+      "method": "GET",
+      "path": "/?type=filter_visibility",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "rules": "array"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Save filter visibility config",
+      "method": "POST",
+      "path": "/?type=filter_visibility",
       "body": {
-        "config": [
+        "rules": [
           {
-            "id": "region",
-            "label": "Регион",
-            "enabled": true,
-            "order": 1
+            "filterId": "status_publ",
+            "hiddenForRoles": ["user1"],
+            "hiddenForCompanies": []
           }
-        ]
+        ],
+        "updatedAt": "2026-03-17T00:00:00Z"
       },
       "expectedStatus": 200,
       "expectedBody": {

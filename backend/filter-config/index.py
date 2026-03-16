@@ -1,4 +1,4 @@
-"""API для хранения и получения конфигурации фильтров"""
+"""API для хранения и получения конфигурации фильтров и правил видимости"""
 import json
 import os
 import psycopg2
@@ -21,14 +21,33 @@ def handler(event: dict, context) -> dict:
             'isBase64Encoded': False
         }
 
+    params = event.get('queryStringParameters') or {}
+    config_type = params.get('type', 'filters')
+
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
 
     if method == 'GET':
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute('SELECT config FROM filter_config ORDER BY id LIMIT 1')
+            cur.execute(
+                "SELECT config FROM filter_config WHERE config_type = %s ORDER BY id LIMIT 1",
+                (config_type,)
+            )
             row = cur.fetchone()
-            config = row['config'] if row else []
+
         conn.close()
+
+        if config_type == 'filter_visibility':
+            data = row['config'] if row else {'rules': [], 'updatedAt': ''}
+            if isinstance(data, str):
+                data = json.loads(data)
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps(data),
+                'isBase64Encoded': False
+            }
+
+        config = row['config'] if row else []
         return {
             'statusCode': 200,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
@@ -38,18 +57,33 @@ def handler(event: dict, context) -> dict:
 
     if method == 'POST':
         body = json.loads(event.get('body', '{}'))
-        config = body.get('config', [])
+
         with conn.cursor() as cur:
-            cur.execute(
-                'UPDATE filter_config SET config = %s, updated_at = CURRENT_TIMESTAMP WHERE id = (SELECT id FROM filter_config ORDER BY id LIMIT 1)',
-                (json.dumps(config),)
-            )
-            if cur.rowcount == 0:
+            if config_type == 'filter_visibility':
+                data = json.dumps(body)
                 cur.execute(
-                    'INSERT INTO filter_config (config) VALUES (%s)',
-                    (json.dumps(config),)
+                    "UPDATE filter_config SET config = %s, updated_at = CURRENT_TIMESTAMP WHERE config_type = %s",
+                    (data, config_type)
                 )
+                if cur.rowcount == 0:
+                    cur.execute(
+                        "INSERT INTO filter_config (config, config_type) VALUES (%s, %s)",
+                        (data, config_type)
+                    )
+            else:
+                config = body.get('config', [])
+                cur.execute(
+                    "UPDATE filter_config SET config = %s, updated_at = CURRENT_TIMESTAMP WHERE config_type = %s",
+                    (json.dumps(config), config_type)
+                )
+                if cur.rowcount == 0:
+                    cur.execute(
+                        "INSERT INTO filter_config (config, config_type) VALUES (%s, %s)",
+                        (json.dumps(config), config_type)
+                    )
+
             conn.commit()
+
         conn.close()
         return {
             'statusCode': 200,
