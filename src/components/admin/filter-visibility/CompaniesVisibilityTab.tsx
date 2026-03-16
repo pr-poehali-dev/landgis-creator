@@ -133,10 +133,7 @@ const CompaniesVisibilityTab = ({
                         const isVisible = !rule.hiddenForCompanies.includes(company.id);
                         return (
                           <td key={company.id} className="p-3 text-center">
-                            <div
-                              className="flex justify-center cursor-pointer"
-                              onClick={() => toggleCompanyForFilter(col.id, company.id)}
-                            >
+                            <div className="flex justify-center">
                               <Checkbox
                                 checked={isVisible}
                                 onCheckedChange={() => toggleCompanyForFilter(col.id, company.id)}

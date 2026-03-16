@@ -117,10 +117,7 @@ const RolesVisibilityTab = ({
                         const isVisible = !rule.hiddenForRoles.includes(role);
                         return (
                           <td key={role} className="p-3 text-center">
-                            <div
-                              className="flex justify-center cursor-pointer"
-                              onClick={() => toggleRoleForFilter(col.id, role)}
-                            >
+                            <div className="flex justify-center">
                               <Checkbox
                                 checked={isVisible}
                                 onCheckedChange={() => toggleRoleForFilter(col.id, role)}
