@@ -33,7 +33,7 @@ const AdvancedFilterPanel = ({
   userRole = 'admin',
   companyId
 }: AdvancedFilterPanelProps) => {
-  const { filterSettings, visibilityConfig } = useFilterSettings(isOpen, filters, onFiltersChange);
+  const { filterSettings, visibilityConfig } = useFilterSettings(isOpen, filters, onFiltersChange, userRole, companyId);
   const { columns, visibleColumns } = useFilterColumns(properties, filterSettings, userRole, companyId, visibilityConfig);
   const {
     localFilters,
