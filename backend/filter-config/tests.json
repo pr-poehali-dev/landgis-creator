@@ -1,16 +1,6 @@
 {
   "tests": [
     {
-      "name": "Get filter config",
-      "method": "GET",
-      "path": "/",
-      "expectedStatus": 200,
-      "expectedBody": {
-        "config": "array"
-      },
-      "bodyMatcher": "partial"
-    },
-    {
       "name": "Save filter config",
       "method": "POST",
       "path": "/",

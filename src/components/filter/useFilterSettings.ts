@@ -63,6 +63,17 @@ export const useFilterSettings = (
         if (saved) {
           const settings = JSON.parse(saved);
           setFilterSettings(settings);
+
+          const defaultFilters: Record<string, string[]> = {};
+          settings.forEach((setting: FilterColumnSettings) => {
+            if (setting.defaultValues && setting.defaultValues.length > 0) {
+              defaultFilters[setting.id] = setting.defaultValues;
+            }
+          });
+
+          if (Object.keys(defaultFilters).length > 0 && Object.keys(filters).length === 0) {
+            onFiltersChange(defaultFilters);
+          }
         }
       }
     };
