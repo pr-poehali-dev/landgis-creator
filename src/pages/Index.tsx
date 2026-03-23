@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { parse, isAfter, subDays, subMonths, startOfDay } from 'date-fns';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import YandexMap from '@/components/YandexMap';
@@ -7,6 +8,7 @@ import { propertyService, Property } from '@/services/propertyService';
 import { visibilityService } from '@/services/visibilityService';
 import { UserRole, USER_ROLES, mapDbRole } from '@/types/userRoles';
 import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
+import { DateFilterValue } from '@/components/filter/FilterPanelContent';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import SidebarPanel from '@/components/map/SidebarPanel';
 import MobileSidebar from '@/components/map/MobileSidebar';
@@ -37,6 +39,7 @@ const Index = () => {
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, string[]>>({});
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>(null);
 
   useEffect(() => {
     loadProperties();
@@ -127,6 +130,28 @@ const Index = () => {
         }
       }
 
+      const matchesDate = (() => {
+        if (!dateFilter) return true;
+        const attrs = property.attributes;
+        if (!attrs) return false;
+        const now = startOfDay(new Date());
+        let cutoff: Date;
+        if (dateFilter === 'today') cutoff = now;
+        else if (dateFilter === 'week') cutoff = subDays(now, 7);
+        else cutoff = subMonths(now, 1);
+
+        return Object.values(attrs).some(val => {
+          if (typeof val !== 'string') return false;
+          try {
+            const parsed = parse(val, 'dd.MM.yyyy', new Date());
+            if (!isNaN(parsed.getTime())) return isAfter(parsed, cutoff) || parsed.getTime() === cutoff.getTime();
+            const isoDate = new Date(val);
+            if (!isNaN(isoDate.getTime())) return isAfter(startOfDay(isoDate), cutoff) || startOfDay(isoDate).getTime() === cutoff.getTime();
+          } catch { /* skip */ }
+          return false;
+        });
+      })();
+
       const matchesAdvanced = Object.entries(advancedFilters).every(([key, values]) => {
         if (!values || values.length === 0) return true;
         
@@ -187,9 +212,9 @@ const Index = () => {
         return true;
       });
       
-      return matchesSearch && matchesType && matchesSegment && matchesAdvanced;
+      return matchesSearch && matchesType && matchesSegment && matchesAdvanced && matchesDate;
     }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
-  }, [visibleByRoleProperties, searchQuery, filterType, filterSegment, advancedFilters]);
+  }, [visibleByRoleProperties, searchQuery, filterType, filterSegment, advancedFilters, dateFilter]);
 
   // Финальная фильтрация (без учёта видимости на карте)
   const filteredProperties = useMemo(() => {
@@ -222,7 +247,17 @@ const Index = () => {
     };
   }, []);
 
-  const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0);
+  const hasDateAttributes = useMemo(() => {
+    return properties.some(p => {
+      if (!p.attributes) return false;
+      return Object.values(p.attributes).some(val => {
+        if (typeof val !== 'string') return false;
+        return /^\d{2}\.\d{2}\.\d{4}$/.test(val);
+      });
+    });
+  }, [properties]);
+
+  const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0) + (dateFilter ? 1 : 0);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -271,6 +306,9 @@ const Index = () => {
             onLayersClick={() => toast.info('Функция "Слои" в разработке')}
             userRole={currentUserRole}
             companyId={authService.getUser()?.id}
+            dateFilter={dateFilter}
+            onDateFilterChange={setDateFilter}
+            hasDateAttributes={hasDateAttributes}
           />
           
           {/* Баннер режима просмотра для админа */}

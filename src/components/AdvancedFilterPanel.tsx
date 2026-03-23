@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import MapTypeSwitcher from '@/components/filter/MapTypeSwitcher';
 import FilterControls from '@/components/filter/FilterControls';
-import FilterPanelContent from '@/components/filter/FilterPanelContent';
+import FilterPanelContent, { DateFilterValue } from '@/components/filter/FilterPanelContent';
 import { useFilterSettings } from '@/components/filter/useFilterSettings';
 import { useFilterColumns } from '@/components/filter/useFilterColumns';
 import { useFilterActions } from '@/components/filter/useFilterActions';
@@ -19,6 +19,9 @@ interface AdvancedFilterPanelProps {
   onLayersClick?: () => void;
   userRole?: UserRole;
   companyId?: number;
+  dateFilter?: DateFilterValue;
+  onDateFilterChange?: (value: DateFilterValue) => void;
+  hasDateAttributes?: boolean;
 }
 
 const AdvancedFilterPanel = ({
@@ -31,7 +34,10 @@ const AdvancedFilterPanel = ({
   onMapTypeChange,
   onLayersClick,
   userRole = 'admin',
-  companyId
+  companyId,
+  dateFilter,
+  onDateFilterChange,
+  hasDateAttributes = false
 }: AdvancedFilterPanelProps) => {
   const { filterSettings, visibilityConfig } = useFilterSettings(isOpen, filters, onFiltersChange, userRole, companyId);
   const { columns, visibleColumns } = useFilterColumns(properties, filterSettings, userRole, companyId, visibilityConfig);
@@ -73,6 +79,9 @@ const AdvancedFilterPanel = ({
           onToggle={onToggle}
           clearFilters={clearFilters}
           toggleFilter={toggleFilter}
+          dateFilter={dateFilter}
+          onDateFilterChange={onDateFilterChange}
+          hasDateAttributes={hasDateAttributes}
         />
       </div>
     </>

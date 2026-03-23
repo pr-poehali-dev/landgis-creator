@@ -1,10 +1,16 @@
+import { useState } from 'react';
+import { format, parse } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Icon from '@/components/ui/icon';
+import { cn } from '@/lib/utils';
 import { DisplayConfig } from '@/services/displayConfigService';
 
 interface AttributeFieldRendererProps {
@@ -297,6 +303,29 @@ export const AttributeFieldRenderer = ({
         </div>
       );
 
+    case 'date': {
+      const parseDate = (val: string | undefined): Date | undefined => {
+        if (!val) return undefined;
+        try {
+          const parsed = parse(val, 'dd.MM.yyyy', new Date());
+          if (!isNaN(parsed.getTime())) return parsed;
+          const isoDate = new Date(val);
+          if (!isNaN(isoDate.getTime())) return isoDate;
+        } catch { /* ignore */ }
+        return undefined;
+      };
+      const dateValue = parseDate(value);
+
+      return (
+        <DatePickerField
+          fieldKey={key}
+          label={config.displayName}
+          dateValue={dateValue}
+          onAttributeChange={onAttributeChange}
+        />
+      );
+    }
+
     default:
       return (
         <div key={key} className="space-y-2">
@@ -312,4 +341,56 @@ export const AttributeFieldRenderer = ({
         </div>
       );
   }
+};
+
+const DatePickerField = ({
+  fieldKey,
+  label,
+  dateValue,
+  onAttributeChange
+}: {
+  fieldKey: string;
+  label: string;
+  dateValue: Date | undefined;
+  onAttributeChange: (key: string, value: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div key={fieldKey} className="space-y-2">
+      <Label htmlFor={fieldKey} className="text-sm font-medium">
+        {label}
+      </Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal",
+              !dateValue && "text-muted-foreground"
+            )}
+          >
+            <Icon name="Calendar" size={16} className="mr-2" />
+            {dateValue
+              ? format(dateValue, 'dd.MM.yyyy', { locale: ru })
+              : 'Выберите дату'}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={dateValue}
+            onSelect={(date) => {
+              if (date) {
+                onAttributeChange(fieldKey, format(date, 'dd.MM.yyyy'));
+              }
+              setOpen(false);
+            }}
+            locale={ru}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 };

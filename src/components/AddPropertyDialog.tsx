@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -145,6 +146,8 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
         initialAttributes[key] = 0;
       } else if (config.formatType === 'multiselect') {
         initialAttributes[key] = JSON.stringify([]);
+      } else if (config.formatType === 'date') {
+        initialAttributes[key] = format(new Date(), 'dd.MM.yyyy');
       } else {
         initialAttributes[key] = '';
       }
