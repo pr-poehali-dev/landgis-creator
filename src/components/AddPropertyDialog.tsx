@@ -281,6 +281,14 @@ const AddPropertyDialog = ({ open, onOpenChange, onAdd }: AddPropertyDialogProps
               kmlFile={kmlFile}
               isParsingKml={isParsingKml}
               onKmlUpload={handleKmlUpload}
+              boundary={formData.boundary}
+              onBoundaryChange={(boundary, center) => {
+                setFormData(prev => ({
+                  ...prev,
+                  boundary: boundary,
+                  coordinates: center || prev.coordinates
+                }));
+              }}
             />
           </div>
 
