@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import MapTypeSwitcher from '@/components/filter/MapTypeSwitcher';
 import FilterControls from '@/components/filter/FilterControls';
-import FilterPanelContent, { DateFilterValue } from '@/components/filter/FilterPanelContent';
+import FilterPanelContent, { DateFilterValue, CreatedAtFilterValue } from '@/components/filter/FilterPanelContent';
 import { useFilterSettings } from '@/components/filter/useFilterSettings';
 import { useFilterColumns } from '@/components/filter/useFilterColumns';
 import { useFilterActions } from '@/components/filter/useFilterActions';
@@ -22,6 +22,8 @@ interface AdvancedFilterPanelProps {
   dateFilter?: DateFilterValue;
   onDateFilterChange?: (value: DateFilterValue) => void;
   hasDateAttributes?: boolean;
+  createdAtFilter?: CreatedAtFilterValue;
+  onCreatedAtFilterChange?: (value: CreatedAtFilterValue) => void;
 }
 
 const AdvancedFilterPanel = ({
@@ -37,7 +39,9 @@ const AdvancedFilterPanel = ({
   companyId,
   dateFilter,
   onDateFilterChange,
-  hasDateAttributes = false
+  hasDateAttributes = false,
+  createdAtFilter,
+  onCreatedAtFilterChange
 }: AdvancedFilterPanelProps) => {
   const { filterSettings, visibilityConfig } = useFilterSettings(isOpen, filters, onFiltersChange, userRole, companyId);
   const { columns, visibleColumns } = useFilterColumns(properties, filterSettings, userRole, companyId, visibilityConfig);
@@ -82,6 +86,8 @@ const AdvancedFilterPanel = ({
           dateFilter={dateFilter}
           onDateFilterChange={onDateFilterChange}
           hasDateAttributes={hasDateAttributes}
+          createdAtFilter={createdAtFilter}
+          onCreatedAtFilterChange={onCreatedAtFilterChange}
         />
       </div>
     </>

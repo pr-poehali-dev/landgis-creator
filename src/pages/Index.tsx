@@ -8,7 +8,7 @@ import { propertyService, Property } from '@/services/propertyService';
 import { visibilityService } from '@/services/visibilityService';
 import { UserRole, USER_ROLES, mapDbRole } from '@/types/userRoles';
 import AdvancedFilterPanel from '@/components/AdvancedFilterPanel';
-import { DateFilterValue } from '@/components/filter/FilterPanelContent';
+import { DateFilterValue, CreatedAtFilterValue } from '@/components/filter/FilterPanelContent';
 import { useAppSettings } from '@/hooks/useAppSettings';
 import SidebarPanel from '@/components/map/SidebarPanel';
 import MobileSidebar from '@/components/map/MobileSidebar';
@@ -40,6 +40,7 @@ const Index = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDataTableOpen, setIsDataTableOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterValue>(null);
+  const [createdAtFilter, setCreatedAtFilter] = useState<CreatedAtFilterValue>(null);
 
   useEffect(() => {
     loadProperties();
@@ -152,6 +153,26 @@ const Index = () => {
         });
       })();
 
+      const matchesCreatedAt = (() => {
+        if (!createdAtFilter) return true;
+        if (!property.created_at) return false;
+        const now = startOfDay(new Date());
+        const createdDate = startOfDay(new Date(property.created_at));
+        if (isNaN(createdDate.getTime())) return false;
+
+        if (createdAtFilter === 'older') {
+          const monthAgo = subMonths(now, 1);
+          return createdDate.getTime() < monthAgo.getTime();
+        }
+
+        let cutoff: Date;
+        if (createdAtFilter === 'today') cutoff = now;
+        else if (createdAtFilter === 'week') cutoff = subDays(now, 7);
+        else cutoff = subMonths(now, 1);
+
+        return isAfter(createdDate, cutoff) || createdDate.getTime() === cutoff.getTime();
+      })();
+
       const matchesAdvanced = Object.entries(advancedFilters).every(([key, values]) => {
         if (!values || values.length === 0) return true;
         
@@ -212,9 +233,9 @@ const Index = () => {
         return true;
       });
       
-      return matchesSearch && matchesType && matchesSegment && matchesAdvanced && matchesDate;
+      return matchesSearch && matchesType && matchesSegment && matchesAdvanced && matchesDate && matchesCreatedAt;
     }).sort((a, b) => a.title.localeCompare(b.title, 'ru', { numeric: true, sensitivity: 'base' }));
-  }, [visibleByRoleProperties, searchQuery, filterType, filterSegment, advancedFilters, dateFilter]);
+  }, [visibleByRoleProperties, searchQuery, filterType, filterSegment, advancedFilters, dateFilter, createdAtFilter]);
 
   // Финальная фильтрация (без учёта видимости на карте)
   const filteredProperties = useMemo(() => {
@@ -257,7 +278,7 @@ const Index = () => {
     });
   }, [properties]);
 
-  const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0) + (dateFilter ? 1 : 0);
+  const filterCount = Object.values(advancedFilters).reduce((sum, arr) => sum + arr.length, 0) + (dateFilter ? 1 : 0) + (createdAtFilter ? 1 : 0);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -309,6 +330,8 @@ const Index = () => {
             dateFilter={dateFilter}
             onDateFilterChange={setDateFilter}
             hasDateAttributes={hasDateAttributes}
+            createdAtFilter={createdAtFilter}
+            onCreatedAtFilterChange={setCreatedAtFilter}
           />
           
           {/* Баннер режима просмотра для админа */}

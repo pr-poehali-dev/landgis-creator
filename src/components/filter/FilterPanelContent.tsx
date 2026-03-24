@@ -16,6 +16,7 @@ interface FilterColumn {
 }
 
 export type DateFilterValue = 'today' | 'week' | 'month' | null;
+export type CreatedAtFilterValue = 'today' | 'week' | 'month' | 'older' | null;
 
 interface FilterPanelContentProps {
   isOpen: boolean;
@@ -29,12 +30,21 @@ interface FilterPanelContentProps {
   dateFilter?: DateFilterValue;
   onDateFilterChange?: (value: DateFilterValue) => void;
   hasDateAttributes?: boolean;
+  createdAtFilter?: CreatedAtFilterValue;
+  onCreatedAtFilterChange?: (value: CreatedAtFilterValue) => void;
 }
 
 const DATE_FILTER_OPTIONS = [
   { value: 'today' as const, label: 'Сегодня', icon: 'CalendarCheck' },
   { value: 'week' as const, label: 'За неделю', icon: 'CalendarDays' },
   { value: 'month' as const, label: 'За месяц', icon: 'CalendarRange' },
+];
+
+const CREATED_AT_FILTER_OPTIONS = [
+  { value: 'today' as const, label: 'За сегодня', icon: 'CalendarCheck' },
+  { value: 'week' as const, label: 'За неделю', icon: 'CalendarDays' },
+  { value: 'month' as const, label: 'За месяц', icon: 'CalendarRange' },
+  { value: 'older' as const, label: 'Более месяца назад', icon: 'History' },
 ];
 
 const FilterPanelContent = ({
@@ -48,7 +58,9 @@ const FilterPanelContent = ({
   toggleFilter,
   dateFilter,
   onDateFilterChange,
-  hasDateAttributes = false
+  hasDateAttributes = false,
+  createdAtFilter,
+  onCreatedAtFilterChange
 }: FilterPanelContentProps) => {
   if (!isOpen) return null;
 
@@ -59,14 +71,15 @@ const FilterPanelContent = ({
           <button
             className={cn(
               "h-8 px-3 text-xs rounded-md border transition-all",
-              (activeCount > 0 || dateFilter)
+              (activeCount > 0 || dateFilter || createdAtFilter)
                 ? "border-input bg-background hover:bg-accent hover:text-accent-foreground active:bg-accent" 
                 : "border-transparent bg-transparent text-muted-foreground opacity-50 cursor-not-allowed"
             )}
             onClick={(e) => {
-              if (activeCount > 0 || dateFilter) {
+              if (activeCount > 0 || dateFilter || createdAtFilter) {
                 clearFilters();
                 if (onDateFilterChange) onDateFilterChange(null);
+                if (onCreatedAtFilterChange) onCreatedAtFilterChange(null);
                 (e.currentTarget as HTMLButtonElement).blur();
               }
             }}
@@ -81,8 +94,21 @@ const FilterPanelContent = ({
             Закрыть
           </Button>
         </div>
-        {(activeFilters.length > 0 || dateFilter) ? (
+        {(activeFilters.length > 0 || dateFilter || createdAtFilter) ? (
           <>
+            {createdAtFilter && onCreatedAtFilterChange && (
+              <Badge
+                variant="secondary"
+                className="h-7 px-3 gap-2 cursor-pointer hover:bg-destructive/20"
+                onClick={() => onCreatedAtFilterChange(null)}
+              >
+                <span className="text-xs text-muted-foreground">Добавлен:</span>
+                <span className="text-xs font-medium">
+                  {CREATED_AT_FILTER_OPTIONS.find(o => o.value === createdAtFilter)?.label}
+                </span>
+                <Icon name="X" size={12} />
+              </Badge>
+            )}
             {dateFilter && onDateFilterChange && (
               <Badge
                 variant="secondary"
@@ -118,6 +144,36 @@ const FilterPanelContent = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {onCreatedAtFilterChange && (
+          <div>
+            <h3 className="text-sm font-semibold mb-3 text-orange-500 uppercase tracking-wide">
+              Дата добавления
+            </h3>
+            <div className="space-y-1.5">
+              {CREATED_AT_FILTER_OPTIONS.map((option) => {
+                const isSelected = createdAtFilter === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => onCreatedAtFilterChange(isSelected ? null : option.value)}
+                    className={cn(
+                      "w-full px-3 py-2.5 text-left rounded-lg transition-all border",
+                      "hover:border-accent/50 group",
+                      isSelected
+                        ? "bg-accent/10 border-accent text-foreground font-medium shadow-sm"
+                        : "bg-card/50 border-border text-muted-foreground hover:bg-card/80"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon name={option.icon as "CalendarCheck" | "CalendarDays" | "CalendarRange" | "History"} size={16} />
+                      <span className="text-sm">{option.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {hasDateAttributes && onDateFilterChange && (
           <div>
             <h3 className="text-sm font-semibold mb-3 text-orange-500 uppercase tracking-wide">
